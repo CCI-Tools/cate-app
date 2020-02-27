@@ -14,6 +14,7 @@ import {
 import * as actions from '../actions';
 import { State } from '../state';
 
+import cateIcon from '../resources/cate-icon-128.png';
 
 interface IDispatch {
     dispatch: Dispatch<State>;
@@ -41,7 +42,10 @@ class _AppBar extends React.PureComponent<IAppBarProps & IDispatch, null> {
     render() {
         return (
             <Navbar>
-                <NavbarGroup><span className="bp3-ui-text-large">Cate - CCI Toolbox</span></NavbarGroup>
+                <NavbarGroup>
+                    <img src={cateIcon} width={32} height={32} alt={'Cate icon'}/>
+                    <h3 style={{marginLeft: 10}}>Cate - ESA CCI Toolbox</h3>
+                </NavbarGroup>
                 <NavbarGroup align="right">
                     <Popover content={<WorkspacesMenu/>} position={PopoverPosition.BOTTOM}>
                         <Button className="bp3-minimal">Workspaces</Button>
