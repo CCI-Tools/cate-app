@@ -1,3 +1,5 @@
+/* TODO (forman): remove this unused file, it is an example from create-react-app */
+
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
