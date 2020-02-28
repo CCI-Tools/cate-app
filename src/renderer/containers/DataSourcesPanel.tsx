@@ -13,6 +13,7 @@ import {
     Collapse,
     Colors,
     HTMLSelect,
+    IconName,
     InputGroup,
     Intent,
     Label,
@@ -20,7 +21,6 @@ import {
     Tabs,
     Tag
 } from '@blueprintjs/core';
-import { IconName } from '@blueprintjs/core/src/components/icon/icon';
 import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
 import { Card } from '../components/Card';
 import { ScrollablePanelContent } from '../components/ScrollableContent';
