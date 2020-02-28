@@ -71,9 +71,9 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "test": "react-scripts test",
+    "start": "yarn run cp_cesium && react-scripts start",
     "build": "yarn run cp_cesium && react-scripts build",
+    "test": "yarn run cp_cesium && react-scripts test",
     "eject": "react-scripts eject",
     "_cp_cesium_assets": "copyfiles -u 3 ./node_modules/cesium/Source/Assets/**/* ./public/cesium",
     "_cp_cesium_widgets": "copyfiles -u 3 ./node_modules/cesium/Source/Widgets/**/* ./public/cesium",
