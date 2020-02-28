@@ -24,3 +24,8 @@ yarn-error.log*
 
 # IntelliJ IDEs
 .idea/
+
+
+# Cesium
+
+public/cesium/

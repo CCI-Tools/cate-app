@@ -6,18 +6,14 @@ import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/table/lib/css/table.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
-import 'cesium/Build/Cesium/Widgets/widgets.css';
 import './index.css';
 
 interface Window {
     CESIUM_BASE_URL: string;
 }
+
 declare var window: Window;
-if (process.env.NODE_ENV === 'development') {
-    window.CESIUM_BASE_URL = 'node_modules/cesium/Build/Cesium';
-} else {
-    window.CESIUM_BASE_URL = 'cesium';
-}
+window.CESIUM_BASE_URL = './cesium';
 console.log('CESIUM_BASE_URL =', window.CESIUM_BASE_URL);
 
 main();
