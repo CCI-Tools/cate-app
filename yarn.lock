@@ -1607,7 +1607,7 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.23.0", "@blueprintjs/core@^3.23.1":
+"@blueprintjs/core@^3.23.0", "@blueprintjs/core@^3.23.1", "@blueprintjs/core@^3.24.0":
   version "3.24.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.24.0.tgz#593a2b289bb94224f3a924eb1b3065ea3c4ca00a"
   integrity sha512-qW29DDPjzYsT27J6n97C0jZ1ifvEEziwNC98UhaKdSE7I8qxbLsb+ft2JOop+pEX4ab67T1lhQKAiQjWCPKZng==
@@ -1634,7 +1634,7 @@
     react-day-picker "7.3.2"
     tslib "~1.9.0"
 
-"@blueprintjs/icons@^3.13.0", "@blueprintjs/icons@^3.14.0":
+"@blueprintjs/icons@^3.14.0":
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.14.0.tgz#9f9a51b116907d103e4e2e9b78d53d4ac6f107fd"
   integrity sha512-cvQ3CSdy0DqVqcXcPqSxoycJw497TVP5goyE6xCFlVs84477ahxh7Uung6J+CCoDVBuI87h576LtuyjwSxorvQ==

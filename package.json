@@ -72,8 +72,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
     "test": "react-scripts test",
+    "build": "yarn run cp_cesium && react-scripts build",
     "eject": "react-scripts eject",
     "_cp_cesium_assets": "copyfiles -u 3 ./node_modules/cesium/Source/Assets/**/* ./public/cesium",
     "_cp_cesium_widgets": "copyfiles -u 3 ./node_modules/cesium/Source/Widgets/**/* ./public/cesium",
