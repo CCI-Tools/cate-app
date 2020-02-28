@@ -3,9 +3,9 @@
   "version": "3.0.0-dev.0",
   "private": true,
   "dependencies": {
-    "@blueprintjs/core": "^3.23.1",
+    "@blueprintjs/core": "^3.24.0",
     "@blueprintjs/datetime": "^3.15.2",
-    "@blueprintjs/icons": "^3.13.0",
+    "@blueprintjs/icons": "^3.14.0",
     "@blueprintjs/table": "^3.8.3",
     "cesium": "1.66.0",
     "classnames": "^2.2.6",
@@ -59,7 +59,7 @@
     "@types/tether": "^1.4.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "copyfiles": "^2.1.1",
+    "copyfiles": "^2.2.0",
     "jsdom": "16.2.0",
     "jsdom-global": "3.0.2",
     "mocha": "^5.2.0",
@@ -74,7 +74,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "_cp_cesium_assets": "copyfiles -u 3 ./node_modules/cesium/Source/Assets/**/* ./public/cesium",
+    "_cp_cesium_widgets": "copyfiles -u 3 ./node_modules/cesium/Source/Widgets/**/* ./public/cesium",
+    "_cp_cesium_workers": "copyfiles -u 4 ./node_modules/cesium/Build/Cesium/Workers/**/* ./public/cesium",
+    "cp_cesium": "yarn run _cp_cesium_assets & yarn run _cp_cesium_widgets & yarn run _cp_cesium_workers"
   },
   "eslintConfig": {
     "extends": "react-app"
