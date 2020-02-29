@@ -1,5 +1,4 @@
 import { combineReducers, Reducer } from 'redux';
-import { setWebAPIMode, setWebAPIStatus } from './actions';
 import { isElectron } from './is-electron';
 import {
     CommunicationState,

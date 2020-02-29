@@ -24,7 +24,7 @@ const WKT_GEOMETRY_TYPES = new Set([
 const WKT_GEOMETRIES_TEXT = new Array(WKT_GEOMETRY_TYPES.values()).map(s => `"${s}"`).join(', ');
 
 function isAlpha(c: string) {
-    return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z';
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
 }
 
 function parseFloatWithError(textValue: string, errorText?: string) {
@@ -194,7 +194,7 @@ export function validateGeoCoordinate(lon: number, lat: number) {
 export function isBox(geometry: DirectGeometryObject) {
     if (geometry.type === 'Polygon' && geometry.coordinates.length === 1) {
         const positions = geometry.coordinates[0] as Position[];
-        if (positions.length == 5) {
+        if (positions.length === 5) {
             const x0 = positions[0][0];
             const y0 = positions[0][1];
             const x1 = positions[1][0];
@@ -213,8 +213,8 @@ export function isBox(geometry: DirectGeometryObject) {
             const dy3 = y3 - y2;
             const dx4 = x4 - x3;
             const dy4 = y4 - y3;
-            return dx1 === 0.0 && dy2 === 0 && dx3 === 0.0 && dy4 === 0
-                   || dy1 === 0 && dx2 === 0.0 && dy3 === 0 && dx4 === 0.0;
+            return (dx1 === 0.0 && dy2 === 0 && dx3 === 0.0 && dy4 === 0)
+                   || (dy1 === 0 && dx2 === 0.0 && dy3 === 0 && dx4 === 0.0);
         }
     }
     return false;
