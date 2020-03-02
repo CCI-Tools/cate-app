@@ -200,7 +200,7 @@ export function login(): ThunkAction {
                         () => dispatch(connectWebAPIClient()),
                         handleError,
                         SECOND,
-                        15 * MINUTE);
+                15 * MINUTE);
         } else {
             dispatch(connectWebAPIClient());
         }
@@ -223,7 +223,7 @@ function invokeUntil(callback: () => Promise<any>,
         let result;
         try {
             result = await callback();
-            console.log(attempt, "result =", result);
+            console.log(attempt, 'result =', result);
         } catch (e) {
             error = e;
         }
@@ -331,8 +331,10 @@ export function connectWebAPIClient(): ThunkAction {
 
         webAPIClient.onClose = (event) => {
             console.error('webAPIClient.onClose:', event);
-            dispatch(setWebAPIStatus('closed'));
-            showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
+            if (getState().communication.webAPIStatus === 'logoff') {
+                dispatch(setWebAPIStatus('closed'));
+                showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
+            }
         };
 
         webAPIClient.onError = (event) => {
@@ -1505,7 +1507,7 @@ export function setSelectedWorkspaceResourceName(selectedWorkspaceResourceName: 
                 if (resource && resource.variables && resource.variables.length) {
                     const variable = resource.variables.find(variable => !!variable.isDefault);
                     dispatch(setSelectedVariable(resource,
-                                                 variable || resource.variables[0],
+                        variable || resource.variables[0],
                                                  selectors.savedLayersSelector(getState())));
                 }
             }

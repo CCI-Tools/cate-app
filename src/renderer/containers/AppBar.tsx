@@ -21,11 +21,14 @@ interface IDispatch {
 }
 
 interface IAppBarProps {
+    canLogout: boolean;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppBarProps {
-    return {};
+    return {
+        canLogout: state.communication.user !== null && state.communication.token !== null,
+    };
 }
 
 class _AppBar extends React.PureComponent<IAppBarProps & IDispatch, null> {
@@ -51,9 +54,14 @@ class _AppBar extends React.PureComponent<IAppBarProps & IDispatch, null> {
                         <Button className="bp3-minimal">Workspaces</Button>
                     </Popover>
                     <NavbarDivider/>
-                    <Button className="bp3-minimal" icon="log-out" onClick={this.handleLogoutClick}>Logout</Button>
+                    <Button className="bp3-minimal"
+                            icon="log-out"
+                            onClick={this.handleLogoutClick}
+                            disabled={!this.props.canLogout}>Logout</Button>
                     <NavbarDivider/>
-                    <Button className="bp3-minimal" icon='cog' onClick={this.handlePreferencesClick}/>
+                    <Button className="bp3-minimal"
+                            icon='cog'
+                            onClick={this.handlePreferencesClick}/>
                 </NavbarGroup>
             </Navbar>
         );
