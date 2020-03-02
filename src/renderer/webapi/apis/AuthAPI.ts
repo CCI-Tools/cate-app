@@ -37,7 +37,7 @@ export class AuthAPI {
         const url = new URL(CATE_HUB_TOKEN_URL);
         console.log('POST: ', url);
         return fetch(url.toString(), {
-            mode: 'no-cors',
+            mode: 'cors',
             method: 'post',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({username, password}),
