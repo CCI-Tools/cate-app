@@ -160,7 +160,7 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
     private renderBackendStatus() {
         let icon: IconName | null = null;
         let tooltipText = null;
-        const mode = ` (${this.props.webAPIStatus})`;
+        const mode = ` (${this.props.webAPIMode})`;
         if (this.props.webAPIStatus === 'connecting') {
             icon = 'link';
             tooltipText = 'Connecting' + mode;
