@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { GeographicPosition, State, TaskState, WebAPIStatus } from '../state';
+import { GeographicPosition, State, TaskState, WebAPIMode, WebAPIStatus } from '../state';
 import * as selectors from '../selectors';
 import * as actions from '../actions';
 import {
@@ -19,6 +19,7 @@ import TaskComponent from './TaskComponent';
 
 interface IStatusBarProps {
     webAPIStatus: WebAPIStatus;
+    webAPIMode: WebAPIMode;
     tasks: { [jobId: number]: TaskState };
     globePosition: GeographicPosition | null;
 }
@@ -32,6 +33,7 @@ interface IStatusBarDispatch {
 function mapStateToProps(state: State): IStatusBarProps {
     return {
         webAPIStatus: state.communication.webAPIStatus,
+        webAPIMode: state.data.appConfig.webAPIMode,
         tasks: state.communication.tasks,
         globePosition: selectors.globeMousePositionSelector(state) || selectors.globeViewPositionSelector(state),
     };
@@ -59,6 +61,31 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
         backgroundColor: '#2B95D6',
         overflow: 'hidden',
     };
+
+    render() {
+        // TODO dummy
+        const message = 'Ready.';
+
+        let cursor;
+        let position = this.props.globePosition;
+        if (position) {
+            cursor = `lon=${position.longitude.toFixed(2)}, lat=${position.latitude.toFixed(2)}`
+        } else {
+            cursor = '';
+        }
+
+        return (
+            <div style={StatusBar.DIV_STYLE}>
+                <div style={{flex: '60 1 auto', padding: 2}}>{message}</div>
+                <div style={{flex: '20 1 auto', padding: 2}}>{this.renderTasks()}</div>
+                <div style={{flex: '20 1 auto', padding: 1}}>{cursor}</div>
+                <div style={{
+                    flex: '0 1 auto',
+                    padding: 2
+                }}>{this.renderBackendStatus()}</div>
+            </div>
+        );
+    }
 
     private renderTasks() {
         const tasks: { [jobId: number]: TaskState } = this.props.tasks;
@@ -133,21 +160,22 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
     private renderBackendStatus() {
         let icon: IconName | null = null;
         let tooltipText = null;
+        const mode = ` (${this.props.webAPIStatus})`;
         if (this.props.webAPIStatus === 'connecting') {
             icon = 'link';
-            tooltipText = 'Connecting';
+            tooltipText = 'Connecting' + mode;
         } else if (this.props.webAPIStatus === 'open') {
             icon = 'link';
-            tooltipText = 'Connected';
+            tooltipText = 'Connected' + mode;
         } else if (this.props.webAPIStatus === 'error') {
             icon = 'offline';
-            tooltipText = 'Error';
+            tooltipText = 'Error' + mode;
         } else if (this.props.webAPIStatus === 'closed') {
             icon = 'offline';
-            tooltipText = 'Closed';
+            tooltipText = 'Closed' + mode;
         } else {
             icon = 'help';
-            tooltipText = 'Unknown';
+            tooltipText = 'Unknown' + mode;
         }
         return (
             <Tooltip content={tooltipText} hoverOpenDelay={1500} position={Position.LEFT_TOP}>
@@ -155,31 +183,6 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
             </Tooltip>
         );
     };
-
-    render() {
-        // TODO dummy
-        const message = 'Ready.';
-
-        let cursor;
-        let position = this.props.globePosition;
-        if (position) {
-            cursor = `lon=${position.longitude.toFixed(2)}, lat=${position.latitude.toFixed(2)}`
-        } else {
-            cursor = '';
-        }
-
-        return (
-            <div style={StatusBar.DIV_STYLE}>
-                <div style={{flex: '60 1 auto', padding: 2}}>{message}</div>
-                <div style={{flex: '20 1 auto', padding: 2}}>{this.renderTasks()}</div>
-                <div style={{flex: '20 1 auto', padding: 1}}>{cursor}</div>
-                <div style={{
-                    flex: '0 1 auto',
-                    padding: 2
-                }}>{this.renderBackendStatus()}</div>
-            </div>
-        );
-    }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(StatusBar as any);
