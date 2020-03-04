@@ -65,20 +65,21 @@
     "mocha": "^5.2.0",
     "react-scripts": "3.4.0",
     "react-test-renderer": "^16.12.0",
-    "rimraf": "^2.6.3",
+    "rimraf": "^3.0.2",
     "spectron": "^3.8.0",
     "ts-node": "^8.6.2",
     "typescript": "~3.7.2"
   },
   "scripts": {
     "start": "yarn run cp_cesium && react-scripts start",
-    "build": "yarn run cp_cesium && react-scripts build",
-    "test": "yarn run cp_cesium && react-scripts test",
+    "build": "yarn run rm_cesium && yarn run cp_cesium && react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "_cp_cesium_assets": "copyfiles -u 3 './node_modules/cesium/Source/Assets/**/*' ./public/cesium",
-    "_cp_cesium_widgets": "copyfiles -u 3 './node_modules/cesium/Source/Widgets/**/*' ./public/cesium",
-    "_cp_cesium_workers": "copyfiles -u 4 './node_modules/cesium/Build/Cesium/Workers/**/*' ./public/cesium",
-    "cp_cesium": "yarn run _cp_cesium_assets & yarn run _cp_cesium_widgets & yarn run _cp_cesium_workers"
+    "rm_cesium": "yarn run rimraf ./public/cesium",
+    "cp_cesium": "yarn run _cp_cesium_assets & yarn run _cp_cesium_widgets & yarn run _cp_cesium_workers",
+    "_cp_cesium_assets": "copyfiles -u 3 \"./node_modules/cesium/Source/Assets/**/*\" ./public/cesium",
+    "_cp_cesium_widgets": "copyfiles -u 3 \"./node_modules/cesium/Source/Widgets/**/*\" ./public/cesium",
+    "_cp_cesium_workers": "copyfiles -u 4 \"./node_modules/cesium/Build/Cesium/Workers/**/*\" ./public/cesium"
   },
   "eslintConfig": {
     "extends": "react-app"
