@@ -154,7 +154,7 @@ export function login(): ThunkAction {
                                           password);
         } catch (error) {
             console.info('error: ', error);
-            if (error instanceof HttpError && error.status === 401) {
+            if (error instanceof HttpError && (error.status === 401 || error.status === 403)) {
                 showToast({type: 'error', text: 'Wrong username or password.'});
             } else {
                 handleFetchError(error, 'Login failed');
@@ -2340,15 +2340,19 @@ function hasElectron(functionName: string): boolean {
 
 function handleFetchError(error: any, message: string) {
     console.info('fetch error: ', message, error);
+    let suffix = '';
     if (error instanceof HttpError) {
-        showToast({type: 'error', text: `${message} (HTTP status ${error.status}, ${error.statusText})`});
+        if (error.statusText) {
+            suffix = ` (HTTP status ${error.status}: ${error.statusText})`;
+        } else {
+            suffix = `(HTTP status ${error.status})`;
+        }
     } else if (error instanceof TypeError) {
-        showToast({type: 'error', text: `${message} (no internet?)`});
+        suffix = ' (no internet?)';
     } else if (error instanceof Error && error.message) {
-        showToast({type: 'error', text: `${message} (${error.message})`});
-    } else {
-        showToast({type: 'error', text: `${message}`});
+        suffix = ` (${error.message})`;
     }
+    showToast({type: 'error', text: message + suffix});
 }
 
 function invokeUntil(callback: () => Promise<any>,
