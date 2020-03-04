@@ -154,7 +154,10 @@ export function login(): ThunkAction {
                                           password);
         } catch (error) {
             console.info('error: ', error);
-            if (error instanceof HttpError && (error.status === 401 || error.status === 403)) {
+            if (error instanceof HttpError && (error.status === 401)) {
+                showToast({type: 'error', text: 'Access unauthorized.'});
+            }
+            else if(error instanceof HttpError && (error.status === 403)) {
                 showToast({type: 'error', text: 'Wrong username or password.'});
             } else {
                 handleFetchError(error, 'Login failed');
@@ -2386,5 +2389,4 @@ function invokeUntil(callback: () => Promise<any>,
     func = _func;
     setTimeout(func, interval);
 }
-
 
