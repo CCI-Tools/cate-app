@@ -96,7 +96,7 @@ class LayerSourcesDialog extends React.Component<DispatchProp<State> & ILayerSou
         }
         return (
             <ScrollablePanelContent>
-                <p>Select the variables to wish to add as a layer:</p>
+                <p>Select the variables you wish to add as a layer:</p>
                 <ListBox items={this.props.layerVariables}
                          getItemKey={LayerSourcesDialog.getVariableItemKey}
                          renderItem={LayerSourcesDialog.renderVariableItem}
