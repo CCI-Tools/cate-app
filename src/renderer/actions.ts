@@ -78,6 +78,7 @@ import {
 } from './containers/editor/value-editor-assign';
 import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
+import { HttpError } from './webapi/HttpError';
 
 let electron;
 try {
@@ -153,8 +154,11 @@ export function login(): ThunkAction {
                                           password);
         } catch (error) {
             console.info('error: ', error);
-            //showToast({type: 'error', text: 'Wrong username or password.'});
-            showToast({type: 'error', text: 'Wrong username or password.'});
+            if (error instanceof HttpError && error.status === 401) {
+                showToast({type: 'error', text: 'Wrong username or password.'});
+            } else {
+                handleFetchError(error, 'Login failed');
+            }
             return;
         }
 
@@ -168,9 +172,8 @@ export function login(): ThunkAction {
         }
 
         if (!hasServer(user)) {
-            const handleError = (error: any) => {
-                console.info('error: ', error);
-                showToast({type: 'error', text: 'Failed to launch remote Cate service.'});
+            const handleLaunchError = (error: any) => {
+                handleFetchError(error, 'Launching remote Cate service failed.');
                 dispatch(setWebAPIStatus(null));
             };
 
@@ -179,7 +182,7 @@ export function login(): ThunkAction {
             try {
                 await authAPI.startWebAPI(username, token);
             } catch (error) {
-                handleError(error);
+                handleLaunchError(error);
                 return;
             }
 
@@ -187,7 +190,6 @@ export function login(): ThunkAction {
                 try {
                     return await authAPI.getUser(username, token);
                 } catch (error) {
-                    console.info('error: ', error);
                     return null;
                 }
             };
@@ -198,7 +200,7 @@ export function login(): ThunkAction {
             invokeUntil(getUserAsync,
                         hasServer,
                         () => dispatch(connectWebAPIClient()),
-                        handleError,
+                        handleLaunchError,
                         SECOND,
                 15 * MINUTE);
         } else {
@@ -207,45 +209,12 @@ export function login(): ThunkAction {
     };
 }
 
-function invokeUntil(callback: () => Promise<any>,
-                     condition: (result: any) => boolean,
-                     onSuccess: (result: any) => any,
-                     onError: (error: any) => any,
-                     interval: number,
-                     timeout: number) {
-    let startTime = new Date().getTime();
-    let func: () => void;
-    let attempt = 0;
-    let error: any = null;
-    // noinspection UnnecessaryLocalVariableJS
-    const _func = async () => {
-        attempt++;
-        let result;
-        try {
-            result = await callback();
-            console.log(attempt, 'result =', result);
-        } catch (e) {
-            error = e;
-        }
-        if (condition(result)) {
-            onSuccess(result);
-        } else if ((new Date().getTime() - startTime) > timeout) {
-            onError(error || new Error('Timeout'));
-        } else {
-            setTimeout(func, interval);
-        }
-    };
-    func = _func;
-    setTimeout(func, interval);
-}
-
-
 export function logout(): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
         const username = getState().communication.username;
         const token = getState().communication.token;
         if (username === null || token === null) {
-            throw new Error('Internal error: username === null || token === null');
+            return;
         }
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
@@ -253,8 +222,7 @@ export function logout(): ThunkAction {
         try {
             await authAPI.stopWebAPI(username, token);
         } catch (error) {
-            console.info('error: ', error);
-            showToast({type: 'warning', text: 'Failed to shut down Cate service.'});
+            handleFetchError(error, 'Logout failed.')
         }
         dispatch(_logout());
     };
@@ -332,9 +300,11 @@ export function connectWebAPIClient(): ThunkAction {
         webAPIClient.onClose = (event) => {
             console.error('webAPIClient.onClose:', event);
             if (getState().communication.webAPIStatus === 'logoff') {
-                dispatch(setWebAPIStatus('closed'));
-                showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
+                // When we are logging off, the webAPIClient is expected to close.
+                return;
             }
+            dispatch(setWebAPIStatus('closed'));
+            showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
         };
 
         webAPIClient.onError = (event) => {
@@ -2366,3 +2336,51 @@ function hasElectron(functionName: string): boolean {
     }
     return true;
 }
+
+
+function handleFetchError(error: any, message: string) {
+    console.info('fetch error: ', message, error);
+    if (error instanceof HttpError) {
+        showToast({type: 'error', text: `${message} (HTTP status ${error.status}, ${error.statusText})`});
+    } else if (error instanceof TypeError) {
+        showToast({type: 'error', text: `${message} (no internet?)`});
+    } else if (error instanceof Error && error.message) {
+        showToast({type: 'error', text: `${message} (${error.message})`});
+    } else {
+        showToast({type: 'error', text: `${message}`});
+    }
+}
+
+function invokeUntil(callback: () => Promise<any>,
+                     condition: (result: any) => boolean,
+                     onSuccess: (result: any) => any,
+                     onError: (error: any) => any,
+                     interval: number,
+                     timeout: number) {
+    let startTime = new Date().getTime();
+    let func: () => void;
+    let attempt = 0;
+    let error: any = null;
+    // noinspection UnnecessaryLocalVariableJS
+    const _func = async () => {
+        attempt++;
+        let result;
+        try {
+            result = await callback();
+            console.log(attempt, 'result =', result);
+        } catch (e) {
+            error = e;
+        }
+        if (condition(result)) {
+            onSuccess(result);
+        } else if ((new Date().getTime() - startTime) > timeout) {
+            onError(error || new Error('Timeout'));
+        } else {
+            setTimeout(func, interval);
+        }
+    };
+    func = _func;
+    setTimeout(func, interval);
+}
+
+

@@ -41,7 +41,7 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
             />);
         case 'logoff':
             return (<StatusBox
-                message={'Closing Cate service instance...'}
+                message={'Shutting down Cate service instance...'}
                 icon="log-out"
                 isWaiting={true}
             />);

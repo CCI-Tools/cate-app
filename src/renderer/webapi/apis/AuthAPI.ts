@@ -1,3 +1,4 @@
+import { HttpError } from '../HttpError';
 import { WebAPIConfig } from '../../state';
 
 const CATE_HUB_SERVER_BASE = 'https://catehub.192.171.139.57.nip.io';
@@ -42,11 +43,10 @@ export class AuthAPI {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({username, password}),
         }).then((response: Response) => {
-            if (response.ok) {
-                return response.json() as Promise<AuthInfo>;
-            } else {
-                throw newFetchError(response);
+            if (!response.ok) {
+                throw HttpError.fromResponse(response);
             }
+            return response.json() as Promise<AuthInfo>;
         });
     }
 
@@ -59,10 +59,11 @@ export class AuthAPI {
                 'Authorization': `token ${token}`,
             }
         }).then((response: Response) => {
-            if (response.ok) {
-                return response.json() as Promise<User>;
+            if (!response.ok) {
+                console.log(response);
+                return null;
             }
-            return null;
+            return response.json() as Promise<User>;
         });
     }
 
@@ -77,10 +78,10 @@ export class AuthAPI {
             },
             body: '{"profile" : "Cate Web-API Service"}',
         }).then((response: Response) => {
-            if (response.ok) {
-                return true;
+            if (!response.ok) {
+                throw HttpError.fromResponse(response);
             }
-            throw newFetchError(response);
+            return true;
         });
     }
 
@@ -93,16 +94,10 @@ export class AuthAPI {
                 'Authorization': `token ${token}`,
             },
         }).then((response: Response) => {
-            if (response.ok) {
-                return true;
+            if (!response.ok) {
+                throw HttpError.fromResponse(response);
             }
-            throw newFetchError(response);
+            return true;
         });
     }
 }
-
-
-function newFetchError(response: Response) {
-    return new Error(`${response.statusText} (HTTP status ${response.status})`);
-}
-
