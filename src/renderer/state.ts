@@ -31,31 +31,22 @@ export interface State {
  * Cate's domain data which is usually received from the Cate WebAPI service.
  */
 export interface DataState {
-    appConfig: AppConfigState;
     dataStores: DataStoreState[] | null;
     operations: OperationState[] | null;
     workspace: WorkspaceState | null;
     colorMaps: ColorMapCategoryState[] | null;
     workspaceNames: string[] | null;
-}
-
-export type WebAPIMode = 'local' | 'remote' | null;
-export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' | 'error' | 'closed' | 'logoff' | null;
-
-
-// Maybe put it into the communication state, see http://jamesknelson.com/5-types-react-application-state/
-// and see https://github.com/trbngr/react-example-pusher
-export interface AppConfigState {
-    webAPIMode: WebAPIMode;
-    webAPIConfig: WebAPIConfig;
     hasWebGL: boolean;
 }
 
-export interface WebAPIConfig {
-    // Values read by main.ts from ./cate-config.js
-    serviceURL: string;
-    serviceFile?: string;
-    processOptions?: Object;
+export type WebAPIProvision = 'CustomURL' | 'CateHub' | null;
+export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' | 'error' | 'closed' | 'logoff' | null;
+
+export interface WebAPIServiceInfo {
+    name: string;
+    version: string;
+    timestamp: string;
+    userRootMode: boolean;
 }
 
 export interface DataStoreNotice {
@@ -637,6 +628,9 @@ export interface ColorMapCategoryState {
  * Communication state is the status of any not-yet-complete requests to other services.
  */
 export interface CommunicationState {
+    webAPIProvision: WebAPIProvision;
+    webAPIServiceURL: string;
+    webAPIServiceInfo: WebAPIServiceInfo | null;
     webAPIStatus: WebAPIStatus;
     webAPIClient: WebAPIClient | null;
     username: string | null;

@@ -1,5 +1,4 @@
 import { combineReducers, Reducer } from 'redux';
-import { isElectron } from './is-electron';
 import {
     CommunicationState,
     ControlState,
@@ -76,34 +75,10 @@ const updateDataStores = (state: DataState, action: Action, createDataSources: (
 
 const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
     switch (action.type) {
-        case actions.SET_WEBAPI_MODE: {
-            const webAPIMode = action.payload.webAPIMode;
-            const appConfig = {...state.appConfig, webAPIMode};
-            return {...state, appConfig};
-        }
-        case actions.SET_WEBAPI_CONFIG: {
-            const webAPIConfig = action.payload.webAPIConfig;
-            const appConfig = {...state.appConfig, webAPIConfig};
-            return {...state, appConfig};
-        }
-        case actions.LOGOUT: {
-            if (isElectron()) {
-                const appConfig = {...state.appConfig, webAPIMode: null};
-                return {...state, appConfig};
-            }
-            return state;
-        }
         case actions.UPDATE_WORKSPACE_NAMES: {
             const workspaceNames = action.payload.workspaceNames || null;
             return {...state, workspaceNames};
         }
-        case actions.UPDATE_INITIAL_STATE:
-            const webAPIConfig = action.payload.webAPIConfig;
-            if (!!webAPIConfig) {
-                const appConfig = {...state.appConfig, webAPIConfig};
-                return {...state, appConfig};
-            }
-            return state;
         case actions.UPDATE_OPERATIONS: {
             const operations = action.payload.operations;
             return updateObject(state, {operations});
@@ -762,10 +737,22 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
 
 const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_STATE, action: Action) => {
     switch (action.type) {
+        case actions.SET_WEBAPI_PROVISION: {
+            const webAPIProvision = action.payload.webAPIProvision;
+            return {...state, webAPIProvision};
+        }
+        case actions.SET_WEBAPI_SERVICE_URL: {
+            const webAPIServiceURL = action.payload.webAPIServiceURL;
+            return {...state, webAPIServiceURL};
+        }
         case actions.SET_WEBAPI_STATUS: {
             const webAPIClient = action.payload.webAPIClient;
             const webAPIStatus = action.payload.webAPIStatus;
             return {...state, webAPIClient, webAPIStatus};
+        }
+        case actions.SET_WEBAPI_SERVER_INFO: {
+            const webAPIServerInfo = action.payload.webAPIServerInfo;
+            return {...state, webAPIServerInfo};
         }
         case actions.UPDATE_TASK_STATE:
             return updateObject(state, {
@@ -786,7 +773,7 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             return {...state, token, user};
         }
         case actions.LOGOUT: {
-            return {...state, token: null, user: null, webAPIStatus: null};
+            return {...state, token: null, user: null, webAPIStatus: null, webAPIProvision: null};
         }
     }
     return state;

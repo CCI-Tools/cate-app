@@ -20,7 +20,7 @@ interface IChooseWorkspaceDialogOwnProps {
 
 interface IChooseWorkspaceDialogProps extends IChooseWorkspaceDialogState, IChooseWorkspaceDialogOwnProps {
     isOpen: boolean;
-    isLocalWebAPI: boolean;
+    isLocalFSAllowed: boolean;
     workspaceNames: string[];
 }
 
@@ -31,10 +31,11 @@ function mapStateToProps(state: State, ownProps: IChooseWorkspaceDialogOwnProps)
     const dialogState = selectors.dialogStateSelector(ownProps.dialogId)(state) as any;
     const isOpen = dialogState.isOpen;
     const dialogId = ownProps.dialogId;
-    const isLocalWebAPI = selectors.isLocalWebAPISelector(state);
+    const isLocalFSAllowed = selectors.isLocalFSAccessAllowedSelector(state);
     let workspaceDir = dialogState.workspaceDir;
     let currentWorkspaceName = dialogState.workspaceName;
     let selectedWorkspaceName = '';
+    // TODO (forman): Fix code duplication with SelectWorkspaceDialog
     if (isOpen) {
         if (!selectors.isScratchWorkspaceSelector(state)) {
             workspaceDir = workspaceDir || selectors.workspaceDirSelector(state);
@@ -42,7 +43,7 @@ function mapStateToProps(state: State, ownProps: IChooseWorkspaceDialogOwnProps)
         }
         workspaceDir = workspaceDir || selectors.lastWorkspaceDirSelector(state);
     }
-    workspaceDir = isLocalWebAPI ? workspaceDir || '' : null;
+    workspaceDir = isLocalFSAllowed ? workspaceDir || '' : null;
     currentWorkspaceName = currentWorkspaceName || '';
     let workspaceNames: string[];
     if (state.data.workspace && state.data.workspaceNames) {
@@ -58,7 +59,7 @@ function mapStateToProps(state: State, ownProps: IChooseWorkspaceDialogOwnProps)
         selectedWorkspaceName,
         dialogId,
         isOpen,
-        isLocalWebAPI,
+        isLocalFSAllowed: isLocalFSAllowed,
         workspaceNames: workspaceNames,
         deleteEntireWorkspace: this.deleteEntireWorkspace
     };
@@ -74,6 +75,7 @@ class ChooseWorkspaceDialog extends React.Component<IChooseWorkspaceDialogProps 
             selectedWorkspaceName: '',
             deleteEntireWorkspace: true
         };
+        // TODO (forman): Fix code duplication with SelectWorkspaceDialog
         this.onCancel = this.onCancel.bind(this);
         this.onConfirm = this.onConfirm.bind(this);
         this.canConfirm = this.canConfirm.bind(this);

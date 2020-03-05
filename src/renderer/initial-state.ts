@@ -5,28 +5,21 @@ import {
     LocationState,
     SessionState,
     STYLE_CONTEXT_ENTITY,
-    WebAPIConfig,
     WorldViewDataState
 } from './state';
 import { hasWebGL, MY_PLACES_LAYER, newWorldView } from './state-util';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { ViewState } from './components/ViewState';
 
-export const DEFAULT_LOCAL_WEB_API_CONFIG: WebAPIConfig = {
-    serviceURL: 'http://localhost:9090'
-};
+export const  DEFAULT_SERVICE_URL = 'http://localhost:9090';
 
 export const INITIAL_DATA_STATE: DataState = {
-    appConfig: {
-        webAPIMode: null,
-        webAPIConfig: {...DEFAULT_LOCAL_WEB_API_CONFIG},
-        hasWebGL: hasWebGL(),
-    },
     dataStores: null,
     operations: null,
     workspace: null,
     colorMaps: null,
-    workspaceNames: null
+    workspaceNames: null,
+    hasWebGL: hasWebGL(),
 };
 
 const INITIAL_WORLD_VIEW: ViewState<WorldViewDataState> = newWorldView();
@@ -114,7 +107,10 @@ export const INITIAL_SESSION_STATE: SessionState = {
 };
 
 export const INITIAL_COMMUNICATION_STATE: CommunicationState = {
+    webAPIProvision: null,
+    webAPIServiceURL: DEFAULT_SERVICE_URL,
     webAPIStatus: null,
+    webAPIServiceInfo: null,
     webAPIClient: null,
     tasks: {},
     // username: 'norman',

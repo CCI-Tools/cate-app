@@ -1,5 +1,4 @@
 import { HttpError } from '../HttpError';
-import { WebAPIConfig } from '../../state';
 
 const CATE_HUB_SERVER_BASE = 'https://catehub.192.171.139.57.nip.io';
 const CATE_HUB_USER_WEBAPI_URL = CATE_HUB_SERVER_BASE + '/user/{username}';
@@ -28,10 +27,8 @@ export interface User {
 
 export class AuthAPI {
     // noinspection JSMethodCanBeStatic
-    getWebAPIConfig(username: string): WebAPIConfig {
-        return {
-            serviceURL: new URL(CATE_HUB_USER_WEBAPI_URL.replace('{username}', username)).toString(),
-        };
+    getWebAPIServiceURL(username: string): string {
+        return new URL(CATE_HUB_USER_WEBAPI_URL.replace('{username}', username)).toString();
     }
 
     auth(username: string, password: string): Promise<AuthInfo> {

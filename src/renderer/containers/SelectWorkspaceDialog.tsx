@@ -19,7 +19,7 @@ interface ISelectWorkspaceDialogOwnProps {
 interface ISelectWorkspaceDialogProps extends ISelectWorkspaceDialogState, ISelectWorkspaceDialogOwnProps {
     isOpen: boolean;
     isNewDialog: boolean;
-    isLocalWebAPI: boolean;
+    isLocalFSAllowed: boolean;
 }
 
 function mapStateToProps(state: State, ownProps: ISelectWorkspaceDialogOwnProps): ISelectWorkspaceDialogProps {
@@ -27,9 +27,10 @@ function mapStateToProps(state: State, ownProps: ISelectWorkspaceDialogOwnProps)
     const isOpen = dialogState.isOpen;
     const dialogId = ownProps.dialogId;
     const isNewDialog = ownProps.dialogId === 'newWorkspaceDialog';
-    const isLocalWebAPI = selectors.isLocalWebAPISelector(state);
+    const isLocalFSAllowed = selectors.isLocalFSAccessAllowedSelector(state);
     let workspaceDir = dialogState.workspaceDir;
     let workspaceName = dialogState.workspaceName;
+    // TODO (forman): Fix code duplication with ChooseWorkspaceDialog
     if (isOpen) {
         if (!selectors.isScratchWorkspaceSelector(state)) {
             workspaceDir = workspaceDir || selectors.workspaceDirSelector(state);
@@ -37,7 +38,7 @@ function mapStateToProps(state: State, ownProps: ISelectWorkspaceDialogOwnProps)
         }
         workspaceDir = workspaceDir || selectors.lastWorkspaceDirSelector(state);
     }
-    workspaceDir = isLocalWebAPI ? workspaceDir || '' : null;
+    workspaceDir = isLocalFSAllowed ? workspaceDir || '' : null;
     workspaceName = workspaceName || '';
     return {
         workspaceDir,
@@ -45,7 +46,7 @@ function mapStateToProps(state: State, ownProps: ISelectWorkspaceDialogOwnProps)
         dialogId,
         isNewDialog,
         isOpen,
-        isLocalWebAPI,
+        isLocalFSAllowed,
     };
 }
 
@@ -58,6 +59,7 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
     constructor(props: ISelectWorkspaceDialogProps & DispatchProp<State>) {
         super(props);
         this.state = {workspaceDir: '', workspaceName: ''};
+        // TODO (forman): Fix code duplication with ChooseWorkspaceDialog
         this.onCancel = this.onCancel.bind(this);
         this.onConfirm = this.onConfirm.bind(this);
         this.canConfirm = this.canConfirm.bind(this);
@@ -65,7 +67,7 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
         this.onWorkspaceNameChange = this.onWorkspaceNameChange.bind(this);
         this.onWorkspaceDirChange = this.onWorkspaceDirChange.bind(this);
         this.showSelectDirectoryDialog = this.showSelectDirectoryDialog.bind(this);
-        this.localWebAPI = props.isLocalWebAPI;
+        this.localWebAPI = props.isLocalFSAllowed;
     }
 
     componentWillReceiveProps(nextProps: ISelectWorkspaceDialogProps) {
@@ -151,7 +153,7 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
         }
 
         let directoryChooser = null;
-        if (this.props.isLocalWebAPI) {
+        if (this.props.isLocalFSAllowed) {
             directoryChooser = (
                 <React.Fragment>
                     <p style={{marginTop: '1em'}}>Workspace parent directory:</p>

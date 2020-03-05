@@ -5,16 +5,12 @@ import { createLogger } from 'redux-logger';
 import thunkMiddleware from 'redux-thunk';
 import { Provider } from 'react-redux';
 import ApplicationPage from './containers/ApplicationPage'
+import { requireElectron } from './electron';
 import { State } from './state';
 import * as actions from './actions'
 import { stateReducer } from './reducers';
 
-let electron;
-try {
-    electron = require('electron');
-} catch (error) {
-    electron = null;
-}
+const electron = requireElectron();
 
 export function main() {
     const middlewares: Middleware[] = [thunkMiddleware];
