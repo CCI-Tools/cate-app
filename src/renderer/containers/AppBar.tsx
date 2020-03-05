@@ -2,9 +2,6 @@ import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
 import {
     Button,
-    Menu,
-    MenuDivider,
-    MenuItem,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -15,6 +12,7 @@ import * as actions from '../actions';
 import { State } from '../state';
 
 import cateIcon from '../resources/cate-icon-128.png';
+import WorkspacesMenu from './WorkspacesMenu';
 
 interface IDispatch {
     dispatch: Dispatch<State>;
@@ -70,46 +68,3 @@ class _AppBar extends React.PureComponent<IAppBarProps & IDispatch, null> {
 
 const AppBar = connect(mapStateToProps)(_AppBar);
 export default AppBar;
-
-interface WorkspacesMenuProps {
-}
-
-const WorkspacesMenu = (props: WorkspacesMenuProps) => {
-    const handleClick = () => {
-    };
-    return (
-        <Menu>
-            <MenuItem
-                icon="folder-new"
-                onClick={handleClick}
-                text="New Workspace"
-            />
-            <MenuItem
-                icon="folder-shared-open"
-                onClick={handleClick}
-                text="Open Workspace"
-            />
-            <MenuItem
-                icon="folder-close"
-                onClick={handleClick}
-                text="Close Workspace"
-            />
-            <MenuDivider/>
-            <MenuItem
-                icon="add-to-folder"
-                onClick={handleClick}
-                text="Save Workspace"
-            />
-            <MenuItem
-                onClick={handleClick}
-                text="Save Workspace As..."
-            />
-            <MenuDivider/>
-            <MenuItem
-                icon="trash"
-                onClick={handleClick}
-                text="Delete Workspace"
-            />
-        </Menu>
-    );
-};
