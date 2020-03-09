@@ -45,6 +45,7 @@ import {
 import { isString } from '../common/types';
 import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style';
 import {
+    DEFAULT_SERVICE_URL,
     INITIAL_COMMUNICATION_STATE,
     INITIAL_CONTROL_STATE,
     INITIAL_DATA_STATE,
@@ -744,6 +745,10 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
         case actions.SET_WEBAPI_SERVICE_URL: {
             const webAPIServiceURL = action.payload.webAPIServiceURL;
             return {...state, webAPIServiceURL};
+        }
+        case actions.SET_WEBAPI_SERVICE_CUSTOM_URL: {
+            const webAPIServiceCustomURL = action.payload.webAPIServiceCustomURL || DEFAULT_SERVICE_URL;
+            return {...state, webAPIServiceURL: webAPIServiceCustomURL, webAPIServiceCustomURL};
         }
         case actions.SET_WEBAPI_STATUS: {
             const webAPIClient = action.payload.webAPIClient;

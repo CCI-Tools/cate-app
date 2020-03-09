@@ -630,6 +630,7 @@ export interface ColorMapCategoryState {
 export interface CommunicationState {
     webAPIProvision: WebAPIProvision;
     webAPIServiceURL: string;
+    webAPIServiceCustomURL: string;
     webAPIServiceInfo: WebAPIServiceInfo | null;
     webAPIStatus: WebAPIStatus;
     webAPIClient: WebAPIClient | null;

@@ -109,6 +109,7 @@ export const INITIAL_SESSION_STATE: SessionState = {
 export const INITIAL_COMMUNICATION_STATE: CommunicationState = {
     webAPIProvision: null,
     webAPIServiceURL: DEFAULT_SERVICE_URL,
+    webAPIServiceCustomURL: DEFAULT_SERVICE_URL,
     webAPIStatus: null,
     webAPIServiceInfo: null,
     webAPIClient: null,

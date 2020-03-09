@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useEffect, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { Button, InputGroup, Intent } from '@blueprintjs/core';
+import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
 import * as actions from '../actions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
@@ -28,16 +28,23 @@ interface IDispatch {
 }
 
 interface IAppModePageProps {
+    webAPIServiceURL: string;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppModePageProps {
-    return {};
+    return {
+        webAPIServiceURL: state.communication.webAPIServiceCustomURL,
+    };
 }
 
 const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
 
-    const [webAPIServiceURL, setWebAPIServiceURL] = useState(DEFAULT_SERVICE_URL);
+    const [webAPIServiceURL, setWebAPIServiceURL] = useState(props.webAPIServiceURL);
+
+    useEffect(() => {
+        setWebAPIServiceURL(props.webAPIServiceURL);
+    }, [props.webAPIServiceURL]);
 
     const setCustomURLMode = () => {
         props.dispatch(actions.setWebAPIProvision('CustomURL', webAPIServiceURL) as any);
@@ -63,23 +70,26 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center'}}>
                     Please select a Cate service provision mode
                 </div>
-
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
                         style={{marginTop: 16}}
                         onClick={setCateHubMode}>
-                    CateHub Service Provider
+                    <Tooltip content="Obtain a new Cate service instance from CateHub service provider">
+                        CateHub Service Provider
+                    </Tooltip>
                 </Button>
                 <Button className={'bp3-large'}
                         style={{marginTop: 16}}
                         disabled={!isValidURL(webAPIServiceURL)}
                         onClick={setCustomURLMode}>
-                    Service at given URL
+                    <Tooltip content="Use a Cate service instance at a known URL">
+                        Service at given URL
+                    </Tooltip>
                 </Button>
                 <div style={{marginTop: 6}}>
                     <InputGroup
                         value={webAPIServiceURL}
-                        onChange={(event) => setWebAPIServiceURL(event.textValue)}
+                        onChange={(event) => setWebAPIServiceURL(event.target.value)}
                         placeholder="Service URL"
                         large={true}
                         rightElement={
