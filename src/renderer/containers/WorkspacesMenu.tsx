@@ -23,7 +23,7 @@ function mapStateToProps(state: State): IWorkspacesMenuProps {
     return {};
 }
 
-const _WorkspacesMenu = (props: IWorkspacesMenuProps & IDispatch) => {
+const _WorkspacesMenu: React.FC<IWorkspacesMenuProps & IDispatch> = (props) => {
 
     const handleNew = () => {
         props.dispatch(newWorkspaceInteractive());
