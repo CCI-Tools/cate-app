@@ -121,7 +121,7 @@ export const SET_WEBAPI_PROVISION = 'SET_WEBAPI_PROVISION';
 export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
 export const SET_WEBAPI_SERVICE_CUSTOM_URL = 'SET_WEBAPI_SERVICE_CUSTOM_URL';
-export const SET_WEBAPI_SERVER_INFO = 'SET_WEBAPI_SERVER_INFO';
+export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
 export const UPDATE_DIALOG_STATE = 'UPDATE_DIALOG_STATE';
 export const UPDATE_TASK_STATE = 'UPDATE_TASK_STATE';
 export const REMOVE_TASK_STATE = 'REMOVE_TASK_STATE';
@@ -265,8 +265,8 @@ export function setWebAPIServiceCustomURL(webAPIServiceCustomURL: string): Actio
     return {type: SET_WEBAPI_SERVICE_CUSTOM_URL, payload: {webAPIServiceCustomURL}};
 }
 
-export function setWebAPIServerInfo(webAPIServiceInfo: WebAPIServiceInfo): Action {
-    return {type: SET_WEBAPI_SERVER_INFO, payload: {webAPIServiceInfo}};
+export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Action {
+    return {type: SET_WEBAPI_SERVICE_INFO, payload: {webAPIServiceInfo}};
 }
 
 function updateWebAPIInfoInMain(webAPIProvision: WebAPIProvision, webAPIServiceURL: string, user: User | null) {
@@ -285,18 +285,19 @@ export function connectWebAPIClient(): ThunkAction {
         updateWebAPIInfoInMain(webAPIProvision, webAPIServiceURL, user);
         dispatch(setWebAPIStatus('connecting'));
 
-        let serverInfo;
+        let serviceInfo;
         try {
-            serverInfo = await new ServiceInfoAPI().getServiceInfo(webAPIServiceURL);
+            serviceInfo = await new ServiceInfoAPI().getServiceInfo(webAPIServiceURL);
         } catch (error) {
             dispatch(setWebAPIProvision(null));
             dispatch(setWebAPIStatus(null));
             handleFetchError(error, 'Failed to retrieve service information');
+            return;
         }
 
         // TODO: check if serverInfo.version is in expected version range (#30), otherwise error
 
-        dispatch(setWebAPIServerInfo(serverInfo));
+        dispatch(setWebAPIServiceInfo(serviceInfo));
 
 
         const webAPIClient = newWebAPIClient(selectors.apiWebSocketsUrlSelector(getState()));
