@@ -29,41 +29,38 @@ function mapStateToProps(state: State): IAppBarProps {
     };
 }
 
-class _AppBar extends React.PureComponent<IAppBarProps & IDispatch, null> {
+const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
 
-    handlePreferencesClick = () => {
-        this.props.dispatch(actions.showPreferencesDialog());
+    const handlePreferencesClick = () => {
+        props.dispatch(actions.showPreferencesDialog());
     };
 
-    handleLogoutClick = () => {
-        this.props.dispatch(actions.logout() as any);
+    const handleLogoutClick = () => {
+        props.dispatch(actions.logout() as any);
     };
 
-    // TODO (forman): implement drop down menus
-    render() {
-        return (
-            <Navbar>
-                <NavbarGroup>
-                    <img src={cateIcon} width={32} height={32} alt={'Cate icon'}/>
-                    <h3 style={{marginLeft: 10}}>Cate - ESA CCI Toolbox</h3>
-                </NavbarGroup>
-                <NavbarGroup align="right">
-                    <Popover content={<WorkspacesMenu/>} position={PopoverPosition.BOTTOM}>
-                        <Button className="bp3-minimal">Workspaces</Button>
-                    </Popover>
-                    <NavbarDivider/>
-                    <Button className="bp3-minimal"
-                            icon="log-out"
-                            onClick={this.handleLogoutClick}
-                            disabled={!this.props.canLogout}>Logout</Button>
-                    <NavbarDivider/>
-                    <Button className="bp3-minimal"
-                            icon='cog'
-                            onClick={this.handlePreferencesClick}/>
-                </NavbarGroup>
-            </Navbar>
-        );
-    }
+    return (
+        <Navbar>
+            <NavbarGroup>
+                <img src={cateIcon} width={32} height={32} alt={'Cate icon'}/>
+                <h3 style={{marginLeft: 10}}>Cate - ESA CCI Toolbox</h3>
+            </NavbarGroup>
+            <NavbarGroup align="right">
+                <Popover content={<WorkspacesMenu/>} position={PopoverPosition.BOTTOM}>
+                    <Button className="bp3-minimal" rightIcon={'caret-down'}>Workspaces</Button>
+                </Popover>
+                <NavbarDivider/>
+                <Button className="bp3-minimal"
+                        icon="log-out"
+                        onClick={handleLogoutClick}
+                        disabled={!props.canLogout}>Logout</Button>
+                <NavbarDivider/>
+                <Button className="bp3-minimal"
+                        icon='cog'
+                        onClick={handlePreferencesClick}/>
+            </NavbarGroup>
+        </Navbar>
+    );
 }
 
 const AppBar = connect(mapStateToProps)(_AppBar);

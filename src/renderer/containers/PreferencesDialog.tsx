@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { AnchorButton, ControlGroup, Intent, Switch, Tab, Tabs } from '@blueprintjs/core';
-import { SessionState, State } from '../state';
+import { SessionState, State, WebAPIServiceInfo } from '../state';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
 import { OpenDialogProperty, showMessageBox } from '../actions';
@@ -11,15 +11,23 @@ import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
 
+
+const CATE_WEBUI_VERSION = "2.1.0-dev.2";
+
+
 interface IPreferencesDialogProps {
     isOpen: boolean;
     preferences: SessionState;
+    serviceInfo: WebAPIServiceInfo,
+    serviceURL: string,
 }
 
 function mapStateToProps(state: State): IPreferencesDialogProps {
     return {
         isOpen: selectors.dialogStateSelector(PreferencesDialog.DIALOG_ID)(state).isOpen,
         preferences: state.session,
+        serviceURL: state.communication.webAPIServiceURL,
+        serviceInfo: state.communication.webAPIServiceInfo,
     };
 }
 
@@ -98,6 +106,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                 <Tab id="g" title="General" panel={this.renderGeneralPanel()}/>
                 <Tab id="dm" title="Data Management" panel={this.renderDataManagementPanel()}/>
                 <Tab id="pc" title="Proxy Configuration" panel={this.renderProxyConfigurationPanel()}/>
+                <Tab id="a" title="About" panel={this.renderAboutPanel()}/>
             </Tabs>
         );
     }
@@ -128,6 +137,31 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         return (
             <div style={{width: '100%', marginTop: '1em'}}>
                 {this.renderProxyUrlInput()}
+            </div>
+        );
+    }
+
+    private renderAboutPanel() {
+        return (
+            <div style={{width: '100%', marginTop: '1em'}}>
+                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
+                    <span style={{width: '40%'}}>Cate UI version:</span>
+                    <span style={{width: '60%'}}><code>{CATE_WEBUI_VERSION}</code></span>
+                </ControlGroup>
+                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
+                    <span style={{width: '40%'}}>Cate service URL:</span>
+                    <span style={{width: '60%'}}><code>{this.props.serviceURL}</code></span>
+                </ControlGroup>
+                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
+                    <span style={{width: '40%'}}>Cate service version:</span>
+                    <span style={{width: '60%'}}><code>{this.props.serviceInfo.version}</code></span>
+                </ControlGroup>
+                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
+                    <span style={{width: '40%'}}>Cate service mode:</span>
+                    <span style={{width: '60%'}}>
+                        {this.props.serviceInfo.userRootMode ? 'user root' : 'without user root'}
+                    </span>
+                </ControlGroup>
             </div>
         );
     }
@@ -224,8 +258,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             <div style={{width: '100%', marginBottom: '1em'}}>
                 <p>{label}:</p>
                 <ControlGroup style={{display: 'flex', alignItems: 'center'}}>
-                    <TextField className="bp3-input"
-                               style={{flexGrow: 1}}
+                    <TextField style={{flexGrow: 1}}
                                value={initialValue}
                                placeholder="Enter local directory path"
                                onChange={onChange}
@@ -246,8 +279,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         return (
             <ControlGroup style={{width: '100%', marginBottom: '1em', display: 'flex', alignItems: 'center'}}>
                 <span style={{flexGrow: 0.8}}>{label}:</span>
-                <TextField className="bp3-input"
-                           style={{flexGrow: 0.2}}
+                <TextField style={{flexGrow: 0.2}}
                            value={initialValue}
                            onChange={onChange}
                 />

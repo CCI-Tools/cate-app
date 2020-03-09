@@ -14,7 +14,8 @@ export class ServiceInfoAPI {
                 }
                 return response.json() as Promise<any>;
             })
-            .then((webAPIServiceInfo: any) => {
+            .then((resonse: any) => {
+                const webAPIServiceInfo = resonse.content;
                 return {
                     name: webAPIServiceInfo.name,
                     version: webAPIServiceInfo.version,
