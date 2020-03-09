@@ -71,7 +71,7 @@ function mapStateToProps(state: State, ownProps: IGlobeViewOwnProps): IGlobeView
         isDialogOpen: selectors.isDialogOpenSelector(state),
         showLayerTextOverlay: state.session.showLayerTextOverlay,
         debugWorldView: state.session.debugWorldView,
-        hasWebGL: state.data.appConfig.hasWebGL,
+        hasWebGL: state.data.hasWebGL,
         externalObjectStore: selectors.externalObjectStoreSelector(state),
         newPlacemarkToolType: selectors.newPlacemarkToolTypeSelector(state),
         defaultPlacemarkStyle: selectors.defaultPlacemarkStyleSelector(state),

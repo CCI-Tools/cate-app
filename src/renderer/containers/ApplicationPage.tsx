@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { isElectron } from '../is-electron';
+import { isElectron } from '../electron';
 import AppBar from './AppBar';
 import AppLoginPage from './AppLoginPage';
 import AppModePage from './AppModePage';
@@ -25,7 +25,14 @@ import SaveWorkspaceAsDialog from './SaveWorkspaceAsDialog';
 import PreferencesDialog from './PreferencesDialog';
 import { PanelContainer, PanelContainerLayout } from '../components/PanelContainer';
 import { Panel } from '../components/Panel';
-import { AnimationViewDataState, FigureViewDataState, State, TableViewDataState, WorldViewDataState } from '../state';
+import {
+    AnimationViewDataState,
+    FigureViewDataState,
+    State,
+    TableViewDataState,
+    WebAPIProvision,
+    WorldViewDataState
+} from '../state';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import { ViewManager, ViewRenderMap } from '../components/ViewManager';
@@ -67,14 +74,14 @@ interface IDispatch {
 }
 
 interface IApplicationPageProps {
-    webAPIMode: 'local' | 'remote' | null;
+    webAPIProvision: WebAPIProvision;
     isSignedIn: boolean | null;
     forceAppBar?: boolean;
 }
 
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
     return {
-        webAPIMode: state.data.appConfig.webAPIMode,
+        webAPIProvision: state.communication.webAPIProvision,
         isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
     };
@@ -98,11 +105,11 @@ class _ApplicationPage extends React.PureComponent<IApplicationPageProps & IDisp
     };
 
     render() {
-        if (this.props.webAPIMode === null) {
+        if (this.props.webAPIProvision === null) {
             return (<AppModePage/>);
         }
 
-        if (this.props.webAPIMode === 'remote' && !this.props.isSignedIn) {
+        if (this.props.webAPIProvision === 'CateHub' && !this.props.isSignedIn) {
             return (<AppLoginPage/>);
         }
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { GeographicPosition, State, TaskState, WebAPIMode, WebAPIStatus } from '../state';
+import { GeographicPosition, State, TaskState, WebAPIProvision, WebAPIStatus } from '../state';
 import * as selectors from '../selectors';
 import * as actions from '../actions';
 import {
@@ -19,7 +19,8 @@ import TaskComponent from './TaskComponent';
 
 interface IStatusBarProps {
     webAPIStatus: WebAPIStatus;
-    webAPIMode: WebAPIMode;
+    webAPIProvision: WebAPIProvision;
+    webAPIServiceURL: string;
     tasks: { [jobId: number]: TaskState };
     globePosition: GeographicPosition | null;
 }
@@ -33,7 +34,8 @@ interface IStatusBarDispatch {
 function mapStateToProps(state: State): IStatusBarProps {
     return {
         webAPIStatus: state.communication.webAPIStatus,
-        webAPIMode: state.data.appConfig.webAPIMode,
+        webAPIProvision: state.communication.webAPIProvision,
+        webAPIServiceURL: state.communication.webAPIServiceURL,
         tasks: state.communication.tasks,
         globePosition: selectors.globeMousePositionSelector(state) || selectors.globeViewPositionSelector(state),
     };
@@ -158,9 +160,9 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
     }
 
     private renderBackendStatus() {
-        let icon: IconName | null = null;
-        let tooltipText = null;
-        const mode = ` (${this.props.webAPIMode})`;
+        let icon: IconName;
+        let tooltipText;
+        const mode = ` (${this.props.webAPIServiceURL})`;
         if (this.props.webAPIStatus === 'connecting') {
             icon = 'link';
             tooltipText = 'Connecting' + mode;

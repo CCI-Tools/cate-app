@@ -1,4 +1,4 @@
-import { DEFAULT_LOCAL_WEB_API_CONFIG } from './initial-state';
+import { requireElectron } from './electron';
 import {
     BackendConfigState,
     ColorMapCategoryState,
@@ -18,8 +18,8 @@ import {
     TaskState,
     VariableLayerBase,
     VariableState,
-    WebAPIConfig,
-    WebAPIMode,
+    WebAPIProvision,
+    WebAPIServiceInfo,
     WebAPIStatus,
     WorkspaceState,
     WorldViewMode
@@ -39,6 +39,7 @@ import {
 import * as selectors from './selectors';
 import * as assert from '../common/assert';
 import { PanelContainerLayout } from './components/PanelContainer';
+import { DEFAULT_SERVICE_URL } from './initial-state';
 import {
     AUTO_LAYER_ID,
     findResourceByName,
@@ -78,14 +79,10 @@ import {
 } from './containers/editor/value-editor-assign';
 import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
+import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 
-let electron;
-try {
-    electron = require('electron');
-} catch (error) {
-    electron = null;
-}
+const electron = requireElectron();
 
 /**
  * The fundamental Action type as it is used here.
@@ -120,9 +117,10 @@ export type ThunkAction = (dispatch: Dispatch, getState: GetState) => void;
 // Application-level actions
 
 export const UPDATE_INITIAL_STATE = 'UPDATE_INITIAL_STATE';
-export const SET_WEBAPI_MODE = 'SET_WEBAPI_MODE';
+export const SET_WEBAPI_PROVISION = 'SET_WEBAPI_PROVISION';
 export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
-export const SET_WEBAPI_CONFIG = 'SET_WEBAPI_CONFIG';
+export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
+export const SET_WEBAPI_SERVER_INFO = 'SET_WEBAPI_SERVER_INFO';
 export const UPDATE_DIALOG_STATE = 'UPDATE_DIALOG_STATE';
 export const UPDATE_TASK_STATE = 'UPDATE_TASK_STATE';
 export const REMOVE_TASK_STATE = 'REMOVE_TASK_STATE';
@@ -143,8 +141,8 @@ export function login(): ThunkAction {
         }
 
         const authAPI = new AuthAPI();
-        const webAPIConfig = authAPI.getWebAPIConfig(username);
-        dispatch(setWebAPIConfig(webAPIConfig));
+        const webAPIConfig = authAPI.getWebAPIServiceURL(username);
+        dispatch(setWebAPIServiceURL(webAPIConfig));
 
         dispatch(setWebAPIStatus('login'));
 
@@ -176,7 +174,7 @@ export function login(): ThunkAction {
 
         if (!hasServer(user)) {
             const handleLaunchError = (error: any) => {
-                handleFetchError(error, 'Launching remote Cate service failed.');
+                handleFetchError(error, 'Launching of Cate service failed.');
                 dispatch(setWebAPIStatus(null));
             };
 
@@ -239,18 +237,19 @@ function _logout(): Action {
     return {type: LOGOUT}
 }
 
-export function setWebAPIMode(webAPIMode: WebAPIMode): ThunkAction {
+export function setWebAPIProvision(webAPIProvision: WebAPIProvision, webAPIServiceURL: string = DEFAULT_SERVICE_URL): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
-        dispatch(_setWebAPIMode(webAPIMode));
-        if (getState().data.appConfig.webAPIMode === 'local') {
-            dispatch(setWebAPIConfig(DEFAULT_LOCAL_WEB_API_CONFIG));
+        dispatch(_setWebAPIProvision(webAPIProvision));
+        if (getState().communication.webAPIProvision === 'CustomURL') {
+            webAPIServiceURL = webAPIServiceURL || DEFAULT_SERVICE_URL;
+            dispatch(setWebAPIServiceURL(webAPIServiceURL));
             dispatch(connectWebAPIClient());
         }
     };
 }
 
-export function _setWebAPIMode(webAPIMode: WebAPIMode): Action {
-    return {type: SET_WEBAPI_MODE, payload: {webAPIMode}}
+export function _setWebAPIProvision(webAPIProvision: WebAPIProvision): Action {
+    return {type: SET_WEBAPI_PROVISION, payload: {webAPIProvision}}
 }
 
 export function setWebAPIStatus(webAPIStatus: WebAPIStatus,
@@ -258,28 +257,43 @@ export function setWebAPIStatus(webAPIStatus: WebAPIStatus,
     return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus, webAPIClient}};
 }
 
-export function setWebAPIConfig(webAPIConfig: WebAPIConfig): Action {
-    return {type: SET_WEBAPI_CONFIG, payload: {webAPIConfig}};
+export function setWebAPIServiceURL(webAPIServiceURL: string): Action {
+    return {type: SET_WEBAPI_SERVICE_URL, payload: {webAPIServiceURL}};
 }
 
-function updateWebAPIInfoInMain(webAPIMode: WebAPIMode, webAPIConfig: WebAPIConfig | null, user: User | null) {
+export function setWebAPIServerInfo(webAPIServiceInfo: WebAPIServiceInfo): Action {
+    return {type: SET_WEBAPI_SERVER_INFO, payload: {webAPIServiceInfo}};
+}
+
+function updateWebAPIInfoInMain(webAPIProvision: WebAPIProvision, webAPIServiceURL: string, user: User | null) {
     if (hasElectron('updateWebAPIInfoInMain')) {
-        const webAPIInfo = {webAPIMode, webAPIConfig, user};
+        const webAPIInfo = {webAPIProvision, webAPIServiceURL, user};
         console.log('webAPIInfo:', webAPIInfo);
         electron.ipcRenderer.send('update-webapi-info', webAPIInfo);
     }
 }
 
 export function connectWebAPIClient(): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const webAPIMode = getState().data.appConfig.webAPIMode;
-        const webAPIConfig = getState().data.appConfig.webAPIConfig;
+    return async (dispatch: Dispatch, getState: GetState) => {
+        const webAPIServiceURL = getState().communication.webAPIServiceURL;
+        const webAPIProvision = getState().communication.webAPIProvision;
         const user = getState().communication.user;
-        if (!webAPIConfig) {
-            throw new Error('Internal error: !webAPIConfig')
-        }
-        updateWebAPIInfoInMain(webAPIMode, webAPIConfig, user);
+        updateWebAPIInfoInMain(webAPIProvision, webAPIServiceURL, user);
         dispatch(setWebAPIStatus('connecting'));
+
+        let serverInfo;
+        try {
+            serverInfo = await new ServiceInfoAPI().getServiceInfo(webAPIServiceURL);
+        } catch (error) {
+            dispatch(setWebAPIProvision(null));
+            dispatch(setWebAPIStatus(null));
+            handleFetchError(error, 'Failed to retrieve service information');
+        }
+
+        // TODO: check if serverInfo.version is in expected version range (#30), otherwise error
+
+        dispatch(setWebAPIServerInfo(serverInfo));
+
 
         const webAPIClient = newWebAPIClient(selectors.apiWebSocketsUrlSelector(getState()));
 
@@ -1310,7 +1324,7 @@ function openLocalWorkspace(dispatch: (action: (Action | ThunkAction)) => void,
 export function openWorkspaceInteractive(): ThunkAction {
 
     return (dispatch: Dispatch, getState: GetState) => {
-        if (selectors.isLocalWebAPISelector(getState())) {
+        if (selectors.isLocalFSAccessAllowedSelector(getState())) {
             openLocalWorkspace(dispatch, getState);
         } else {
             openRemoteWorkspace(dispatch, getState);
@@ -1326,7 +1340,7 @@ export function openWorkspaceInteractive(): ThunkAction {
 export function deleteWorkspaceInteractive(): ThunkAction {
 
     return (dispatch: Dispatch, getState: GetState) => {
-        if (!selectors.isLocalWebAPISelector(getState())) {
+        if (!selectors.isLocalFSAccessAllowedSelector(getState())) {
             deleteRemoteWorkspace(dispatch, getState);
         }
     };

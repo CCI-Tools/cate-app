@@ -1,3 +1,4 @@
+import { requireElectron } from './electron';
 import {
     ColorMapCategoryState,
     ColorMapState,
@@ -22,7 +23,6 @@ import {
     VariableLayerBase,
     VariableState,
     VectorLayerState,
-    WebAPIConfig,
     WorkflowStepState,
     WorkspaceState,
     WorldViewDataState
@@ -52,6 +52,8 @@ import { entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 
+const electron = requireElectron();
+
 export const EMPTY_OBJECT = {};
 export const EMPTY_ARRAY = [];
 
@@ -65,42 +67,49 @@ export const offlineModeSelector = (state: State): boolean => state.session.offl
 // Remote API selectors
 
 export const webAPIClientSelector = (state: State): WebAPIClient => state.communication.webAPIClient;
-export const webAPIConfigSelector = (state: State): WebAPIConfig => state.data.appConfig.webAPIConfig;
+export const webAPIServiceURLSelector = (state: State): string => state.communication.webAPIServiceURL;
 
-export const isLocalWebAPISelector = (state: State): boolean => state.data.appConfig.webAPIMode === 'local';
-export const isRemoteWebAPISelector = (state: State): boolean => state.data.appConfig.webAPIMode === 'remote';
+export const isLocalFSAccessAllowedSelector = (state: State): boolean => {
+    // Note that once we have ChooseWorkspaceDialog and SelectWorkspaceDialog with directory choosers,
+    // we can get rid of the electron requirement here.
+    return !!electron
+           && !!electron.ipcRenderer
+           && state.communication.webAPIProvision === 'CustomURL'
+           && !!state.communication.webAPIServiceInfo
+           && !state.communication.webAPIServiceInfo.userRootMode;
+};
 
 export const webAPIRestUrlSelector = createSelector(
-    webAPIConfigSelector,
-    (webAPIConfig: WebAPIConfig) => {
-        return getRestUrl(webAPIConfig);
+    webAPIServiceURLSelector,
+    (webAPIServiceURL: string) => {
+        return getRestUrl(webAPIServiceURL);
     }
 );
 
 export const apiWebSocketsUrlSelector = createSelector(
-    webAPIConfigSelector,
-    (webAPIConfig: WebAPIConfig) => {
-        return getAPIWebSocketsUrl(webAPIConfig);
+    webAPIServiceURLSelector,
+    (webAPIServiceURL: string) => {
+        return getAPIWebSocketsUrl(webAPIServiceURL);
     }
 );
 
 export const mplWebSocketUrlSelector = createSelector(
-    webAPIConfigSelector,
-    (webAPIConfig: WebAPIConfig) => {
-        return getMPLWebSocketsUrl(webAPIConfig);
+    webAPIServiceURLSelector,
+    (webAPIServiceURL: string) => {
+        return getMPLWebSocketsUrl(webAPIServiceURL);
     }
 );
 
-function getRestUrl(webAPIConfig: WebAPIConfig): string {
-    return makeURL(webAPIConfig.serviceURL, false, '/');
+function getRestUrl(webAPIServiceURL: string): string {
+    return makeURL(webAPIServiceURL, false, '/');
 }
 
-function getAPIWebSocketsUrl(webAPIConfig: WebAPIConfig): string {
-    return makeURL(webAPIConfig.serviceURL, true, 'api');
+function getAPIWebSocketsUrl(webAPIServiceURL: string): string {
+    return makeURL(webAPIServiceURL, true, 'api');
 }
 
-function getMPLWebSocketsUrl(webAPIConfig: WebAPIConfig): string {
-    return makeURL(webAPIConfig.serviceURL, true, 'mpl/figures/');
+function getMPLWebSocketsUrl(webAPIServiceURL: string): string {
+    return makeURL(webAPIServiceURL, true, 'mpl/figures/');
 }
 
 function makeURL(url: string, ws: boolean, path: string): string {
@@ -108,7 +117,7 @@ function makeURL(url: string, ws: boolean, path: string): string {
     const _url = new URL(url);
     const protocol = ws ? (_url.protocol === 'https:' ? 'wss:' : 'ws:') : _url.protocol;
     const pathname = _url.pathname;
-    let newUrl = `${protocol}//${ _url.host}`;
+    let newUrl = `${protocol}//${_url.host}`;
     if (pathname && pathname !== '/') {
         newUrl += pathname
     }

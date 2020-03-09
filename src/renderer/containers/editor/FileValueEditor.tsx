@@ -32,7 +32,7 @@ export class FileValueEditor extends React.PureComponent<IFileValueEditorProps, 
             <ControlGroup style={FileValueEditor.DIV_STYLE}>
                 <TextField style={FileValueEditor.TEXT_FIELD_STYLE}
                            value={value}
-                           placeholder="Enter local file path"
+                           placeholder="Enter file path"
                            onChange={value => onChange(input, value)}
                            nullable={this.props.input.nullable}
                 />
