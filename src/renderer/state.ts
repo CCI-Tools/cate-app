@@ -716,6 +716,7 @@ export const STYLE_CONTEXT_ENTITY = 'entity';
 export const STYLE_CONTEXT_LAYER = 'layer';
 
 export type StyleContext = 'entity' | 'layer';
+export type WorkspacePanelMode = 'resources' | 'steps';
 
 /**
  * Session state contains information about the human being which is currently using Cate.
@@ -771,7 +772,7 @@ export interface SessionState {
     showOperationDetails: boolean;
 
     // WorkspacePanel
-    workspacePanelMode: 'resources' | 'steps';
+    workspacePanelMode: WorkspacePanelMode;
     resourceListHeight: number;
     showResourceDetails: boolean;
     workflowStepListHeight: number;

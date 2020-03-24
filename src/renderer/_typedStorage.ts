@@ -67,4 +67,5 @@ export class TypedStorage {
     }
 }
 
-export const localStorage = new TypedStorage();
+export const localStorage = new TypedStorage(window.localStorage);
+export const sessionStorage = new TypedStorage(window.sessionStorage);
