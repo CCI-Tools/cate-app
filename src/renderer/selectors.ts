@@ -337,7 +337,7 @@ export const selectedDataSourceIdSelector = (state: State) => state.session.sele
 export const dataSourceFilterExprSelector = (state: State) => state.session.dataSourceFilterExpr;
 export const dataSourceListHeightSelector = (state: State) => state.session.dataSourceListHeight;
 export const showDataSourceDetailsSelector = (state: State) => state.session.showDataSourceDetails;
-export const showDataSourceIdsOnlySelector = (state: State): boolean => state.session.showDataSourceIdsOnly;
+export const showDataSourceTitlesOnlySelector = (state: State): boolean => state.session.showDataSourceTitlesOnly;
 export const showDataStoreDescriptionSelector = (state: State): boolean => state.session.showDataStoreDescription;
 export const showDataStoreNoticesSelector = (state: State): boolean => state.session.showDataStoreNotices;
 
@@ -368,7 +368,7 @@ export const filteredDataSourcesSelector = createSelector<State, DataSourceState
     boolean>(
     selectedDataSourcesSelector,
     dataSourceFilterExprSelector,
-    showDataSourceIdsOnlySelector,
+    showDataSourceTitlesOnlySelector,
     (selectedDataSources, dataSourceFilterExpr, showDataSourceTitles) => {
         const hasDataSources = selectedDataSources && selectedDataSources.length;
         const hasFilterExpr = dataSourceFilterExpr && dataSourceFilterExpr !== '';
