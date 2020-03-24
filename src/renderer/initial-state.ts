@@ -10,7 +10,7 @@ import {
 import { hasWebGL, MY_PLACES_LAYER, newWorldView } from './state-util';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { ViewState } from './components/ViewState';
-import { localStorage } from './_typedStorage';
+import { localStorage } from './typedStorage';
 
 export const DEFAULT_SERVICE_URL = 'http://localhost:9090';
 

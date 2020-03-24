@@ -80,7 +80,7 @@ import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containe
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
-import { localStorage } from './_typedStorage';
+import { localStorage } from './typedStorage';
 
 const electron = requireElectron();
 
