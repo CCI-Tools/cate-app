@@ -53,7 +53,7 @@ interface IDataSourcesPanelProps {
     selectedDataSources: DataSourceState[] | null;
     filteredDataSources: DataSourceState[] | null;
     dataSourceListHeight: number;
-    showDataSourceIdsOnly: boolean;
+    showDataSourceTitlesOnly: boolean;
     showDataSourceDetails: boolean;
     showDataStoreDescription: boolean;
     showDataStoreNotices: boolean;
@@ -71,7 +71,7 @@ function mapStateToProps(state: State): IDataSourcesPanelProps {
         filteredDataSources: selectors.filteredDataSourcesSelector(state),
         dataSourceListHeight: selectors.dataSourceListHeightSelector(state),
         showDataSourceDetails: selectors.showDataSourceDetailsSelector(state),
-        showDataSourceIdsOnly: selectors.showDataSourceIdsOnlySelector(state),
+        showDataSourceTitlesOnly: selectors.showDataSourceTitlesOnlySelector(state),
         showDataStoreDescription: selectors.showDataStoreDescriptionSelector(state),
         showDataStoreNotices: selectors.showDataStoreNoticesSelector(state),
         offlineMode: selectors.offlineModeSelector(state),
@@ -131,7 +131,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.handleDataStoreSelected = this.handleDataStoreSelected.bind(this);
         this.handleShowDataStoreDescriptionChanged = this.handleShowDataStoreDescriptionChanged.bind(this);
         this.handleShowDataStoreNoticesChanged = this.handleShowDataStoreNoticesChanged.bind(this);
-        this.handleShowDataSourceIdsOnlyChanged = this.handleShowDataSourceIdsOnlyChanged.bind(this);
+        this.handleShowDataSourceTitlesOnlyChanged = this.handleShowDataSourceTitlesOnlyChanged.bind(this);
     }
 
     private handleAddDatasetDialog() {
@@ -179,8 +179,8 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.props.updateSessionState({showDataStoreNotices: !this.props.showDataStoreNotices});
     }
 
-    private handleShowDataSourceIdsOnlyChanged(ev: any) {
-        this.props.updateSessionState({showDataSourceIdsOnly: ev.target.checked});
+    private handleShowDataSourceTitlesOnlyChanged(ev: any) {
+        this.props.updateSessionState({showDataSourceTitlesOnly: ev.target.checked});
     }
 
     render() {
@@ -251,7 +251,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                         <DataSourcesList dataSources={this.props.filteredDataSources}
                                          selectedDataSourceId={this.props.selectedDataSource ? this.props.selectedDataSource.id : null}
                                          setSelectedDataSourceId={this.props.setSelectedDataSourceId}
-                                         showDataSourceIdsOnly={this.props.showDataSourceIdsOnly}
+                                         showDataSourceTitlesOnly={this.props.showDataSourceTitlesOnly}
                                          doubleClickAction={listItemDoubleClickAction}/>
                         <DataSourceDetails dataSource={this.props.selectedDataSource}/>
                     </ContentWithDetailsPanel>
@@ -303,7 +303,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             );
         }
 
-        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices, showDataSourceIdsOnly} = this.props;
+        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices, showDataSourceTitlesOnly} = this.props;
 
         const hasDataStoreDescription = selectedDataStore && selectedDataStore.description;
         const hasDataStoreNotices = selectedDataStore && selectedDataStore.notices && selectedDataStore.notices.length;
@@ -374,9 +374,9 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
 
                 <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
                     <span style={DataSourcesPanel.SPACER_STYLE}/>
-                    <Checkbox label="Show data source IDs only"
-                              checked={showDataSourceIdsOnly}
-                              onChange={this.handleShowDataSourceIdsOnlyChanged}
+                    <Checkbox label="Show data source titles only"
+                              checked={showDataSourceTitlesOnly}
+                              onChange={this.handleShowDataSourceTitlesOnlyChanged}
                               style={{marginBottom: 2, marginTop: 6}}
                     />
                 </div>
@@ -446,7 +446,7 @@ interface IDataSourcesListProps {
     dataSources: DataSourceState[];
     selectedDataSourceId: string | null;
     setSelectedDataSourceId: (selectedDataSourceId: string) => void;
-    showDataSourceIdsOnly: boolean;
+    showDataSourceTitlesOnly: boolean;
     doubleClickAction: (dataSource: DataSourceState) => any;
 }
 
@@ -460,7 +460,7 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
         super(props);
         this.renderIcon = this.renderIcon.bind(this);
         this.renderDataSourceTitleAndId = this.renderDataSourceTitleAndId.bind(this);
-        this.renderDataSourceId = this.renderDataSourceId.bind(this);
+        this.renderDataSourceTitle = this.renderDataSourceTitle.bind(this);
         this.handleDataSourceSelected = this.handleDataSourceSelected.bind(this);
         this.handleIconLoadError = this.handleIconLoadError.bind(this);
     }
@@ -504,20 +504,20 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
         );
     }
 
-    private renderDataSourceId(dataSource: DataSourceState) {
-        const id = dataSource.id;
+    private renderDataSourceTitle(dataSource: DataSourceState) {
+        const title = dataSource.title;
         return (
             <div style={DataSourcesList.ITEM_DIV_STYLE}>
                 {this.renderIcon(dataSource)}
-                <span className="user-selectable">{id}</span>
+                <span className="user-selectable">{title}</span>
             </div>
         );
     }
 
     render() {
         let renderTitle;
-        if (this.props.showDataSourceIdsOnly) {
-            renderTitle = this.renderDataSourceId;
+        if (this.props.showDataSourceTitlesOnly) {
+            renderTitle = this.renderDataSourceTitle;
         } else {
             renderTitle = this.renderDataSourceTitleAndId;
         }

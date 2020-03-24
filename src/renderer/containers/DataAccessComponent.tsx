@@ -155,7 +155,7 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         //         </Label>
         //     </div>
         // );
-        const dataSourceNameElement = <strong>{this.props.dataSource.id}</strong>;
+        const dataSourceNameElement = <strong>{this.props.dataSource.title}</strong>;
         if (isLocalDataSource) {
             headerText = (<p>Local data source:<br/>{dataSourceNameElement}</p>);
         } else {

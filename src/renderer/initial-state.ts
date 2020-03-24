@@ -92,7 +92,7 @@ export const INITIAL_SESSION_STATE: SessionState = {
 
     showDataStoreDescription: false,
     showDataStoreNotices: true,
-    showDataSourceIdsOnly: false,
+    showDataSourceTitlesOnly: false,
 
     showLayerTextOverlay: true,
     debugWorldView: false,
