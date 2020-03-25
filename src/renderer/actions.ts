@@ -1,7 +1,7 @@
 import { requireElectron } from './electron';
 import {
     BackendConfigState,
-    ColorMapCategoryState,
+    ColorMapCategoryState, ControlState,
     DataSourceState,
     DataStoreState,
     GeographicPosition,
@@ -12,9 +12,9 @@ import {
     OperationState,
     Placemark,
     ResourceState,
-    SavedLayers,
+    SavedLayers, SessionState,
     SplitMode,
-    State,
+    State, StyleContext,
     TaskState,
     VariableLayerBase,
     VariableState,
@@ -51,7 +51,6 @@ import {
     getLockForLoadDataSources,
     getNonSpatialIndexers,
     getWorldViewVectorLayerForEntity,
-    hasWebGL,
     isAnimationResource,
     isFigureResource,
     MY_PLACES_LAYER_ID,
@@ -81,6 +80,7 @@ import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containe
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
+import { localStorage } from './typedStorage';
 
 const electron = requireElectron();
 
@@ -155,8 +155,7 @@ export function login(): ThunkAction {
             console.info('error: ', error);
             if (error instanceof HttpError && (error.status === 401)) {
                 showToast({type: 'error', text: 'Access unauthorized.'});
-            }
-            else if(error instanceof HttpError && (error.status === 403)) {
+            } else if (error instanceof HttpError && (error.status === 403)) {
                 showToast({type: 'error', text: 'Wrong username or password.'});
             } else {
                 handleFetchError(error, 'Login failed');
@@ -204,7 +203,7 @@ export function login(): ThunkAction {
                         () => dispatch(connectWebAPIClient()),
                         handleLaunchError,
                         SECOND,
-                15 * MINUTE);
+                        15 * MINUTE);
         } else {
             dispatch(connectWebAPIClient());
         }
@@ -218,6 +217,7 @@ export function logout(): ThunkAction {
         if (username === null || token === null) {
             return;
         }
+        dispatch(storePreferences());
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
         const authAPI = new AuthAPI();
@@ -242,7 +242,7 @@ export function setWebAPIProvision(webAPIProvision: WebAPIProvision, webAPIServi
     return (dispatch: Dispatch, getState: GetState) => {
         dispatch(_setWebAPIProvision(webAPIProvision));
         if (getState().communication.webAPIProvision === 'CustomURL') {
-            dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL ));
+            dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL));
             dispatch(connectWebAPIClient());
         }
     };
@@ -417,17 +417,24 @@ export function invokeCtxOperationImpl(selectedCtxOperationName: string, inputAs
     return {type: INVOKE_CTX_OPERATION, payload: {selectedCtxOperationName, inputAssignments}};
 }
 
-export function updateControlState(controlState: any): Action {
+export function updateControlState(controlState: Partial<ControlState>): Action {
     return {type: UPDATE_CONTROL_STATE, payload: controlState};
 }
 
-export function updatePreferences(session: any, sendToMain: boolean = false): ThunkAction {
+export function updatePreferences(session: Partial<SessionState>, sendToMain: boolean = false): ThunkAction {
     return (dispatch: Dispatch) => {
-        session = {...session, hasWebGL: hasWebGL()};
         dispatch(updateSessionState(session));
+        dispatch(storePreferences());
+        localStorage.setItem('preferences', session);
         if (sendToMain) {
             dispatch(sendPreferencesToMain());
         }
+    };
+}
+
+export function storePreferences(): ThunkAction {
+    return (dispatch: Dispatch, getState) => {
+        localStorage.setItem('preferences', getState().session);
     };
 }
 
@@ -435,7 +442,7 @@ export function setSessionProperty(propertyName: string, value: any): Action {
     return updateSessionState({[propertyName]: value});
 }
 
-export function updateSessionState(sessionState: any): Action {
+export function updateSessionState(sessionState: Partial<SessionState>): Action {
     return {type: UPDATE_SESSION_STATE, payload: sessionState};
 }
 
@@ -1499,7 +1506,7 @@ export function setSelectedWorkspaceResourceName(selectedWorkspaceResourceName: 
                 if (resource && resource.variables && resource.variables.length) {
                     const variable = resource.variables.find(variable => !!variable.isDefault);
                     dispatch(setSelectedVariable(resource,
-                        variable || resource.variables[0],
+                                                 variable || resource.variables[0],
                                                  selectors.savedLayersSelector(getState())));
                 }
             }
@@ -1982,7 +1989,7 @@ export function saveLayer(key: string, layer: LayerState): Action {
     return {type: SAVE_LAYER, payload: {key, layer}};
 }
 
-export function setStyleContext(styleContext: string) {
+export function setStyleContext(styleContext: StyleContext) {
     return updateSessionState({styleContext});
 }
 
@@ -2312,7 +2319,6 @@ export function copyTextToClipboard(text: string) {
         electron.clipboard.writeText(text);
     }
 }
-
 
 /**
  * Update frontend preferences (but not backend configuration).
