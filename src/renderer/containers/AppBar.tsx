@@ -14,6 +14,9 @@ import { State } from '../state';
 import cateIcon from '../resources/cate-icon-128.png';
 import WorkspacesMenu from './WorkspacesMenu';
 
+
+const TITLE_STYLE = {marginLeft: 10};
+
 interface IDispatch {
     dispatch: Dispatch<State>;
 }
@@ -29,6 +32,7 @@ function mapStateToProps(state: State): IAppBarProps {
     };
 }
 
+
 const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
 
     const handlePreferencesClick = () => {
@@ -43,7 +47,7 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
         <Navbar>
             <NavbarGroup>
                 <img src={cateIcon} width={32} height={32} alt={'Cate icon'}/>
-                <h3 style={{marginLeft: 10}}>Cate - ESA CCI Toolbox</h3>
+                <h2 style={TITLE_STYLE}>Cate - ESA CCI Toolbox</h2>
             </NavbarGroup>
             <NavbarGroup align="right">
                 <Popover content={<WorkspacesMenu/>} position={PopoverPosition.BOTTOM}>

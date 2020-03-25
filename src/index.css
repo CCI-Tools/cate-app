@@ -6,6 +6,11 @@ html, body, #root {
     height: 100vh;
     /* blueprint's @dark-gray5*/
     background-color: #394B59;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: notesesaregular, Arial, Helvetica, sans-serif;
 }
 
 /*
@@ -192,6 +197,7 @@ ul.cate-list-box li.cate-selected {
     text-align: left;
     margin-left: 0.5em;
     margin-right: 0.5em;
+    font-family: notesesaregular, Arial, sans-serif
 }
 
 span.cate-icon-small {
