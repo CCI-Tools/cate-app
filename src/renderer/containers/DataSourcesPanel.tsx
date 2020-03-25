@@ -53,7 +53,7 @@ interface IDataSourcesPanelProps {
     selectedDataSources: DataSourceState[] | null;
     filteredDataSources: DataSourceState[] | null;
     dataSourceListHeight: number;
-    showDataSourceTitlesOnly: boolean;
+    showDataSourceIDs: boolean;
     showDataSourceDetails: boolean;
     showDataStoreDescription: boolean;
     showDataStoreNotices: boolean;
@@ -71,7 +71,7 @@ function mapStateToProps(state: State): IDataSourcesPanelProps {
         filteredDataSources: selectors.filteredDataSourcesSelector(state),
         dataSourceListHeight: selectors.dataSourceListHeightSelector(state),
         showDataSourceDetails: selectors.showDataSourceDetailsSelector(state),
-        showDataSourceTitlesOnly: selectors.showDataSourceTitlesOnlySelector(state),
+        showDataSourceIDs: selectors.showDataSourceIDsSelector(state),
         showDataStoreDescription: selectors.showDataStoreDescriptionSelector(state),
         showDataStoreNotices: selectors.showDataStoreNoticesSelector(state),
         offlineMode: selectors.offlineModeSelector(state),
@@ -117,7 +117,7 @@ const mapDispatchToProps = {
  */
 class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSourcesPanelDispatch, null> {
 
-    private static readonly FLEX_ROW_STYLE: CSSProperties = {display: 'flex', alignItems: 'center'};
+    private static readonly FLEX_ROW_STYLE: CSSProperties = {display: 'flex', alignItems: 'center', marginBottom: 1};
     private static readonly SPACER_STYLE: CSSProperties = {flex: 1};
 
     constructor(props: IDataSourcesPanelProps & IDataSourcesPanelDispatch) {
@@ -131,7 +131,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.handleDataStoreSelected = this.handleDataStoreSelected.bind(this);
         this.handleShowDataStoreDescriptionChanged = this.handleShowDataStoreDescriptionChanged.bind(this);
         this.handleShowDataStoreNoticesChanged = this.handleShowDataStoreNoticesChanged.bind(this);
-        this.handleShowDataSourceTitlesOnlyChanged = this.handleShowDataSourceTitlesOnlyChanged.bind(this);
+        this.handleShowDataSourceIDsChanged = this.handleShowDataSourceIDsChanged.bind(this);
     }
 
     private handleAddDatasetDialog() {
@@ -179,8 +179,8 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.props.updateSessionState({showDataStoreNotices: !this.props.showDataStoreNotices});
     }
 
-    private handleShowDataSourceTitlesOnlyChanged(ev: any) {
-        this.props.updateSessionState({showDataSourceTitlesOnly: ev.target.checked});
+    private handleShowDataSourceIDsChanged(ev: any) {
+        this.props.updateSessionState({showDataSourceIDs: ev.target.checked});
     }
 
     render() {
@@ -251,7 +251,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                         <DataSourcesList dataSources={this.props.filteredDataSources}
                                          selectedDataSourceId={this.props.selectedDataSource ? this.props.selectedDataSource.id : null}
                                          setSelectedDataSourceId={this.props.setSelectedDataSourceId}
-                                         showDataSourceTitlesOnly={this.props.showDataSourceTitlesOnly}
+                                         showDataSourceIDs={this.props.showDataSourceIDs}
                                          doubleClickAction={listItemDoubleClickAction}/>
                         <DataSourceDetails dataSource={this.props.selectedDataSource}/>
                     </ContentWithDetailsPanel>
@@ -303,7 +303,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             );
         }
 
-        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices, showDataSourceTitlesOnly} = this.props;
+        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices, showDataSourceIDs} = this.props;
 
         const hasDataStoreDescription = selectedDataStore && selectedDataStore.description;
         const hasDataStoreNotices = selectedDataStore && selectedDataStore.notices && selectedDataStore.notices.length;
@@ -374,9 +374,9 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
 
                 <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
                     <span style={DataSourcesPanel.SPACER_STYLE}/>
-                    <Checkbox label="Show data source titles only"
-                              checked={showDataSourceTitlesOnly}
-                              onChange={this.handleShowDataSourceTitlesOnlyChanged}
+                    <Checkbox label="Show identifiers"
+                              checked={showDataSourceIDs}
+                              onChange={this.handleShowDataSourceIDsChanged}
                               style={{marginBottom: 2, marginTop: 6}}
                     />
                 </div>
@@ -446,7 +446,7 @@ interface IDataSourcesListProps {
     dataSources: DataSourceState[];
     selectedDataSourceId: string | null;
     setSelectedDataSourceId: (selectedDataSourceId: string) => void;
-    showDataSourceTitlesOnly: boolean;
+    showDataSourceIDs: boolean;
     doubleClickAction: (dataSource: DataSourceState) => any;
 }
 
@@ -516,10 +516,10 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
 
     render() {
         let renderTitle;
-        if (this.props.showDataSourceTitlesOnly) {
-            renderTitle = this.renderDataSourceTitle;
-        } else {
+        if (this.props.showDataSourceIDs) {
             renderTitle = this.renderDataSourceTitleAndId;
+        } else {
+            renderTitle = this.renderDataSourceTitle;
         }
 
         return (
