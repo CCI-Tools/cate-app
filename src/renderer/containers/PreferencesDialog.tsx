@@ -118,8 +118,8 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                 {this.renderReopenLastWorkspace()}
                 {this.renderAutoShowNewFigures()}
                 {this.renderPanelContainerUndockedMode()}
-                {userRootMode && this.renderAutoUpdates()}
-                {userRootMode && this.renderOfflineMode()}
+                {!userRootMode && this.renderAutoUpdates()}
+                {!userRootMode && this.renderOfflineMode()}
             </div>
         );
     }
@@ -128,8 +128,8 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         const userRootMode = this.props.serviceInfo.userRootMode;
         return (
             <div style={{width: '100%', marginTop: '1em'}}>
-                {userRootMode && this.renderDataStoresPath()}
-                {this.renderCacheWorkspaceImagery()}
+                {!userRootMode && this.renderDataStoresPath()}
+                {!userRootMode && this.renderCacheWorkspaceImagery()}
                 {this.renderResourceNamePrefix()}
             </div>
         );
