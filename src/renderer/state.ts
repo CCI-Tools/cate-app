@@ -760,7 +760,7 @@ export interface SessionState {
     dataSourceFilterExpr: string;
     dataSourceListHeight: number;
     showDataSourceDetails: boolean;
-    showDataSourceTitlesOnly: boolean;
+    showDataSourceIDs: boolean;
     showDataStoreDescription: boolean;
     showDataStoreNotices: boolean;
 
