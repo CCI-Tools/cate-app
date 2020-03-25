@@ -29,7 +29,7 @@ import {
     ResourceState,
     State,
     WorkflowPortState,
-    WorkflowStepState,
+    WorkflowStepState, WorkspacePanelMode,
     WorkspaceState
 } from '../state';
 import { ScrollablePanelContent } from '../components/ScrollableContent';
@@ -199,7 +199,7 @@ class WorkspacePanel extends React.PureComponent<IWorkspacePanelProps & Dispatch
         this.props.dispatch(actions.cleanWorkspaceInteractive() as any);
     }
 
-    private handleWorkspacePanelModeChanged(workspacePanelMode: string) {
+    private handleWorkspacePanelModeChanged(workspacePanelMode: WorkspacePanelMode) {
         this.props.dispatch(actions.updateSessionState({workspacePanelMode}) as any);
     }
 

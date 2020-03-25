@@ -112,22 +112,24 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
     }
 
     private renderGeneralPanel() {
+        const userRootMode = this.props.serviceInfo.userRootMode;
         return (
             <div style={{width: '100%', marginTop: '1em'}}>
                 {this.renderReopenLastWorkspace()}
-                {this.renderAutoUpdates()}
                 {this.renderAutoShowNewFigures()}
-                {this.renderOfflineMode()}
                 {this.renderPanelContainerUndockedMode()}
+                {!userRootMode && this.renderAutoUpdates()}
+                {!userRootMode && this.renderOfflineMode()}
             </div>
         );
     }
 
     private renderDataManagementPanel() {
+        const userRootMode = this.props.serviceInfo.userRootMode;
         return (
             <div style={{width: '100%', marginTop: '1em'}}>
-                {this.renderDataStoresPath()}
-                {this.renderCacheWorkspaceImagery()}
+                {!userRootMode && this.renderDataStoresPath()}
+                {!userRootMode && this.renderCacheWorkspaceImagery()}
                 {this.renderResourceNamePrefix()}
             </div>
         );
@@ -235,9 +237,9 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         const onChange = this.getChangeHandler('proxyUrl', true);
         return (
             <ControlGroup style={{width: '100%', marginBottom: '1em', display: 'flex', alignItems: 'center'}}>
-                <span style={{flexBasis: '100px'}}>Proxy URL:</span>
+                <span style={{flexGrow: 0.8}}>Proxy URL:</span>
                 <TextField className="bp3-input bp3-fill"
-                           style={{flexGrow: 0.2, marginLeft: '20px'}}
+                           style={{flexGrow: 0.2}}
                            value={initialValue}
                            onChange={onChange}
                            placeholder={'http://user:password@host:port'}
