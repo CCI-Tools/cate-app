@@ -12,7 +12,7 @@ import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
 
 
-const CATE_WEBUI_VERSION = "2.1.0-dev3";
+const CATE_WEBUI_VERSION = "2.1.0-dev.2";
 
 
 interface IPreferencesDialogProps {
