@@ -4,7 +4,7 @@ import {
     ButtonGroup,
     Checkbox,
     Colors,
-    ContextMenuTarget,
+    // ContextMenuTarget,
     Icon,
     IconName,
     Label,
@@ -359,7 +359,7 @@ interface IPlacemarkItemProps {
     onDoubleClick: (placemark: Placemark) => void;
 }
 
-@ContextMenuTarget
+// @ContextMenuTarget
 class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
     static readonly ICON_STYLE: CSSProperties = {marginLeft: '0.5em'};
