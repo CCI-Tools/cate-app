@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { CSSProperties } from 'react';
+import { createRef, CSSProperties } from 'react';
 import {
     ButtonGroup,
     Checkbox,
-    Colors,
-    // ContextMenuTarget,
+    Colors, ContextMenu,
     Icon,
     IconName,
     Label,
@@ -30,6 +29,7 @@ import { GeometryToolType } from '../components/cesium/geometry-tool';
 import { isBoolean } from '../../common/types';
 import { NumericField, NumericFieldValue } from '../components/field/NumericField';
 import { ToolButton } from '../components/ToolButton';
+
 
 interface IPlacemarksPanelDispatch {
     dispatch: Dispatch<State>;
@@ -359,12 +359,14 @@ interface IPlacemarkItemProps {
     onDoubleClick: (placemark: Placemark) => void;
 }
 
-// @ContextMenuTarget
+
 class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
     static readonly ICON_STYLE: CSSProperties = {marginLeft: '0.5em'};
     static readonly NAME_STYLE: CSSProperties = {marginLeft: '0.5em'};
     static readonly INFO_STYLE: CSSProperties = {float: 'right', color: Colors.BLUE5};
+
+    placemarkItemRef = createRef<HTMLDivElement>();
 
     constructor(props: IPlacemarkItemProps) {
         super(props);
@@ -395,6 +397,33 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
         this.props.onVisibilityChange(this.props.placemark, event.target.checked)
     }
 
+    componentDidMount(): void {
+        const rightClickMe = this.placemarkItemRef.current;
+
+        if (rightClickMe) {
+            rightClickMe.oncontextmenu = (e: MouseEvent) => {
+                // prevent the browser's native context menu
+                e.preventDefault();
+
+                // render a Menu without JSX...
+                const menu = React.createElement(
+                    Menu,
+                    {}, // empty props
+                    React.createElement(MenuItem, { onClick: this.handleCopyPlacemarkCsv, text: "Copy as CSV" }),
+                    React.createElement(MenuItem, { onClick: this.handleCopyPlacemarkWkt, text: "Copy as WKT" }),
+                    React.createElement(MenuItem, { onClick: this.handleCopyPlacemarksGeoJSON,
+                        text: "Copy as GeoJSON" }),
+
+                );
+
+                // mouse position is available on event
+                ContextMenu.show(menu, { left: e.clientX, top: e.clientY }, () => {
+                    // menu was closed; callback optional
+                });
+            };
+        }
+    }
+
     public render() {
         const placemark = this.props.placemark;
         const visible = placemark.properties['visible'];
@@ -417,32 +446,17 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
         }
 
         return (
-            <Checkbox
-                checked={isBoolean(visible) ? visible : true}
-                onChange={this.handleVisibilityChanged}
-                onDoubleClick={this.handleDoubleClick}>
-                <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
-                <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
-                <span style={PlacemarkItem.INFO_STYLE}>{info}</span>
-            </Checkbox>
+            <div ref={this.placemarkItemRef}>
+                <Checkbox
+                    checked={isBoolean(visible) ? visible : true}
+                    onChange={this.handleVisibilityChanged}
+                    onDoubleClick={this.handleDoubleClick}>
+                    <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
+                    <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
+                    <span style={PlacemarkItem.INFO_STYLE}>{info}</span>
+                </Checkbox>
+            </div>
         );
-    }
-
-    //noinspection JSUnusedGlobalSymbols
-    renderContextMenu() {
-        // return a single element, or nothing to use default browser behavior
-        return (
-            <Menu>
-                <MenuItem onClick={this.handleCopyPlacemarkCsv} text="Copy as CSV"/>
-                <MenuItem onClick={this.handleCopyPlacemarkWkt} text="Copy as WKT"/>
-                <MenuItem onClick={this.handleCopyPlacemarksGeoJSON} text="Copy as GeoJSON"/>
-            </Menu>
-        );
-    }
-
-    //noinspection JSUnusedGlobalSymbols
-    onContextMenuClose() {
-        // Optional method called once the context menu is closed.
     }
 }
 
