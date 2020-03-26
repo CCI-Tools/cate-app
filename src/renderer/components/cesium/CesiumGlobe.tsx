@@ -769,9 +769,10 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
     }
 
     private static copyEntities(from: Cesium.EntityCollection, to: Cesium.EntityCollection, show: boolean) {
-        for (let entity of from.values) {
+        for (let entity of from.values.slice()) {
             entity.show = show;
             to.add(entity);
+            from.remove(entity);
         }
     }
 
