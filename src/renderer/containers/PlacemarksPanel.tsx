@@ -360,7 +360,7 @@ interface IPlacemarkItemProps {
 }
 
 
-class PlacemarkItem extends React.Component<IPlacemarkItemProps, {}> {
+class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
     static readonly ICON_STYLE: CSSProperties = {marginLeft: '0.5em'};
     static readonly NAME_STYLE: CSSProperties = {marginLeft: '0.5em'};
