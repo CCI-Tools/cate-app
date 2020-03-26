@@ -61,7 +61,7 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
     return (
         <div style={CENTER_DIV_STYLE}>
             <div style={BOX_STYLE}>
-                <h2 style={{textAlign: 'center'}}>CateHub Login</h2>
+                <h1 style={{textAlign: 'center'}}>CateHub Login</h1>
 
                 <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center'}}>
                     <img src={cateIcon} width={128} height={128} alt={'Cate icon'}/>
