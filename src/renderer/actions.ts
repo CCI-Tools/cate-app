@@ -81,6 +81,7 @@ import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { localStorage } from './typedStorage';
+import copyToClipboard from 'copy-to-clipboard';
 
 const electron = requireElectron();
 
@@ -2316,7 +2317,11 @@ export function openExternal(url: string): boolean {
  */
 export function copyTextToClipboard(text: string) {
     if (hasElectron('copyTextToClipboard')) {
+        // noinspection JSIgnoredPromiseFromCall
         electron.clipboard.writeText(text);
+    }
+    else {
+        copyToClipboard(text);
     }
 }
 
