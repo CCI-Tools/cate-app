@@ -362,7 +362,7 @@ interface IPlacemarkItemProps {
 
 class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
-    static readonly DIV_STYLE: CSSProperties ={display: 'flex'};
+    static readonly DIV_STYLE: CSSProperties = {display: 'flex', alignItems: 'center'};
     static readonly CHECK_STYLE: CSSProperties = {flexGrow: 0};
     static readonly LABEL_STYLE: CSSProperties = {flexGrow: 1};
     static readonly ICON_STYLE: CSSProperties = {marginLeft: '0.5em'};
@@ -455,8 +455,7 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
                     style={PlacemarkItem.CHECK_STYLE}
                     checked={isBoolean(visible) ? visible : true}
                     onChange={this.handleVisibilityChanged}
-                >
-                </Checkbox>
+                />
                 <div onDoubleClick={this.handleDoubleClick} style={PlacemarkItem.LABEL_STYLE}>
                     <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
                     <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
