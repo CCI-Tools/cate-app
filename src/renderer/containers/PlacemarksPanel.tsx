@@ -362,6 +362,9 @@ interface IPlacemarkItemProps {
 
 class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
+    static readonly DIV_STYLE: CSSProperties ={display: 'flex'};
+    static readonly CHECK_STYLE: CSSProperties = {flexGrow: 0};
+    static readonly LABEL_STYLE: CSSProperties = {flexGrow: 1};
     static readonly ICON_STYLE: CSSProperties = {marginLeft: '0.5em'};
     static readonly NAME_STYLE: CSSProperties = {marginLeft: '0.5em'};
     static readonly INFO_STYLE: CSSProperties = {float: 'right', color: Colors.BLUE5};
@@ -409,15 +412,16 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
                 const menu = React.createElement(
                     Menu,
                     {}, // empty props
-                    React.createElement(MenuItem, { onClick: this.handleCopyPlacemarkCsv, text: "Copy as CSV" }),
-                    React.createElement(MenuItem, { onClick: this.handleCopyPlacemarkWkt, text: "Copy as WKT" }),
-                    React.createElement(MenuItem, { onClick: this.handleCopyPlacemarksGeoJSON,
-                        text: "Copy as GeoJSON" }),
-
+                    React.createElement(MenuItem, {onClick: this.handleCopyPlacemarkCsv, text: "Copy as CSV"}),
+                    React.createElement(MenuItem, {onClick: this.handleCopyPlacemarkWkt, text: "Copy as WKT"}),
+                    React.createElement(MenuItem, {
+                        onClick: this.handleCopyPlacemarksGeoJSON,
+                        text: "Copy as GeoJSON"
+                    }),
                 );
 
                 // mouse position is available on event
-                ContextMenu.show(menu, { left: e.clientX, top: e.clientY }, () => {
+                ContextMenu.show(menu, {left: e.clientX, top: e.clientY}, () => {
                     // menu was closed; callback optional
                 });
             };
@@ -446,15 +450,18 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
         }
 
         return (
-            <div ref={this.placemarkItemRef}>
+            <div ref={this.placemarkItemRef} style={PlacemarkItem.DIV_STYLE}>
                 <Checkbox
+                    style={PlacemarkItem.CHECK_STYLE}
                     checked={isBoolean(visible) ? visible : true}
                     onChange={this.handleVisibilityChanged}
-                    onDoubleClick={this.handleDoubleClick}>
+                >
+                </Checkbox>
+                <div onDoubleClick={this.handleDoubleClick} style={PlacemarkItem.LABEL_STYLE}>
                     <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
                     <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
                     <span style={PlacemarkItem.INFO_STYLE}>{info}</span>
-                </Checkbox>
+                </div>
             </div>
         );
     }
