@@ -398,7 +398,7 @@ export function entityToGeoJson(entity: Cesium.Entity | null, id: string, proper
         const hierarchy = entity.polygon.hierarchy.getValue(Cesium.JulianDate.now());
         const positions = hierarchy.positions || hierarchy;
         const holes = hierarchy.holes;
-        if (holes) {
+        if (holes && holes.length) {
             throw new Error('entityToGeoJson() does not yet support polygons with holes');
         }
         let ring = [];
