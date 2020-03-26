@@ -102,9 +102,9 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
         return (
             <ModalDialog
                 isOpen={isOpen}
-                title={'Open Local Dataset'}
+                title={'Open Dataset from File(s)'}
                 icon="database"
-                confirmTitle="Open Local"
+                confirmTitle="Open File(s)"
                 confirmIconName="folder-shared-open"
                 confirmTooltip={confirmTooltip}
                 onCancel={this.onCancel}

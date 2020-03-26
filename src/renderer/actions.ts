@@ -918,7 +918,7 @@ export function addLocalDataset(dataSourceId: string, filePathPattern: string): 
         }
 
         callAPI({
-                    title: `Add local data source "${dataSourceId}"`,
+                    title: `Add file data source "${dataSourceId}"`,
                     dispatch, call, action, requireDoneNotification: true
                 });
     }
@@ -935,7 +935,7 @@ export function removeLocalDataset(dataSourceId: string, removeFiles: boolean): 
         }
 
         callAPI({
-                    title: `Remove local copy of data source "${dataSourceId}"`,
+                    title: `Remove copy of file data source "${dataSourceId}"`,
                     dispatch, call, action, requireDoneNotification: true
                 });
     }

@@ -157,7 +157,7 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         // );
         const dataSourceNameElement = <strong>{this.props.dataSource.title}</strong>;
         if (isLocalDataSource) {
-            headerText = (<p>Local data source:<br/>{dataSourceNameElement}</p>);
+            headerText = (<p>File data source:<br/>{dataSourceNameElement}</p>);
         } else {
             headerText = (<p>Remote data source:<br/>{dataSourceNameElement}</p>);
             localDataSourceCheck = (
@@ -166,7 +166,7 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                     <Checkbox
                         style={DataAccessComponent.OPTION_CHECK_STYLE}
                         checked={isMakeLocalSelected}
-                        label="Download and make local data source (allocates space on disk)"
+                        label="Cache data source (allocates space on disk)"
                         onChange={this.onMakeLocalSelectedChange}
                     />
                 </Tooltip>

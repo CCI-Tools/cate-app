@@ -262,7 +262,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                 <ControlGroup style={{display: 'flex', alignItems: 'center'}}>
                     <TextField style={{flexGrow: 1}}
                                value={initialValue}
-                               placeholder="Enter local directory path"
+                               placeholder="Enter directory path"
                                onChange={onChange}
                     />
                     <AnchorButton
