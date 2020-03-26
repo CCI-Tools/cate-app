@@ -229,9 +229,9 @@ export class PointTool extends ToolBase {
                                        position: cartesian,
                                        point: {
                                            pixelSize: 6,
-                                           //color: Cesium.Color.RED,
+                                           color: Cesium.ColorMaterialProperty(Cesium.Color.AQUA),
                                            //outlineColor: Cesium.Color.WHITE,
-                                           outlineWidth: 1
+                                           outlineWidth: 4
                                        },
                                    });
         }
