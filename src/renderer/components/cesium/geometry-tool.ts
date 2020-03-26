@@ -5,10 +5,10 @@ export const pointHeight = 10;
 export const polylineHeight = 5;
 export const polygonHeight = 0;
 
-export const pointColor = Cesium.Color.CHARTREUSE.withAlpha(0.9);
-export const polylineColor = Cesium.Color.YELLOW.withAlpha(0.9);
+export const pointColor = new Cesium.ColorMaterialProperty(Cesium.Color.CHARTREUSE.withAlpha(0.9));
+export const polylineColor = new Cesium.ColorMaterialProperty(Cesium.Color.YELLOW.withAlpha(0.9));
 export const polylineWidth = 2;
-export const polygonColor = Cesium.Color.AQUA.withAlpha(0.5);
+export const polygonColor = new Cesium.ColorMaterialProperty(Cesium.Color.AQUA.withAlpha(0.7));
 
 export type GeometryToolType = 'PointTool' | 'PolylineTool' | 'PolygonTool' | 'BoxTool' | 'NoTool';
 

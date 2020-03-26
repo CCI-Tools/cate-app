@@ -81,6 +81,7 @@ import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { localStorage } from './typedStorage';
+import copyToClipboard from 'copy-to-clipboard';
 
 const electron = requireElectron();
 
@@ -917,7 +918,7 @@ export function addLocalDataset(dataSourceId: string, filePathPattern: string): 
         }
 
         callAPI({
-                    title: `Add local data source "${dataSourceId}"`,
+                    title: `Add file data source "${dataSourceId}"`,
                     dispatch, call, action, requireDoneNotification: true
                 });
     }
@@ -934,7 +935,7 @@ export function removeLocalDataset(dataSourceId: string, removeFiles: boolean): 
         }
 
         callAPI({
-                    title: `Remove local copy of data source "${dataSourceId}"`,
+                    title: `Remove copy of file data source "${dataSourceId}"`,
                     dispatch, call, action, requireDoneNotification: true
                 });
     }
@@ -2316,7 +2317,11 @@ export function openExternal(url: string): boolean {
  */
 export function copyTextToClipboard(text: string) {
     if (hasElectron('copyTextToClipboard')) {
+        // noinspection JSIgnoredPromiseFromCall
         electron.clipboard.writeText(text);
+    }
+    else {
+        copyToClipboard(text);
     }
 }
 

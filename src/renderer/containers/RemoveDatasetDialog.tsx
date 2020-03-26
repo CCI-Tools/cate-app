@@ -61,11 +61,11 @@ class RemoveDatasetDialog extends React.Component<IRemoveDatasetDialogProps & Di
         return (
             <ModalDialog
                 isOpen={isOpen}
-                title="Remove data source"
+                title="Remove Data Source"
                 icon="trash"
                 confirmTitle="Remove"
                 confirmIconName="delete"
-                confirmTooltip="Remove the local data source."
+                confirmTooltip="Remove the file data source."
                 onCancel={this.onCancel}
                 onConfirm={this.onConfirm}
                 renderBody={this.renderBody}
@@ -78,12 +78,12 @@ class RemoveDatasetDialog extends React.Component<IRemoveDatasetDialogProps & Di
         }
         return (
             <div>
-                <p>You are about to remove the definition for the local data source
+                <p>You are about to remove the definition for the file data source
                     <strong>{this.props.dataSource.id}</strong>.
                 </p>
 
                 <Checkbox style={{marginTop: '1em'}} checked={this.state.removeFiles}
-                          label="Remove data files from local disk, too"
+                          label="Remove data files from disk too"
                           onChange={this.onRemoveFilesChange}/>
             </div>
         );

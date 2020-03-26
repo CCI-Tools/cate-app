@@ -89,11 +89,11 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
         return (
             <ModalDialog
                 isOpen={isOpen}
-                title="Add local data source"
+                title="Add file data source"
                 icon="add"
                 confirmTitle="Add"
                 confirmIconName="add"
-                confirmTooltip="Add local data source."
+                confirmTooltip="Add file data source."
                 onCancel={this.onCancel}
                 canConfirm={this.canConfirm}
                 onConfirm={this.onConfirm}
@@ -107,7 +107,7 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
         }
         return (
             <ControlGroup>
-                <p>Define a new local data source using a file pattern.</p>
+                <p>Define a new file data source using a file path pattern.</p>
 
                 <p style={{marginTop: '1em'}}>Name:</p>
                 <InputGroup

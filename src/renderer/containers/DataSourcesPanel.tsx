@@ -199,7 +199,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             let primaryAction;
             if (isLocalStore) {
                 primaryAction = (
-                    <ToolButton tooltipContent="Open local data source"
+                    <ToolButton tooltipContent="Open file data source"
                                 intent={Intent.PRIMARY}
                                 onClick={this.handleShowOpenDatasetDialog}
                                 disabled={!canOpen}
@@ -216,12 +216,12 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             }
             const actionComponent = (
                 <ButtonGroup>
-                    <ToolButton tooltipContent="Add local data source"
+                    <ToolButton tooltipContent="Add file data source"
                                 intent={(isDynamicLocalStore && !hasDataSources) ? Intent.PRIMARY : Intent.NONE}
                                 onClick={this.handleAddDatasetDialog}
                                 disabled={!canAdd}
                                 icon="add"/>
-                    <ToolButton tooltipContent="Remove local data source"
+                    <ToolButton tooltipContent="Remove file data source"
                                 onClick={this.handleRemoveDatasetDialog}
                                 disabled={!canRemove}
                                 icon="trash"/>

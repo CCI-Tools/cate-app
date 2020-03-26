@@ -41,9 +41,9 @@ export const NO_DATA_STORES_FOUND = (
 
 export const NO_LOCAL_DATA_SOURCES = (
     <NonIdealState
-        title="No local data sources"
+        title="No file data sources"
         icon={ICON_CIRCLE}
-        description={<span>Add new local data sources using the <code>cate ds add <em>name</em> <em>files...</em></code> command-line</span>}/>
+        description={<span>Add new file data sources using the <code>cate ds add <em>name</em> <em>files...</em></code> command-line</span>}/>
 );
 
 export const NO_DATA_SOURCES_FOUND = (
