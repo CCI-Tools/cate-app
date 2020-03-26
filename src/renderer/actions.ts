@@ -81,7 +81,7 @@ import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { localStorage } from './typedStorage';
-import copy from 'copy-to-clipboard';
+import copyToClipboard from 'copy-to-clipboard';
 
 const electron = requireElectron();
 
@@ -2321,7 +2321,7 @@ export function copyTextToClipboard(text: string) {
         electron.clipboard.writeText(text);
     }
     else {
-        copy(text);
+        copyToClipboard(text);
     }
 }
 
