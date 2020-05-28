@@ -381,7 +381,7 @@ export function removeTaskState(jobId: number): Action {
     return {type: REMOVE_TASK_STATE, payload: {jobId}};
 }
 
-export function setControlProperty(propertyName: string, value: any): Action {
+export function setControlProperty(propertyName: keyof ControlState, value: any): Action {
     return updateControlState({[propertyName]: value});
 }
 
@@ -439,7 +439,7 @@ export function storePreferences(): ThunkAction {
     };
 }
 
-export function setSessionProperty(propertyName: string, value: any): Action {
+export function setSessionProperty(propertyName: keyof SessionState, value: any): Action {
     return updateSessionState({[propertyName]: value});
 }
 
@@ -2319,8 +2319,7 @@ export function copyTextToClipboard(text: string) {
     if (hasElectron('copyTextToClipboard')) {
         // noinspection JSIgnoredPromiseFromCall
         electron.clipboard.writeText(text);
-    }
-    else {
+    } else {
         copyToClipboard(text);
     }
 }

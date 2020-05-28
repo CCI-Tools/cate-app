@@ -1,0 +1,89 @@
+{
+  "ecvs": {
+    "aerosol": {
+      "group": "atmosphere",
+      "color": "ecv_blue",
+      "label": "AER"
+    },
+    "cloud": {
+      "group": "atmosphere",
+      "color": "ecv_blue",
+      "label": "CL"
+    },
+    "ghg": {
+      "group": "atmosphere",
+      "color": "ecv_blue",
+      "label": "GHG"
+    },
+    "ozone": {
+      "group": "atmosphere",
+      "color": "ecv_blue",
+      "label": "OZ"
+    },
+    "fire": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "FIR"
+    },
+    "glaciers": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "GLA"
+    },
+    "lc": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "LC"
+    },
+    "soilmoisture": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "SM"
+    },
+    "ghrsst": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "SST"
+    },
+    "icesheats": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "IS"
+    },
+    "oc": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "OC"
+    },
+    "seaice": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "SI"
+    },
+    "sealevel": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "SL"
+    },
+    "seasurfacesalinity": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "SAL"
+    },
+    "sst": {
+      "group": "ocean",
+      "color": "ecv_green",
+      "label": "SST"
+    }
+  },
+  "colors": {
+    "ecv_deep_space": "#002B40",
+    "ecv_deep_space_1": "#2F5D6F",
+    "ecv_green": "#248A90",
+    "ecv_orange": "#FF902B",
+    "ecv_blue": "#32A6DC",
+    "esa_teal": "#0BB7A0",
+    "esa_teal_55": "#78D4C7",
+    "default": "#0BB7A0"
+  }
+}

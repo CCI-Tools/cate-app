@@ -3,6 +3,7 @@ import { CSSProperties } from 'react';
 import { connect } from 'react-redux';
 import { Cell, Column, Table, TruncatedFormat } from '@blueprintjs/table';
 import ReactMarkdown from 'react-markdown';
+import { EcvMeta } from '../ecv-meta';
 import { DataSourceState, DataStoreNotice, DataStoreState, State } from '../state';
 import {
     AnchorButton,
@@ -35,6 +36,12 @@ import * as actions from '../actions';
 import * as selectors from '../selectors';
 import { NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES } from '../messages';
 
+import _ecvMeta from '../resources/ecv-meta.json';
+
+
+const ECV_META: EcvMeta = _ecvMeta;
+
+const USE_OLD_CCI_ICONS = false;
 
 const INTENTS = {
     'default': Intent.NONE,
@@ -454,12 +461,24 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
     static readonly ITEM_DIV_STYLE: CSSProperties = {display: 'flex', alignItems: 'flex-start'};
     static readonly ID_DIV_STYLE: CSSProperties = {color: Colors.GREEN4, fontSize: '0.8em'};
     static readonly ICON_DIV_STYLE: CSSProperties = {width: 32, height: 32, flex: 'none', marginRight: 6};
+    static readonly TEXT_ICON_DIV_STYLE: CSSProperties = {
+        width: 32,
+        height: 32,
+        flex: 'none',
+        marginRight: 6,
+        borderRadius: 16,
+        textAlign: 'center',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    };
     readonly defaultIconName = 'cci';
 
     constructor(props: IDataSourcesListProps) {
         super(props);
         this.renderIcon = this.renderIcon.bind(this);
-        this.renderDataSourceTitleAndId = this.renderDataSourceTitleAndId.bind(this);
+        this.renderTextIcon = this.renderTextIcon.bind(this);
         this.renderDataSourceTitle = this.renderDataSourceTitle.bind(this);
         this.handleDataSourceSelected = this.handleDataSourceSelected.bind(this);
         this.handleIconLoadError = this.handleIconLoadError.bind(this);
@@ -490,43 +509,47 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
                     onError={this.handleIconLoadError}/>
     }
 
-    private renderDataSourceTitleAndId(dataSource: DataSourceState) {
-        const title = dataSource.title || (dataSource.meta_info && dataSource.meta_info.title);
-        const id = dataSource.id;
-        return (
-            <div style={DataSourcesList.ITEM_DIV_STYLE}>
-                {this.renderIcon(dataSource)}
-                <div>
-                    <div className="user-selectable">{title}</div>
-                    <div className="user-selectable" style={DataSourcesList.ID_DIV_STYLE}>{id}</div>
-                </div>
-            </div>
-        );
+    // noinspection JSMethodCanBeStatic
+    private renderTextIcon(dataSource: DataSourceState) {
+        const ecvId = ((dataSource.meta_info && dataSource.meta_info.cci_project) || '').toLowerCase();
+        const ecvMetaItem = ECV_META.ecvs[ecvId];
+        let backgroundColor, label;
+        if (ecvMetaItem) {
+            backgroundColor = ECV_META.colors[ecvMetaItem.color] || ecvMetaItem.color;
+            label = ecvMetaItem.label;
+        }
+        if (!backgroundColor) {
+            backgroundColor = ECV_META.colors["default"] || "#0BB7A0";
+        }
+        if (!label) {
+            label = ecvId.substr(0, 3).toUpperCase() || '?';
+        }
+        return <div style={{...DataSourcesList.TEXT_ICON_DIV_STYLE, backgroundColor}}>{label}</div>;
     }
 
     private renderDataSourceTitle(dataSource: DataSourceState) {
-        const title = dataSource.title;
+        const title = dataSource.title || (dataSource.meta_info && dataSource.meta_info.title);
         return (
             <div style={DataSourcesList.ITEM_DIV_STYLE}>
-                {this.renderIcon(dataSource)}
-                <span className="user-selectable">{title}</span>
+                {USE_OLD_CCI_ICONS ? this.renderIcon(dataSource) : this.renderTextIcon(dataSource)}
+                {this.props.showDataSourceIDs ? (
+                    <div>
+                        <div className="user-selectable">{title}</div>
+                        <div className="user-selectable" style={DataSourcesList.ID_DIV_STYLE}>{dataSource.id}</div>
+                    </div>
+                ) : (
+                     <span className="user-selectable">{title}</span>
+                 )}
             </div>
         );
     }
 
     render() {
-        let renderTitle;
-        if (this.props.showDataSourceIDs) {
-            renderTitle = this.renderDataSourceTitleAndId;
-        } else {
-            renderTitle = this.renderDataSourceTitle;
-        }
-
         return (
             <ScrollablePanelContent>
                 <ListBox items={this.props.dataSources}
                          getItemKey={DataSourcesList.getItemKey}
-                         renderItem={renderTitle}
+                         renderItem={this.renderDataSourceTitle}
                          selectionMode={ListBoxSelectionMode.SINGLE}
                          selection={this.props.selectedDataSourceId}
                          onItemDoubleClick={this.props.doubleClickAction}
