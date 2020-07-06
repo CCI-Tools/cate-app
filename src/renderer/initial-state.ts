@@ -10,7 +10,7 @@ import {
 import { hasWebGL, MY_PLACES_LAYER, newWorldView } from './state-util';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { ViewState } from './components/ViewState';
-import { localStorage } from './typedStorage';
+// import { localStorage } from './typedStorage';
 
 export const DEFAULT_SERVICE_URL = 'http://localhost:9090';
 
@@ -107,30 +107,6 @@ export const INITIAL_SESSION_STATE: SessionState = {
         proxyUrl: null,
     },
 };
-
-
-/**
- * Load initial preferences from browser local storage.
- */
-const LOADED_SESSION_STATE = localStorage.getItem('preferences', INITIAL_SESSION_STATE);
-if (INITIAL_SESSION_STATE !== LOADED_SESSION_STATE) {
-    console.log('Loaded preferences!');
-    console.log('INITIAL_SESSION_STATE:', INITIAL_SESSION_STATE);
-    console.log('LOADED_SESSION_STATE:', LOADED_SESSION_STATE);
-    Object.getOwnPropertyNames(INITIAL_SESSION_STATE).forEach(name => {
-        const initialValue = INITIAL_SESSION_STATE[name];
-        const loadedValue = LOADED_SESSION_STATE[name];
-        // Loaded property may no longer be in use, so make sure it is defined.
-        if (typeof loadedValue !== 'undefined') {
-            // Names and types may change from version to version, so make sure, we have matching types.
-            if (typeof initialValue === typeof loadedValue
-                || initialValue === null
-                || loadedValue === null) {
-                INITIAL_SESSION_STATE[name] = loadedValue;
-            }
-        }
-    });
-}
 
 
 export const INITIAL_COMMUNICATION_STATE: CommunicationState = {

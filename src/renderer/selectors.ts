@@ -51,6 +51,7 @@ import { GeometryWKTGetter } from './containers/editor/ValueEditor';
 import { entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
+import {RemoteStorage} from "../remoteStorage";
 
 const electron = requireElectron();
 
@@ -153,12 +154,22 @@ export const operationAPISelector = createSelector(
     }
 );
 
+
 export const workspaceAPISelector = createSelector(
     webAPIClientSelector,
     (webAPIClient) => {
         return new WorkspaceAPI(webAPIClient);
     }
 );
+
+
+export const remoteStorageAPISelector = createSelector(
+    webAPIClientSelector,
+    (webAPIClient) => {
+        return new RemoteStorage(webAPIClient);
+    }
+);
+
 
 export const colorMapsAPISelector = createSelector(
     webAPIClientSelector,
