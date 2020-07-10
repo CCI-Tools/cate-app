@@ -9,6 +9,7 @@ import { requireElectron } from './electron';
 import { State } from './state';
 import * as actions from './actions'
 import { stateReducer } from './reducers';
+// import {loadPreferences, updatePreferences} from "./actions";
 
 const electron = requireElectron();
 
