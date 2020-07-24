@@ -1,15 +1,15 @@
 import * as React from 'react';
-import {AnchorButton, ControlGroup, Intent, Switch, Tab, Tabs} from '@blueprintjs/core';
-import {SessionState, State, WebAPIServiceInfo} from '../state';
-import {connect, DispatchProp} from 'react-redux';
+import { AnchorButton, ControlGroup, Intent, Switch, Tab, Tabs } from '@blueprintjs/core';
+import { SessionState, State, WebAPIServiceInfo } from '../state';
+import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
-import {OpenDialogProperty, showMessageBox} from '../actions';
+import { OpenDialogProperty, showMessageBox } from '../actions';
 import * as selectors from '../selectors';
-import {TextField} from '../components/field/TextField';
+import { TextField } from '../components/field/TextField';
 import deepEqual from 'deep-equal';
-import {ModalDialog} from '../components/ModalDialog';
-import {showToast} from '../toast';
-import {isDefined} from '../../common/types';
+import { ModalDialog } from '../components/ModalDialog';
+import { showToast } from '../toast';
+import { isDefined } from '../../common/types';
 
 
 const CATE_WEBUI_VERSION = "2.1.0-dev.4";
@@ -59,16 +59,16 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             if (autoUpdateSoftwareChangeDetected || backendChangesDetected) {
                 this.props.dispatch(actions.storeBackendConfig(backendConfig) as any);
                 showMessageBox({
-                    type: 'info',
-                    title: PreferencesDialog.DIALOG_TITLE,
-                    message: 'Some changes will be effective only after restart.'
-                });
+                                   type: 'info',
+                                   title: PreferencesDialog.DIALOG_TITLE,
+                                   message: 'Some changes will be effective only after restart.'
+                               });
             }
         } else {
             showToast({
-                type: 'info',
-                text: 'No changes detected.'
-            });
+                          type: 'info',
+                          text: 'No changes detected.'
+                      });
         }
     }
 

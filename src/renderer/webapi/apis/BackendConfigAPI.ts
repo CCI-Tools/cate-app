@@ -1,6 +1,6 @@
-import { WebAPIClient } from '../WebAPIClient';
-import { JobPromise } from '../Job';
 import { BackendConfigState } from '../../state';
+import { JobPromise } from '../Job';
+import { WebAPIClient } from '../WebAPIClient';
 
 
 function fromPythonConfig(configResponse: any): BackendConfigState | null {

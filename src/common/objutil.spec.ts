@@ -1,5 +1,5 @@
-import { updateConditionally, updateObject, updatePropertyObject } from './objutil';
 import { expect, should } from 'chai';
+import { updateConditionally, updateObject, updatePropertyObject } from './objutil';
 
 should();
 

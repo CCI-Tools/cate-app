@@ -1,7 +1,6 @@
-import { pep440ToSemver } from './version'
-import { satisfies } from 'semver'
-
 import { expect } from 'chai';
+import { satisfies } from 'semver'
+import { pep440ToSemver } from './version'
 
 describe('Version-related utilities', function () {
 

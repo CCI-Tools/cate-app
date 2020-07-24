@@ -25,7 +25,6 @@
  */
 
 import { IconName, Intent } from '@blueprintjs/core';
-import { WebSocketMin } from './WebSocketMock'
 import {
     Job,
     JobFailure,
@@ -38,6 +37,7 @@ import {
     JobStatus,
     JobStatusEnum
 } from './Job'
+import { WebSocketMin } from './WebSocketMock'
 
 // IMPORTANT NOTE: The following error codes MUST BE COPIED from cate/util/web/jsonrpchandler.py
 //
@@ -334,6 +334,27 @@ class JobImpl<JobResponse> implements Job {
         return promise as JobPromise<JobResponse>;
     }
 
+    notifyInProgress(progress: JobProgress) {
+        this.setStatus(JobStatusEnum.IN_PROGRESS);
+        if (this.onProgress) {
+            this.onProgress(progress);
+        }
+    }
+
+    notifyDone(response: JobResponse) {
+        this.setStatus(JobStatusEnum.DONE);
+        if (this.onResolve) {
+            this.onResolve(this.transformer ? this.transformer(response) : response);
+        }
+    }
+
+    notifyFailed(failure: JobFailure) {
+        this.setStatus(failure.code === ERROR_CODE_CANCELLED ? JobStatusEnum.CANCELLED : JobStatusEnum.FAILED);
+        if (this.onReject) {
+            this.onReject(failure);
+        }
+    }
+
     private getJob(): Job {
         return this;
     }
@@ -354,27 +375,6 @@ class JobImpl<JobResponse> implements Job {
 
     private setStatus(status: JobStatus) {
         this.status = status;
-    }
-
-    notifyInProgress(progress: JobProgress) {
-        this.setStatus(JobStatusEnum.IN_PROGRESS);
-        if (this.onProgress) {
-            this.onProgress(progress);
-        }
-    }
-
-    notifyDone(response: JobResponse) {
-        this.setStatus(JobStatusEnum.DONE);
-        if (this.onResolve) {
-            this.onResolve(this.transformer ? this.transformer(response) : response);
-        }
-    }
-
-    notifyFailed(failure: JobFailure) {
-        this.setStatus(failure.code === ERROR_CODE_CANCELLED ? JobStatusEnum.CANCELLED : JobStatusEnum.FAILED);
-        if (this.onReject) {
-            this.onReject(failure);
-        }
     }
 }
 

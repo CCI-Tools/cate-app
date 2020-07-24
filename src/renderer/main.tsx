@@ -1,14 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, Dispatch, Middleware, Store } from 'redux';
 import { createLogger } from 'redux-logger';
 import thunkMiddleware from 'redux-thunk';
-import { Provider } from 'react-redux';
+import * as actions from './actions'
 import ApplicationPage from './containers/ApplicationPage'
 import { requireElectron } from './electron';
-import { State } from './state';
-import * as actions from './actions'
 import { stateReducer } from './reducers';
+import { State } from './state';
 // import {loadPreferences, updatePreferences} from "./actions";
 
 const electron = requireElectron();

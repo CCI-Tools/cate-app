@@ -434,7 +434,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
             console.log('CesiumGlobe: updating placemarks');
         }
         const actions = arrayDiff<Placemark>((currentPlacemarks && currentPlacemarks.features) || EMPTY_ARRAY,
-            (nextPlacemarks && nextPlacemarks.features) || EMPTY_ARRAY);
+                                             (nextPlacemarks && nextPlacemarks.features) || EMPTY_ARRAY);
         const promises = [];
         for (let action of actions) {
             if (this.props.debug) {

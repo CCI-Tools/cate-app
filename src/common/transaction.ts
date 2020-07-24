@@ -122,9 +122,6 @@ export class TransactionError extends Error {
 
 
 export class TransactionSet implements TransactionContext {
-    // noinspection JSUnusedLocalSymbols
-    private static NO_PROGRESS_HANDLER: TransactionProgressHandler = (progress: TransactionProgress) => null;
-
     private _transactions: { [id: string]: Transaction };
     private _transactionStates: { [id: string]: TransactionState };
 
@@ -135,6 +132,9 @@ export class TransactionSet implements TransactionContext {
             this.addTransactions(transactions);
         }
     }
+
+    // noinspection JSUnusedLocalSymbols
+    private static NO_PROGRESS_HANDLER: TransactionProgressHandler = (progress: TransactionProgress) => null;
 
     getTransactionIds(): string[] {
         return Object.getOwnPropertyNames(this._transactions);

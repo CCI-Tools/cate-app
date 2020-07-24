@@ -1,8 +1,8 @@
 import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { WebSocketMock } from './WebSocketMock';
 import { JobProgress, JobStatusEnum } from './Job';
 import { newWebAPIClient, WebAPIClient } from './WebAPIClient';
+import { WebSocketMock } from './WebSocketMock';
 
 const expect = chai.expect;
 chai.should();
@@ -282,9 +282,8 @@ describe('WebAPIClient', function () {
 
 describe('WebSocketMock', function () {
     class MyServiceObject {
-        private state = 'me';
-
         processData = {};
+        private state = 'me';
 
         generateSausages(num, veggie) {
             if (num < -1) {

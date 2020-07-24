@@ -51,7 +51,7 @@ import { GeometryWKTGetter } from './containers/editor/ValueEditor';
 import { entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
-import {RemoteStorage} from "../remoteStorage";
+import { RemoteStorage } from "./remoteStorage";
 
 const electron = requireElectron();
 

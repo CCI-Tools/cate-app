@@ -4,29 +4,29 @@
 
 
 export function isDefined(value: any): boolean {
-    return typeof(value) !== 'undefined';
+    return typeof (value) !== 'undefined';
 }
 
 export function isUndefined(value: any): boolean {
-    return typeof(value) === 'undefined';
+    return typeof (value) === 'undefined';
 }
 
 export function isDefinedAndNotNull(value: any): boolean {
-    return value !== null && typeof(value) !== 'undefined';
+    return value !== null && typeof (value) !== 'undefined';
 }
 
 export function isUndefinedOrNull(value: any): boolean {
-    return value === null || typeof(value) === 'undefined';
+    return value === null || typeof (value) === 'undefined';
 }
 
 export function isNumber(value: any): boolean {
-    return typeof(value) === 'number';
+    return typeof (value) === 'number';
 }
 
 export function isString(value: any): boolean {
-    return typeof(value) === 'string';
+    return typeof (value) === 'string';
 }
 
 export function isBoolean(value: any): boolean {
-    return typeof(value) === 'boolean';
+    return typeof (value) === 'boolean';
 }

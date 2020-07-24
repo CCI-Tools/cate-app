@@ -1,8 +1,11 @@
-import {JobPromise, WebAPIClient} from "./renderer/webapi";
-import {SessionState} from "./renderer/state";
+import { SessionState } from "./state";
+import { JobPromise, WebAPIClient } from "./webapi";
 
 
-/** This Remote Storage API interface provides access to a particular domain's session or local storage. It allows, for example, the addition, modification, or deletion of stored data items. */
+/**
+ * This interface provides access to a particular domain's session or local storage.
+ * It allows, for example, the addition, modification, or deletion of stored data items.
+ */
 export class RemoteStorage {
     private readonly webAPIClient: WebAPIClient;
 

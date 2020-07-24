@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import 'chai-as-promised';
-import { isDefined } from './types';
 import {
     Transaction,
     TransactionContext,
@@ -8,6 +7,7 @@ import {
     TransactionProgressHandler,
     TransactionSet
 } from './transaction';
+import { isDefined } from './types';
 import deepEqual = require('deep-equal');
 
 describe('TransactionSet', function () {

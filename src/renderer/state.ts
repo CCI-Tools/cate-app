@@ -1,10 +1,10 @@
-import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
-import { PanelContainerLayout } from './components/PanelContainer';
-import { ViewLayoutState, ViewState } from './components/ViewState';
-import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { IconName } from '@blueprintjs/core';
+import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
+import { PanelContainerLayout } from './components/PanelContainer';
+import { ViewLayoutState, ViewState } from './components/ViewState';
+import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
 import { User } from './webapi/apis/AuthAPI';
 
 /**

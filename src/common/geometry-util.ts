@@ -157,8 +157,7 @@ function validateWKTBody(value: string, geometryType: string) {
                 throw new Error('Invalid WKT, too many "(".');
             }
             maxDepthCount = Math.max(maxDepthCount, depthCount);
-        }
-        else if (c === ')') {
+        } else if (c === ')') {
             depthCount--;
             if (depthCount < 0) {
                 throw new Error('Invalid WKT, too many ")".');
@@ -169,8 +168,7 @@ function validateWKTBody(value: string, geometryType: string) {
                 }
                 commaCount = 0;
             }
-        }
-        else if (c === ',') {
+        } else if (c === ',') {
             commaCount++;
         }
     }

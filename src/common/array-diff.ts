@@ -1,5 +1,5 @@
-import * as assert from './assert';
 import deepEqual from 'deep-equal';
+import * as assert from './assert';
 
 type ObjectWithId = { id: any; }
 

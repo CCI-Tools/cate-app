@@ -1,8 +1,8 @@
-import { WebAPIClient } from '../WebAPIClient';
-import { JobProgress, JobPromise } from '../Job';
-import { ImageStatisticsState, OperationKWArgs, ResourceState, VariableState, WorkspaceState } from '../../state';
-import { EMPTY_ARRAY, EMPTY_OBJECT } from '../../selectors';
 import { isDefined, isNumber } from '../../../common/types';
+import { EMPTY_ARRAY, EMPTY_OBJECT } from '../../selectors';
+import { ImageStatisticsState, OperationKWArgs, ResourceState, VariableState, WorkspaceState } from '../../state';
+import { JobProgress, JobPromise } from '../Job';
+import { WebAPIClient } from '../WebAPIClient';
 
 function responseToVariables(variablesResponse: any): VariableState[] {
     return (variablesResponse || EMPTY_ARRAY).map(v => {

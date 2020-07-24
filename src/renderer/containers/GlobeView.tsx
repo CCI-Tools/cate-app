@@ -202,7 +202,7 @@ class GlobeView extends React.Component<IGlobeViewProps & IGlobeViewOwnProps & D
 
             if (expectedInputType) {
                 let dividerAdded = false;
-                for (let operation of  operations) {
+                for (let operation of operations) {
                     let geometryInput;
                     for (let input of operation.inputs) {
                         const dataType = input.dataType;

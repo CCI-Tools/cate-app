@@ -217,8 +217,7 @@ function findDims(props: IValueEditorProps<any>) {
 
     if (valueSetSource[0] && valueSetSource[1] && variable) {
         dimNames = variable.dimNames;
-    }
-    else if (valueSetSource[0] && !valueSetSource[1] && resource) {
+    } else if (valueSetSource[0] && !valueSetSource[1] && resource) {
         dimNames = resource.coordVariables.map(c => c.name);
     }
 
