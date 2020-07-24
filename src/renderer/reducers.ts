@@ -294,7 +294,16 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
             };
         }
         case actions.UPDATE_MOUSE_IDLE_STATE: {
-            return {...state, ...action.payload}
+            return {...state, ...action.payload};
+        }
+        case actions.SHOW_PWA_INSTALL_PROMOTION: {
+            return {...state, pwaInstallPromotionVisible: true};
+        }
+        case actions.HIDE_PWA_INSTALL_PROMOTION: {
+            return {...state, pwaInstallPromotionVisible: false};
+        }
+        case actions.UPDATE_PWA_DISPLAY_MODE: {
+            return {...state, pwaDisplayMode: action.payload};
         }
         default: {
             const newViews = viewsReducer(state.views, action, state.activeViewId);

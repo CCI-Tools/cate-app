@@ -660,7 +660,7 @@ export interface TaskState {
  */
 export interface ControlState {
 
-    // TODO (forman): Move following selection properties into workspace so they can be stored.
+    // TODO (forman): Move following selection properties into SessionState so they can be stored.
     // WorkspacePanel
     selectedWorkspaceResourceName: string | null;
     selectedWorkflowStepId: string | null;
@@ -683,6 +683,9 @@ export interface ControlState {
 
     // Used to force component update after an entity's properties have changed
     entityUpdateCount: number;
+
+    pwaInstallPromotionVisible: boolean;
+    pwaDisplayMode: 'standalone' | 'browser';
 }
 
 export interface DialogState {

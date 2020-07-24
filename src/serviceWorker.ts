@@ -10,6 +10,12 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://bit.ly/CRA-PWA
 
+// The app cache is only updated, if this file changes (i.e. the compiled
+// "./service-worker.js" file changes). Therefore we use a version number here,
+// so we can force updates.
+const PWA_VERSION = 1;
+console.debug(`This is PWA version ${PWA_VERSION}`);
+
 const isLocalhost = Boolean(
     window.location.hostname === 'localhost' ||
     // [::1] is the IPv6 localhost address.
@@ -23,6 +29,7 @@ const isLocalhost = Boolean(
 type Config = {
     onSuccess?: (registration: ServiceWorkerRegistration) => void;
     onUpdate?: (registration: ServiceWorkerRegistration) => void;
+    onError?: (error: Error) => void;
 };
 
 export function register(config?: Config) {
@@ -51,7 +58,7 @@ export function register(config?: Config) {
                 navigator.serviceWorker.ready.then(() => {
                     console.log(
                         'This web app is being served cache-first by a service ' +
-                        'worker. To learn more, visit https://bit.ly/CRA-PWA'
+                        'worker. To learn more, visit https://create-react-app.dev/docs/making-a-progressive-web-app/'
                     );
                 });
             } else {
@@ -79,7 +86,8 @@ function registerValidSW(swUrl: string, config?: Config) {
                                  // content until all client tabs are closed.
                                  console.log(
                                      'New content is available and will be used when all ' +
-                                     'tabs for this page are closed. See https://bit.ly/CRA-PWA.'
+                                     'tabs for this page are closed. ' +
+                                     'See https://create-react-app.dev/docs/making-a-progressive-web-app/.'
                                  );
 
                                  // Execute callback
@@ -103,6 +111,10 @@ function registerValidSW(swUrl: string, config?: Config) {
              })
              .catch(error => {
                  console.error('Error during service worker registration:', error);
+                 // Execute callback
+                 if (config && config.onError) {
+                     config.onError(error);
+                 }
              });
 }
 
@@ -136,14 +148,17 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
         });
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function unregister() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready
                  .then(registration => {
+                     // noinspection JSIgnoredPromiseFromCall
                      registration.unregister();
                  })
                  .catch(error => {
                      console.error(error.message);
+
                  });
     }
 }
