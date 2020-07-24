@@ -1,3 +1,9 @@
+### Changes in v2.0.0-dev.5
+
+* Turned Cate Web UI into a Desktop Progressive Web Application (PWA).
+  Users can now install Cate from browsers (tested on Windows 10 with 
+  latest Edge and Chrome) to their desktops. 
+
 ### Changes in v2.0.0-dev.4
 
 * Is now using the Cate Web API to handle user preferences
