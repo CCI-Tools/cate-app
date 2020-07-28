@@ -1,9 +1,11 @@
 {
   "name": "Cate App",
   "short_name": "Cate App",
-  "description": "ESA CCI Toolbox (Cate)",
+  "description": "Cate is the ESA CCI Toolbox",
+  "lang": "en-GB",
   "start_url": ".",
   "display": "standalone",
+  "orientation": "landscape",
   "theme_color": "#394B59",
   "background_color": "#394B59",
   "icons": [
