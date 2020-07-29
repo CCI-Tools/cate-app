@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { convertLayersToLayerDescriptors, transferEntityGeometry } from './globe-view-layers';
-import { FeatureCollection } from 'geojson';
 import { Placemark, PlacemarkCollection } from '../state';
 import { COUNTRIES_LAYER, COUNTRIES_LAYER_ID, MY_PLACES_LAYER, MY_PLACES_LAYER_ID } from '../state-util';
 

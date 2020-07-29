@@ -1,3 +1,4 @@
+import Cesium from "cesium";
 import { expect } from 'chai';
 import {
     BoxTool,
@@ -11,26 +12,6 @@ import {
 } from './geometry-tool';
 
 
-class Point {
-    readonly longitude: number;
-    readonly latitude: number;
-    readonly height?: number;
-
-    constructor(longitude: number, latitude: number, height?: number) {
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.height = height;
-    }
-
-    // noinspection JSUnusedGlobalSymbols
-    equals(point: Point) {
-        return this.longitude === point.longitude && this.latitude === point.latitude && this.height === point.height;
-    }
-}
-
-function newPoint(p) {
-    return new Point(p.longitude, p.latitude, p.height);
-}
 
 class TestToolContext extends ToolContextBase {
     entities: any[];
@@ -42,35 +23,32 @@ class TestToolContext extends ToolContextBase {
         this.toolEntities = [];
     }
 
-    newEntity(entity) {
+    newEntity(entity: Cesium.Entity): void {
         this.entities.push(entity);
-        return entity;
     }
 
-    addToolEntity(entity) {
+    addToolEntity(entity: Cesium.Entity): void {
         this.toolEntities.push(entity);
-        return entity;
     }
 
     removeAllToolEntities(): void {
         this.toolEntities = [];
     }
 
-    pickEllipsoid(position) {
-        return newPoint({...position, height: 0});
+    pickEllipsoid(cartesian: Cesium.Cartesian2): Cesium.Cartesian3 | undefined {
+        return new Cesium.Cartesian3(cartesian.x, cartesian.y, 0);
     }
 
-    cartesianWithHeightDelta(cartesian, delta: number) {
-        return newPoint({...cartesian, height: delta});
+    cartesianWithHeightDelta(cartesian: Cesium.Cartesian3, height: number): Cesium.Cartesian3 {
+        return new Cesium.Cartesian3(cartesian.x, cartesian.y, height);
     }
 
-
-    cartesianToCartographic(cartesian) {
-        return newPoint({...cartesian});
+    cartesianToCartographic(cartesian: Cesium.Cartesian3): Cesium.Cartographic {
+        return new Cesium.Cartographic(cartesian.x, cartesian.y, cartesian.z);
     }
 
-    cartographicToCartesian(cartographic) {
-        return newPoint({...cartographic});
+    cartographicToCartesian(cartographic: Cesium.Cartographic): Cesium.Cartesian3 {
+        return new Cesium.Cartesian3(cartographic.longitude, cartographic.latitude, cartographic.height);
     }
 }
 
@@ -80,13 +58,13 @@ describe('GeometryTool', function () {
         const toolContext = new TestToolContext();
         expect(toolContext.tool).to.equal(NO_TOOL);
 
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 10, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 12, latitude: 9})});
-        toolContext.onLeftClick({position: newPoint({longitude: 10, latitude: 12})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 18, latitude: 0})});
-        toolContext.onLeftClick({position: newPoint({longitude: 20, latitude: 15})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 11})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 12, /*latitude::*/ 9)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 12)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 18, /*latitude::*/ 0)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 20, /*latitude::*/ 15)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 11)});
 
         expect(toolContext.entities).to.exist;
         expect(toolContext.entities).to.deep.equal([]);
@@ -96,25 +74,25 @@ describe('GeometryTool', function () {
         const toolContext = new TestToolContext();
         toolContext.tool = new PointTool();
 
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 10, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 12, latitude: 9})});
-        toolContext.onLeftClick({position: newPoint({longitude: 10, latitude: 12})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 18, latitude: 0})});
-        toolContext.onLeftClick({position: newPoint({longitude: 20, latitude: 15})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 11})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 12, /*latitude::*/ 9)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 12)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 18, /*latitude::*/ 0)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 20, /*latitude::*/ 15)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 11)});
 
         expect(toolContext.entities).to.exist;
         expect(toolContext.entities).to.deep.equal([
                                                        {
-                                                           position: newPoint({height: 0, longitude: 10, latitude: 12}),
+                                                           position: new Cesium.Cartesian3(/*longitude:*/ 10, /*latitude::*/ 12, /*height:*/ 0),
                                                            point: {
                                                                outlineWidth: 1,
                                                                pixelSize: 6,
                                                            }
                                                        },
                                                        {
-                                                           position: newPoint({height: 0, longitude: 20, latitude: 15}),
+                                                           position: new Cesium.Cartesian3(/*longitude:*/ 20, /*latitude::*/ 15, /*height:*/ 0),
                                                            point: {
                                                                outlineWidth: 1,
                                                                pixelSize: 6,
@@ -129,22 +107,22 @@ describe('GeometryTool', function () {
         const toolContext = new TestToolContext();
         toolContext.tool = new PolylineTool();
 
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 10, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 12, latitude: 9})});
-        toolContext.onLeftClick({position: newPoint({longitude: 10, latitude: 10})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 18, latitude: 0})});
-        toolContext.onLeftClick({position: newPoint({longitude: 20, latitude: 10})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 21, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 19, latitude: 15})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 12, /*latitude::*/ 9)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 10)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 18, /*latitude::*/ 0)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 20, /*latitude::*/ 10)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 21, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 19, /*latitude::*/ 15)});
         // Note, we simulate here a browser sensing two(!) left click events before a double-click event.
         // See also https://github.com/AnalyticalGraphicsInc/cesium/issues/1171
-        let endPoint = {position: newPoint({longitude: 20, latitude: 20})};
+        let endPoint = {position: new Cesium.Cartesian2(/*longitude:*/ 20, /*latitude::*/ 20)};
         toolContext.onLeftClick(endPoint);
         toolContext.onLeftClick(endPoint);
         toolContext.onLeftDoubleClick(endPoint);
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 46, latitude: 26})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 49, latitude: 32})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 46, /*latitude::*/ 26)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 49, /*latitude::*/ 32)});
 
         expect(toolContext.entities).to.exist;
         expect(toolContext.entities.length).to.equal(1);
@@ -156,9 +134,9 @@ describe('GeometryTool', function () {
             {
                 polyline: {
                     positions: [
-                        newPoint({longitude: 10, latitude: 10, height: 5}),
-                        newPoint({longitude: 20, latitude: 10, height: 5}),
-                        newPoint({longitude: 20, latitude: 20, height: 5})
+                        new Cesium.Cartesian3(/*longitude:*/ 10, /*latitude::*/ 10, /*height:*/ 5),
+                        new Cesium.Cartesian3(/*longitude:*/ 20, /*latitude::*/ 10, /*height:*/ 5),
+                        new Cesium.Cartesian3(/*longitude:*/ 20, /*latitude::*/ 20, /*height:*/ 5)
                     ],
                     material: polylineColor
                 }
@@ -173,22 +151,22 @@ describe('GeometryTool', function () {
         const toolContext = new TestToolContext();
         toolContext.tool = new PolygonTool();
 
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 10, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 12, latitude: 9})});
-        toolContext.onLeftClick({position: newPoint({longitude: 10, latitude: 10})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 18, latitude: 0})});
-        toolContext.onLeftClick({position: newPoint({longitude: 20, latitude: 10})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 21, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 19, latitude: 15})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 12, /*latitude::*/ 9)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 10)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 18, /*latitude::*/ 0)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 20, /*latitude::*/ 10)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 21, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 19, /*latitude::*/ 15)});
         // Note, we simulate here a browser sensing two(!) left click events before a double-click event.
         // See also https://github.com/AnalyticalGraphicsInc/cesium/issues/1171
-        let endPoint = {position: newPoint({longitude: 20, latitude: 20})};
+        let endPoint = {position: new Cesium.Cartesian2(/*longitude:*/ 20, /*latitude::*/ 20)};
         toolContext.onLeftClick(endPoint);
         toolContext.onLeftClick(endPoint);
         toolContext.onLeftDoubleClick(endPoint);
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 46, latitude: 26})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 49, latitude: 32})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 46, /*latitude::*/ 26)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 49, /*latitude::*/ 32)});
 
         expect(toolContext.entities).to.exist;
         expect(toolContext.entities.length).to.equal(1);
@@ -200,9 +178,9 @@ describe('GeometryTool', function () {
             {
                 polygon: {
                     hierarchy: [
-                        newPoint({longitude: 10, latitude: 10, height: 0}),
-                        newPoint({longitude: 20, latitude: 10, height: 0}),
-                        newPoint({longitude: 20, latitude: 20, height: 0})
+                        new Cesium.Cartesian3(/*longitude:*/ 10, /*latitude::*/ 10, /*height:*/ 0),
+                        new Cesium.Cartesian3(/*longitude:*/ 20, /*latitude::*/ 10, /*height:*/ 0),
+                        new Cesium.Cartesian3(/*longitude:*/ 20, /*latitude::*/ 20, /*height:*/ 0)
                     ],
                     material: polygonColor
                 }
@@ -217,14 +195,14 @@ describe('GeometryTool', function () {
         const toolContext = new TestToolContext();
         toolContext.tool = new BoxTool();
 
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 10, latitude: 11})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 12, latitude: 16})});
-        toolContext.onLeftClick({position: newPoint({longitude: 10, latitude: 20})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 13, latitude: 28})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 28, latitude: 32})});
-        toolContext.onLeftClick({position: newPoint({longitude: 30, latitude: 40})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 31, latitude: 41})});
-        toolContext.onMouseMove({endPosition: newPoint({longitude: 39, latitude: 35})});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 11)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 12, /*latitude::*/ 16)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 10, /*latitude::*/ 20)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 13, /*latitude::*/ 28)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 28, /*latitude::*/ 32)});
+        toolContext.onLeftClick({position: new Cesium.Cartesian2(/*longitude:*/ 30, /*latitude::*/ 40)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 31, /*latitude::*/ 41)});
+        toolContext.onMouseMove({endPosition: new Cesium.Cartesian2(/*longitude:*/ 39, /*latitude::*/ 35)});
 
         expect(toolContext.entities).to.exist;
         expect(toolContext.entities.length).to.equal(1);
@@ -236,10 +214,10 @@ describe('GeometryTool', function () {
             {
                 polygon: {
                     hierarchy: [
-                        newPoint({longitude: 10, latitude: 20, height: 0}),
-                        newPoint({longitude: 30, latitude: 20, height: 0}),
-                        newPoint({longitude: 30, latitude: 40, height: 0}),
-                        newPoint({longitude: 10, latitude: 40, height: 0}),
+                        new Cesium.Cartesian3(/*longitude:*/ 10, /*latitude::*/ 20, /*height:*/ 0),
+                        new Cesium.Cartesian3(/*longitude:*/ 30, /*latitude::*/ 20, /*height:*/ 0),
+                        new Cesium.Cartesian3(/*longitude:*/ 30, /*latitude::*/ 40, /*height:*/ 0),
+                        new Cesium.Cartesian3(/*longitude:*/ 10, /*latitude::*/ 40, /*height:*/ 0),
                     ],
                     material: polygonColor
                 }
