@@ -13,7 +13,7 @@ describe('cesium-util', function () {
 
         it('works for point entities', function () {
 
-            let position = Cesium.Cartographic.toCartesian({
+            let position = toCartesian({
                                                                longitude: Cesium.Math.toRadians(10.24),
                                                                latitude: Cesium.Math.toRadians(53.52),
                                                                height: 0.0
@@ -45,17 +45,17 @@ describe('cesium-util', function () {
         it('works for polyline entities', function () {
 
             let positions = [
-                Cesium.Cartographic.toCartesian({
+                toCartesian({
                                                     longitude: Cesium.Math.toRadians(10.24),
                                                     latitude: Cesium.Math.toRadians(53.52),
                                                     height: 0.0
                                                 }),
-                Cesium.Cartographic.toCartesian({
+                toCartesian({
                                                     longitude: Cesium.Math.toRadians(10.24 + 10),
                                                     latitude: Cesium.Math.toRadians(53.52),
                                                     height: 0.0
                                                 }),
-                Cesium.Cartographic.toCartesian({
+                toCartesian({
                                                     longitude: Cesium.Math.toRadians(10.24 + 10),
                                                     latitude: Cesium.Math.toRadians(53.52 - 5),
                                                     height: 0.0
@@ -89,17 +89,17 @@ describe('cesium-util', function () {
         it('works for polygon entities', function () {
 
             let positions = [
-                Cesium.Cartographic.toCartesian({
+                toCartesian({
                                                     longitude: Cesium.Math.toRadians(10.24),
                                                     latitude: Cesium.Math.toRadians(53.52),
                                                     height: 0.0
                                                 }),
-                Cesium.Cartographic.toCartesian({
+                toCartesian({
                                                     longitude: Cesium.Math.toRadians(10.24 + 10),
                                                     latitude: Cesium.Math.toRadians(53.52),
                                                     height: 0.0
                                                 }),
-                Cesium.Cartographic.toCartesian({
+                toCartesian({
                                                     longitude: Cesium.Math.toRadians(10.24 + 10),
                                                     latitude: Cesium.Math.toRadians(53.52 - 5),
                                                     height: 0.0
@@ -108,7 +108,7 @@ describe('cesium-util', function () {
 
             let obj = entityToGeoJson(new Cesium.Entity({
                                                             polygon: {
-                                                                hierarchy: {positions},
+                                                                hierarchy: new Cesium.PolygonHierarchy(positions),
                                                                 material: Cesium.Color.YELLOW.withAlpha(0.7),
                                                                 outlineWidth: 2.8,
                                                                 outlineColor: Cesium.Color.BLACK.withAlpha(0.4),
@@ -137,3 +137,7 @@ describe('cesium-util', function () {
     });
 
 });
+
+function toCartesian({longitude, latitude, height}: {longitude: number, latitude: number, height: number}) {
+    return Cesium.Cartographic.toCartesian(new Cesium.Cartographic(longitude, latitude, height));
+}

@@ -1,3 +1,4 @@
+import { GeoJsonDataSource } from "cesium";
 import * as React from 'react';
 import * as Cesium from 'cesium';
 import { diff } from 'deep-object-diff'
@@ -68,7 +69,7 @@ export interface ImageLayerDescriptor extends LayerDescriptor {
 export interface VectorLayerDescriptor extends LayerDescriptor {
     style?: SimpleStyle;
     entityStyles?: { [entityId: string]: SimpleStyle };
-    dataSource?: ((viewer: Cesium.Viewer, options: any) => Cesium.DataSource) | Cesium.DataSource;
+    dataSource: ((viewer: Cesium.Viewer, options: any) => Cesium.DataSource | Promise<Cesium.DataSource>) | Cesium.DataSource | Promise<Cesium.DataSource>;
     dataSourceOptions?: any;
 }
 
@@ -172,7 +173,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
             //baseLayerImageryProvider.errorEvent.addEventListener(this.handleRemoteBaseLayerError);
         }
 
-        const cesiumViewerOptions = {
+        const cesiumViewerOptions: Cesium.Viewer.ConstructorOptions = {
             animation: false,
             baseLayerPicker: false,
             selectionIndicator: true,
@@ -209,12 +210,19 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         // when using multiple views this breaks, for unknown reason
         // to get this working we update the 'style' attribute of the selectionIndicatorElement manually
         // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Widgets/SelectionIndicator/SelectionIndicatorViewModel.js
+
         const viewModel = viewer.selectionIndicator.viewModel;
+        console.log("newExternalObject: viewModel:", viewModel);
+
         const originalUpdate = viewModel.update;
         viewModel.update = function () {
+            // TODO (forman): Note viewModel.update() is called all over the time.
+            //  Check if this is cause for OOM-Error on Firefox.
+            // console.log("newExternalObject: viewModel.update()!");
+            const vm = viewModel as any;
             originalUpdate.apply(this);
-            const styleValue = `top : ${viewModel._screenPositionY}; left : ${viewModel._screenPositionX};`;
-            viewModel._selectionIndicatorElement.setAttribute('style', styleValue);
+            const styleValue = `top : ${vm._screenPositionY}; left : ${vm._screenPositionX};`;
+            vm._selectionIndicatorElement.setAttribute('style', styleValue);
         };
 
         return viewer;
@@ -255,7 +263,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
     }
 
     private static getStaticNaturalEarthImageryProvider() {
-        Cesium.buildModuleUrl.setBaseUrl('./');
+        // Cesium.buildModuleUrl.setBaseUrl('./');
         const baseUrl = Cesium.buildModuleUrl('');
         const imageryProviderOptions = {
             url: baseUrl + 'Assets/Textures/NaturalEarthII/{z}/{x}/{reverseY}.jpg',
@@ -429,13 +437,14 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
     private updatePlacemarks(entities: Cesium.EntityCollection,
                              currentPlacemarks: PlacemarkCollection,
                              nextPlacemarks: PlacemarkCollection,
-                             style: SimpleStyle): Promise<any> {
+                             style: SimpleStyle): Promise<Cesium.GeoJsonDataSource[]> {
+        console.log('CesiumGlobe: updating placemarks');
         if (this.props.debug) {
             console.log('CesiumGlobe: updating placemarks');
         }
         const actions = arrayDiff<Placemark>((currentPlacemarks && currentPlacemarks.features) || EMPTY_ARRAY,
                                              (nextPlacemarks && nextPlacemarks.features) || EMPTY_ARRAY);
-        const promises = [];
+        const promises: Promise<Cesium.GeoJsonDataSource>[] = [];
         for (let action of actions) {
             if (this.props.debug) {
                 console.log('CesiumGlobe: next placemark action', action);
@@ -444,9 +453,12 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
                 case 'ADD': {
                     const placemark = action.newElement;
                     const visible = placemark.properties['visible'];
-                    const promise = Cesium.GeoJsonDataSource.load(placemark, simpleStyleToCesium(style));
-                    promises.push(Promise.resolve(promise).then(ds => {
-                        CesiumGlobe.copyEntities(ds.entities, entities, isBoolean(visible) ? visible : true);
+                    const dataSourcePromise = Cesium.GeoJsonDataSource.load(placemark, simpleStyleToCesium(style));
+                    promises.push(dataSourcePromise.then(dataSource => {
+                        console.log(`will add ${dataSource.entities.values.length} placemark(s)`);
+                        CesiumGlobe.moveEntities(dataSource.entities, entities, isBoolean(visible) ? visible : true);
+                        console.log(`we have now ${entities.values.length} placemark(s)`);
+                        return dataSource;
                     }));
                     break;
                 }
@@ -459,10 +471,11 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
                     const oldPlacemark = action.oldElement;
                     const newPlacemark = action.newElement;
                     const visible = newPlacemark.properties['visible'];
-                    const promise = Cesium.GeoJsonDataSource.load(newPlacemark, simpleStyleToCesium(style));
-                    promises.push(Promise.resolve(promise).then(ds => {
+                    const dataSourcePromise = Cesium.GeoJsonDataSource.load(newPlacemark, simpleStyleToCesium(style));
+                    promises.push(dataSourcePromise.then(dataSource => {
                         entities.removeById(oldPlacemark.id);
-                        CesiumGlobe.copyEntities(ds.entities, entities, isBoolean(visible) ? visible : true);
+                        CesiumGlobe.moveEntities(dataSource.entities, entities, isBoolean(visible) ? visible : true);
+                        return dataSource;
                     }));
                     break;
                 default:
@@ -625,22 +638,18 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
 
     // https://cesiumjs.org/Cesium/Build/Documentation/GeoJsonDataSource.html
     private static getDataSource(viewer: Cesium.Viewer, dataSourceDescriptor: VectorLayerDescriptor): Cesium.DataSource | Promise<Cesium.DataSource> {
-        if (dataSourceDescriptor.dataSource) {
-            if (typeof dataSourceDescriptor.dataSource === 'function') {
-                return dataSourceDescriptor.dataSource(viewer, dataSourceDescriptor.dataSourceOptions);
-            } else {
-                return dataSourceDescriptor.dataSource;
-            }
+        if (typeof dataSourceDescriptor.dataSource === 'function') {
+            return dataSourceDescriptor.dataSource(viewer, dataSourceDescriptor.dataSourceOptions);
+        } else {
+            return dataSourceDescriptor.dataSource;
         }
-        return null;
     }
 
     private addDataSource(viewer: Cesium.Viewer,
                           layer: VectorLayerDescriptor,
                           dataSourceMap: DataSourceMap): void {
-        const dataSourcePromise = CesiumGlobe.getDataSource(viewer, layer);
-        assert.ok(dataSourcePromise);
-        Promise.resolve(viewer.dataSources.add(dataSourcePromise)).then((resolvedDataSource) => {
+        const dataSource = CesiumGlobe.getDataSource(viewer, layer);
+        viewer.dataSources.add(dataSource).then((resolvedDataSource) => {
             if (this.props.debug) {
                 console.log(`CesiumGlobe: added data source: ${layer.name}`);
             }
@@ -768,7 +777,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         });
     }
 
-    private static copyEntities(from: Cesium.EntityCollection, to: Cesium.EntityCollection, show: boolean) {
+    private static moveEntities(from: Cesium.EntityCollection, to: Cesium.EntityCollection, show: boolean) {
         for (let entity of from.values.slice()) {
             entity.show = show;
             to.add(entity);
