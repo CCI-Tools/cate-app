@@ -1,11 +1,9 @@
-import { GeoJsonDataSource } from "cesium";
 import * as React from 'react';
 import * as Cesium from 'cesium';
 import { diff } from 'deep-object-diff'
 import { Feature, FeatureCollection, Point } from 'geojson';
 import { ContextMenu } from '@blueprintjs/core';
 import { ExternalObjectComponent, IExternalObjectComponentProps } from '../ExternalObjectComponent'
-import * as assert from '../../../common/assert';
 import { isBoolean, isNumber, isString } from '../../../common/types';
 import { arrayDiff } from '../../../common/array-diff';
 import { SimpleStyle } from '../../../common/geojson-simple-style';
@@ -212,7 +210,6 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         // https://github.com/AnalyticalGraphicsInc/cesium/blob/master/Source/Widgets/SelectionIndicator/SelectionIndicatorViewModel.js
 
         const viewModel = viewer.selectionIndicator.viewModel;
-        console.log("newExternalObject: viewModel:", viewModel);
 
         const originalUpdate = viewModel.update;
         viewModel.update = function () {
