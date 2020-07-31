@@ -321,8 +321,8 @@ function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics): Simpl
 function polygonGraphicsToSimpleStyle(polygon: Cesium.PolygonGraphics): SimpleStyle {
     const now = Cesium.JulianDate.now();
     const isFilled = polygon.fill && polygon.fill.getValue(now);
-    const material = polygon.material && polygon.material.getValue(now);
-    const color = material && material.color && material.color.getValue(now);
+    const material = polygon.material;
+    const color = material && (material as any).color && (material as Cesium.ColorMaterialProperty).color.getValue(now);
     const isOutlined = polygon.outline && polygon.outline.getValue(now);
     const outlineColor = polygon.outlineColor && polygon.outlineColor.getValue(now);
     const outlineWidth = polygon.outlineWidth && polygon.outlineWidth.getValue(now);
@@ -344,15 +344,14 @@ function polygonGraphicsToSimpleStyle(polygon: Cesium.PolygonGraphics): SimpleSt
     }
 
     if (isDefined(outlineColor)) {
-        const colorValue = outlineColor.getValue(now);
-        stroke = rgbToCssColor(colorValue.red, colorValue.green, colorValue.blue);
-        strokeOpacity = colorValue.alpha;
+        stroke = rgbToCssColor(outlineColor.red, outlineColor.green, outlineColor.blue);
+        strokeOpacity = outlineColor.alpha;
     }
-    if (isDefined(isOutlined) && !outlineColor.getValue(now)) {
+    if (isDefined(isOutlined) && !outlineColor) {
         strokeOpacity = 0;
     }
     if (isDefined(outlineWidth)) {
-        strokeWidth = outlineWidth.getValue(now);
+        strokeWidth = outlineWidth;
     }
 
     return {

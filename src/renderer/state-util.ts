@@ -46,7 +46,9 @@ export const COUNTRIES_LAYER = {
     visible: false,
     style: {
         ...SIMPLE_STYLE_DEFAULTS,
+        stroke: '#ffff00',
         fill: '#FFFFFF',
+        fillOpacity: 0.25,
     },
 };
 
