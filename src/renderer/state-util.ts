@@ -48,7 +48,8 @@ export const COUNTRIES_LAYER = {
         ...SIMPLE_STYLE_DEFAULTS,
         stroke: '#ffff00',
         fill: '#FFFFFF',
-        fillOpacity: 0.25,
+        fillOpacity: 0.2,
+        strokeWidth: 1.5,
     },
 };
 
