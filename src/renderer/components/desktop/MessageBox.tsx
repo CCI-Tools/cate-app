@@ -76,7 +76,7 @@ export const MessageBox: React.FC<IMessageBoxProps> = (
             renderActions={renderActions}
         >
             <p>{message}</p>
-            <p>{detail}</p>
+            <p className="bp3-text-muted">{detail}</p>
             {hasCheckbox && <p><Checkbox label={checkboxLabel} onChange={handleCheckboxChange}/></p>}
         </ModalDialog>
     );
