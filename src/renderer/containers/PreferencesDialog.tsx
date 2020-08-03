@@ -58,11 +58,11 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             this.props.dispatch(actions.updatePreferences(this.state) as any);
             if (autoUpdateSoftwareChangeDetected || backendChangesDetected) {
                 this.props.dispatch(actions.storeBackendConfig(backendConfig) as any);
-                showMessageBox({
-                                   type: 'info',
-                                   title: PreferencesDialog.DIALOG_TITLE,
-                                   message: 'Some changes will be effective only after restart.'
-                               });
+                this.props.dispatch(showMessageBox({
+                                                       type: 'info',
+                                                       title: PreferencesDialog.DIALOG_TITLE,
+                                                       message: 'Some changes will be effective only after restart.'
+                                                   }) as any);
             }
         } else {
             showToast({

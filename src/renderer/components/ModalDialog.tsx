@@ -8,11 +8,11 @@ interface IModalDialogProps {
     confirmTitle?: string;
     confirmTooltip?: JSX.Element | string;
     icon?: IconName;
-    renderBody: () => JSX.Element | JSX.Element[];
+    renderBody?: () => JSX.Element | JSX.Element[];
     renderActions?: () => JSX.Element[];
     renderExtraActions?: () => JSX.Element[];
-    onConfirm: () => void;
-    onCancel: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
     canConfirm?: () => boolean;
     noCancelButton?: boolean;
     style?: React.CSSProperties;
@@ -47,7 +47,7 @@ export class ModalDialog extends React.Component<IModalDialogProps, IModalDialog
     private renderDialogContent() {
         return (
             <div className={Classes.DIALOG_BODY}>
-                {this.props.renderBody()}
+                {this.props.renderBody ? this.props.renderBody() : this.props.children}
             </div>
         );
     }

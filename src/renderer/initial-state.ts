@@ -30,6 +30,7 @@ export const INITIAL_CONTROL_STATE: ControlState = {
     selectedWorkspaceResourceName: null,
     selectedVariableName: null,
     dialogs: {},
+    messageBox: {},
 
     selectedCtxOperationName: null,
 
