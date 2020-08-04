@@ -5,6 +5,7 @@ import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
 import * as actions from '../actions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
+import { OpenDialog } from '../components/desktop/fs/FileChooser';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
@@ -41,6 +42,7 @@ function mapStateToProps(state: State): IAppModePageProps {
 const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
 
     const [webAPIServiceURL, setWebAPIServiceURL] = useState(props.webAPIServiceURL);
+    const [openDialogOpen, setOpenDialogOpen] = useState(true);
 
     useEffect(() => {
         setWebAPIServiceURL(props.webAPIServiceURL);
@@ -101,6 +103,16 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                     />
                 </div>
             </div>
+            <OpenDialog
+                isOpen={openDialogOpen}
+                onClose={() => setOpenDialogOpen(false)}
+                filters={[
+                    {name: 'All files', extensions: ['*']},
+                    {name: 'Images', extensions: ['jpg', 'png', 'gif']},
+                    {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
+                    {name: 'Vector data', extensions: ['geojson', 'shp']}
+                ]}
+            />
         </div>
     );
 };

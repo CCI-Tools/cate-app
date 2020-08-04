@@ -14,23 +14,44 @@ export type OpenDialogProperty =
     | 'createDirectory'
     | 'showHiddenFiles';
 
+export type SaveDialogProperty =
+    'createDirectory'
+    | 'showHiddenFiles';
+
 /**
  * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
  */
 export interface FileDialogOptions {
+    /**
+     * Dialog title
+     */
     title?: string;
+    /**
+     * Path or file name to use by default.
+     */
     defaultPath?: string;
     /**
      * Custom label for the confirmation button, when left empty the default label will be used.
      */
     buttonLabel?: string;
+    /**
+     * File filters
+     */
     filters?: FileFilter[];
+    /**
+     * Contains which features the dialog should use.
+     */
+    properties?: string[];
 }
 
 /**
  * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
  */
 export interface SaveDialogOptions extends FileDialogOptions {
+    /**
+     * Contains which features the save dialog should use.
+     */
+    properties?: SaveDialogProperty[];
 }
 
 /**
