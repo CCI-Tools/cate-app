@@ -23,6 +23,7 @@ import StylesPanel from './StylesPanel';
 import NewWorkspaceDialog from './NewWorkspaceDialog';
 import SaveWorkspaceAsDialog from './SaveWorkspaceAsDialog';
 import PreferencesDialog from './PreferencesDialog';
+import MessageBox from './MessageBox';
 import { PanelContainer, PanelContainerLayout } from '../components/PanelContainer';
 import { Panel } from '../components/Panel';
 import {
@@ -41,6 +42,7 @@ import OperationStepDialog from './OperationStepDialog';
 import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './operation-step-dialog-ids';
 import AnimationView from './AnimationView';
 import JobFailureDialog from './JobFailureDialog';
+import desktopActions from '../components/desktop/actions';
 
 
 function renderWorldView(view: ViewState<WorldViewDataState>) {
@@ -135,6 +137,7 @@ class _ApplicationPage extends React.PureComponent<IApplicationPageProps & IDisp
                 <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
                 <JobFailureDialog/>
                 <WebAPIStatusBox/>
+                {!desktopActions.isNativeUI && <MessageBox/>}
             </div>
         );
     }
