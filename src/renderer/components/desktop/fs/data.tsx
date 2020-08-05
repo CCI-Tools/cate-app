@@ -1,163 +1,60 @@
-import * as React from 'react';
-import { Classes, Icon, Intent, Position, Tooltip } from '@blueprintjs/core';
+import { FileNode } from './file-system';
 
-import { IFileNode } from './types';
+function x2(n: number, off?): string {
+    const i = Math.round(Math.random()  * n) + (off || 0);
+    return i < 10 ? '0' + i : '' + i;
+}
 
+const newFileNode = (name, childNodes?: FileNode[]): FileNode => {
+    return {
+        name,
+        lastModified: `2020-${x2(12, 1)}-${x2(30, 1)} ${x2(24)}:${x2(60)}:${x2(24)}`,
+        size: Math.round(100000 * Math.random()),
+        isDirectory: Boolean(childNodes),
+        childNodes,
+    };
+};
 
-const DATA: IFileNode[] = [
-    {
-        id: 0,
-        hasCaret: true,
-        icon: "folder-close",
-        label: "Folder 0",
-        nodeData: {
-            name: "Folder 0",
-            size: 230983,
-            isDirectory: true,
-            isFile: false,
-            lastModified: "2020-07-01 10:42:12"
-        }
-    },
-    {
-        id: 1,
-        icon: "folder-close",
-        isExpanded: true,
-        label: (
-            <Tooltip content="I'm a folder <3" position={Position.RIGHT}>
-                Folder 1
-            </Tooltip>
-        ),
-        childNodes: [
-            {
-                id: 2,
-                icon: "document",
-                label: "Item 0",
-                secondaryLabel: (
-                    <Tooltip content="An eye!">
-                        <Icon icon="eye-open"/>
-                    </Tooltip>
-                ),
-                nodeData: {
-                    name: "Item 0",
-                    size: 7654,
-                    isDirectory: false,
-                    isFile: true,
-                    lastModified: "2020-07-01 10:42:12"
-                },
-            },
-            {
-                id: 3,
-                icon: <Icon icon="tag" intent={Intent.PRIMARY} className={Classes.TREE_NODE_ICON}/>,
-                label: "Organic meditation gluten-free, sriracha VHS drinking vinegar beard man.",
-                nodeData: {
-                    name: "Organic meditation gluten-free, sriracha VHS drinking vinegar beard man.",
-                    size: 6456,
-                    isDirectory: false,
-                    isFile: true,
-                    lastModified: "2020-07-01 10:42:12"
-                },
-            },
-            {
-                id: 4,
-                hasCaret: true,
-                icon: "folder-close",
-                label: (
-                    <Tooltip content="foo" position={Position.RIGHT}>
-                        Folder 2
-                    </Tooltip>
-                ),
-                childNodes: [
-                    {
-                        id: 5,
-                        label: "No-Icon Item",
-                        nodeData: {
-                            name: "No-Icon Item",
-                            size: 234,
-                            isDirectory: false,
-                            isFile: true,
-                            lastModified: "2020-07-01 10:42:12"
-                        }
-                    },
-                    {
-                        id: 6,
-                        icon: "tag",
-                        label: "Item 1",
-                        nodeData: {
-                            name: "Item 1",
-                            size: 634,
-                            isDirectory: false,
-                            isFile: true,
-                            lastModified: "2020-07-01 10:42:12"
-                        }
-                    },
-                    {
-                        id: 7,
-                        hasCaret: true,
-                        icon: "folder-close",
-                        label: "Folder 3",
-                        childNodes: [
-                            {
-                                id: 8, icon: "document", label: "Item 0",
-                                nodeData: {
-                                    name: "Item 0",
-                                    size: 23423,
-                                    isDirectory: false,
-                                    isFile: true,
-                                    lastModified: "2020-07-01 10:42:12"
-                                }
-                            },
-                            {
-                                id: 9, icon: "tag", label: "Item 1",
-                                nodeData: {
-                                    name: "Item 1",
-                                    size: 6346,
-                                    isDirectory: false,
-                                    isFile: true,
-                                    lastModified: "2020-07-01 10:42:12"
-                                }
-                            },
-                        ],
-                        nodeData: {
-                            name: "Folder 3",
-                            size: 6345345,
-                            isDirectory: true,
-                            isFile: false,
-                            lastModified: "2020-07-01 10:42:12"
-                        }
-                    },
-                ],
-                nodeData: {
-                    name: "Folder 2",
-                    size: 534743,
-                    isDirectory: true,
-                    isFile: false,
-                    lastModified: "2020-07-01 10:42:12"
-                },
-            },
-        ],
-        nodeData: {
-            name: "Folder 1",
-            size: 2313423,
-            isDirectory: true,
-            isFile: false,
-            lastModified: "2020-07-01 10:42:12"
-        }
-    },
-    {
-        id: 10,
-        hasCaret: true,
-        icon: "folder-close",
-        label: "Super secret files",
-        disabled: true,
-        nodeData: {
-            name: "Super secret files",
-            size: 53452345,
-            isDirectory: true,
-            isFile: false,
-            lastModified: "2020-07-01 10:42:12"
-        }
-    },
-
+const DATA: FileNode[] = [
+    newFileNode('Dir-1.zarr', [
+        newFileNode('.zgroup'),
+        newFileNode('.zattrs'),
+        newFileNode('File-11'),
+        newFileNode('File-12'),
+        newFileNode('File-13'),
+    ]),
+    newFileNode('Dir-2', [
+        newFileNode('Dir-21', [
+            newFileNode('Dir-211', [
+                newFileNode('File-2111.txt'),
+                newFileNode('File-2112.txt'),
+            ]),
+            newFileNode('File-211.nc'),
+            newFileNode('File-212.nc'),
+            newFileNode('File-213.png'),
+            newFileNode('File-214.geojson'),
+        ]),
+        newFileNode('Dir-22', [
+            newFileNode('File-221.shp'),
+            newFileNode('File-222.shp'),
+            newFileNode('File-223.jpg'),
+        ]),
+        newFileNode('File-21.doc'),
+        newFileNode('File-22.doc'),
+        newFileNode('File-23.doc'),
+    ]),
+    newFileNode('Dir-3', [
+        newFileNode('File-31.txt'),
+        newFileNode('File-32.txt'),
+        newFileNode('File-33.nc'),
+        newFileNode('File-34.nc'),
+        newFileNode('File-35.nc'),
+        newFileNode('File-36.nc'),
+    ]),
+    newFileNode('Dir-4', []),
+    newFileNode('File-1.txt'),
+    newFileNode('File-2'),
+    newFileNode('File-3.txt'),
 ];
 
 export default DATA;

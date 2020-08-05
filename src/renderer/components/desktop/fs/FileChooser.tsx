@@ -4,6 +4,8 @@ import { Breadcrumb, Breadcrumbs, Button, ButtonGroup, Classes, Colors, HTMLSele
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
 import { Splitter } from '../../Splitter';
+import INITIAL_STATE from './data';
+import { FileNode } from './file-system';
 import FileTree from './FileTree';
 import FileList from './FileList';
 import { FileFilter, OpenDialogOptions } from '../types';
@@ -26,17 +28,25 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
         properties,
     }) => {
 
+    const [fileNodes, setFileNodes] = React.useState<FileNode[]>(INITIAL_STATE);
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
     const [fileFilterIndex, setFileFilterIndex] = React.useState(0);
+    const [selectedDirPath, setSelectedDirPath] = React.useState<string | null>(defaultPath || null);
+    const [selectedPaths, setSelectedPaths] = React.useState<string[] | null>((defaultPath && [defaultPath]) || null);
+    const [expandedPaths, setExpandedPaths] = React.useState<string[] | null>((defaultPath && [defaultPath]) || null);
 
     if (!isOpen) {
         return null;
     }
 
+    const canConfirm = () => {
+        return selectedPaths !== null;
+    }
+
     const handleConfirm = () => {
         if (onClose) {
             // TODO
-            onClose(null);
+            onClose(selectedPaths);
         }
     }
 
@@ -54,6 +64,10 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
         setFileFilterIndex(parseInt(event.target.value));
     };
 
+    const handleSync = () => {
+        setFileNodes(INITIAL_STATE);
+    }
+
     return (
         <ModalDialog
             confirmTitle={buttonLabel || "Open File"}
@@ -61,6 +75,7 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
             title={title || "Open File"}
             onConfirm={handleConfirm}
             onCancel={handleCancel}
+            canConfirm={canConfirm}
             style={{width: 800, height: 600}}
         >
             <div style={{width: '100%', height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
@@ -82,22 +97,36 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
                     </div>
                     <ButtonGroup minimal={true}>
                         <Button icon="caret-down"/>
-                        <Button icon="refresh"/>
+                        <Button icon="refresh" onClick={handleSync}/>
                     </ButtonGroup>
                 </div>
                 <SplitPane dir="hor" initialSize={fileTreeWidth} onChange={handleFileTreeWidthChange}>
-                    <FileTree/>
-                    <FileList fileFilter={filters && filters.length > 0 && filters[fileFilterIndex]}/>
+                    <FileTree
+                        fileNodes={fileNodes}
+                        selectedPath={'Dir-2/Dir-21'}
+                        expandedPaths={['Dir-2']}
+                    />
+                    <FileList
+                        fileNodes={fileNodes}
+                        selectedDirPath='Dir-2/Dir-21'
+                        selectedPaths={selectedPaths}
+                        onSelectedPathsChange={paths => setSelectedPaths(paths)}
+                        fileFilter={filters && filters.length > 0 && filters[fileFilterIndex]}
+                    />
                 </SplitPane>
                 <div
                     style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', marginTop: 10}}>
                     <span>Filename:</span>
                     <input id="filename" className={Classes.INPUT}
                            style={{flexGrow: 1, marginLeft: 10, marginRight: 5}} type="text"/>
-                    <HTMLSelect disabled={!filters || filters.length <= 1} onChange={handleFileFilterChange}>{
+                    <HTMLSelect
+                        value={fileFilterIndex}
+                        disabled={!filters || filters.length <= 1}
+                        onChange={handleFileFilterChange}
+                    >{
                         (filters || [{name: "All files", extensions: ["*"]}])
                             .map((f, i) =>
-                                     <option value={i} key={i} selected={fileFilterIndex === i}>{
+                                     <option value={i} key={i}>{
                                          `${f.name} (${f.extensions.map(e => "*." + e).join(", ")})`
                                      }</option>)
                     }</HTMLSelect>
