@@ -128,7 +128,7 @@ class VariablesPanel extends React.Component<IVariablesPanelProps & DispatchProp
         };
         this.props.dispatch(actions.setWorkspaceResource('cate.ops.plot.plot', opArgs,
                                                          null, false,
-                                                         `Creating time series plot for placemark ${placemarkName}`)  as any);
+                                                         `Creating time series plot for placemark ${placemarkName}`) as any);
     }
 
     private handleAddVariableHistogramPlot() {

@@ -1,4 +1,9 @@
-import {requireElectron} from './electron';
+import * as redux from 'redux';
+import * as d3 from 'd3-fetch';
+import * as Cesium from 'cesium';
+import { DirectGeometryObject } from 'geojson';
+import copyToClipboard from 'copy-to-clipboard';
+
 import {
     BackendConfigState,
     ColorMapCategoryState, ControlState,
@@ -24,7 +29,7 @@ import {
     WorkspaceState,
     WorldViewMode
 } from './state';
-import {ViewPath, ViewState} from './components/ViewState';
+import { ViewPath, ViewState } from './components/ViewState';
 import {
     ERROR_CODE_CANCELLED,
     ERROR_CODE_INVALID_PARAMS,
@@ -38,8 +43,8 @@ import {
 } from './webapi';
 import * as selectors from './selectors';
 import * as assert from '../common/assert';
-import {PanelContainerLayout} from './components/PanelContainer';
-import {DEFAULT_SERVICE_URL} from './initial-state';
+import { PanelContainerLayout } from './components/PanelContainer';
+import { DEFAULT_SERVICE_URL } from './initial-state';
 import {
     AUTO_LAYER_ID,
     findResourceByName,
@@ -57,30 +62,29 @@ import {
     newVariableLayer,
     PLACEMARK_ID_PREFIX
 } from './state-util';
-import {SplitDir} from './components/Splitter';
-import {updateObject} from '../common/objutil';
-import {showToast} from './toast';
-import * as redux from 'redux';
-import * as d3 from 'd3-fetch';
-import * as Cesium from 'cesium';
-import {isDefined, isNumber} from '../common/types';
-import {reloadEntityWithOriginalGeometry} from './containers/globe-view-layers';
-import {DirectGeometryObject} from 'geojson';
-import {SimpleStyle} from '../common/geojson-simple-style';
-import {GeometryToolType} from './components/cesium/geometry-tool';
-import {getEntityByEntityId} from './components/cesium/cesium-util';
-import {isAssignableFrom, VAR_NAME_LIKE_TYPE, VAR_NAMES_LIKE_TYPE} from '../common/cate-types';
+import { SplitDir } from './components/Splitter';
+import { updateObject } from '../common/objutil';
+import { showToast } from './toast';
+import { isDefined, isNumber } from '../common/types';
+import { reloadEntityWithOriginalGeometry } from './containers/globe-view-layers';
+import { SimpleStyle } from '../common/geojson-simple-style';
+import { GeometryToolType } from './components/cesium/geometry-tool';
+import { getEntityByEntityId } from './components/cesium/cesium-util';
+import { isAssignableFrom, VAR_NAME_LIKE_TYPE, VAR_NAMES_LIKE_TYPE } from '../common/cate-types';
 import {
     assignConstantValueInput,
     assignResourceNameInput,
     InputAssignments,
     isInputAssigned
 } from './containers/editor/value-editor-assign';
-import {DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID} from './containers/ChooseWorkspaceDialog';
-import {AuthAPI, AuthInfo, User} from './webapi/apis/AuthAPI'
-import {ServiceInfoAPI} from './webapi/apis/ServiceInfoAPI';
-import {HttpError} from './webapi/HttpError';
-import copyToClipboard from 'copy-to-clipboard';
+import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
+import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
+import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
+import { HttpError } from './webapi/HttpError';
+import { requireElectron } from './electron';
+import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
+
+import desktopActions from './components/desktop/actions';
 
 const electron = requireElectron();
 
@@ -150,7 +154,7 @@ export function login(): ThunkAction {
         let authInfo;
         try {
             authInfo = await authAPI.auth(username,
-                password);
+                                          password);
         } catch (error) {
             console.info('error: ', error);
             if (error instanceof HttpError && (error.status === 401)) {
@@ -199,11 +203,11 @@ export function login(): ThunkAction {
             const MINUTE = 60 * SECOND;
 
             invokeUntil(getUserAsync,
-                hasServer,
-                () => dispatch(connectWebAPIClient()),
-                handleLaunchError,
-                SECOND,
-                15 * MINUTE);
+                        hasServer,
+                        () => dispatch(connectWebAPIClient()),
+                        handleLaunchError,
+                        SECOND,
+                        15 * MINUTE);
         } else {
             dispatch(connectWebAPIClient());
         }
@@ -438,18 +442,18 @@ export function loadPreferences(): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                type: 'error',
-                title: 'Loading Preferences',
-                message: 'Failed to load preferences.',
-                detail: jobFailure.message
-            });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Loading Preferences',
+                                        message: 'Failed to load preferences.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
-            title: `Loading Preferences`,
-            dispatch, call, action, planB, requireDoneNotification: true
-        });
+                    title: `Loading Preferences`,
+                    dispatch, call, action, planB, requireDoneNotification: true
+                });
     }
 }
 
@@ -468,18 +472,18 @@ export function updatePreferences(session: Partial<SessionState>, sendToMain: bo
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                type: 'error',
-                title: 'Save Preferences',
-                message: 'Failed to save workspace.',
-                detail: jobFailure.message
-            });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Save Preferences',
+                                        message: 'Failed to save workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
-            title: `Save Preferences`,
-            dispatch, call, action, planB, requireDoneNotification: true
-        });
+                    title: `Save Preferences`,
+                    dispatch, call, action, planB, requireDoneNotification: true
+                });
     }
 }
 
@@ -716,9 +720,9 @@ export function setGlobeViewPosition(position: GeographicPosition): ThunkAction 
 
                     const call = () => {
                         return selectors.datasetAPISelector(getState()).extractPixelValues(baseDir,
-                            resource.name,
-                            [position.longitude, position.latitude],
-                            indexers);
+                                                                                           resource.name,
+                                                                                           [position.longitude, position.latitude],
+                                                                                           indexers);
                     };
 
                     const action = (positionData: { [varName: string]: number }) => {
@@ -879,12 +883,12 @@ export function loadDataSources(dataStoreId: string, setSelection: boolean): Thu
 
         const dataStore = getState().data.dataStores.find(dataStore => dataStore.id === dataStoreId);
         callAPI({
-            title: `Load data sources for store "${dataStore ? dataStore.id : '?'}"`,
-            dispatch,
-            call,
-            action,
-            requestLock
-        });
+                    title: `Load data sources for store "${dataStore ? dataStore.id : '?'}"`,
+                    dispatch,
+                    call,
+                    action,
+                    requestLock
+                });
     }
 }
 
@@ -964,10 +968,10 @@ export function openDataset(dataSourceId: string, args: any, updateLocalDataSour
         }
 
         dispatch(setWorkspaceResource(opName,
-            wrappedOpArgs,
-            null,
-            false,
-            `Opening data source "${dataSourceId}"`, postSetAction));
+                                      wrappedOpArgs,
+                                      null,
+                                      false,
+                                      `Opening data source "${dataSourceId}"`, postSetAction));
     }
 }
 
@@ -982,9 +986,9 @@ export function addLocalDataset(dataSourceId: string, filePathPattern: string): 
         }
 
         callAPI({
-            title: `Add file data source "${dataSourceId}"`,
-            dispatch, call, action, requireDoneNotification: true
-        });
+                    title: `Add file data source "${dataSourceId}"`,
+                    dispatch, call, action, requireDoneNotification: true
+                });
     }
 }
 
@@ -999,9 +1003,9 @@ export function removeLocalDataset(dataSourceId: string, removeFiles: boolean): 
         }
 
         callAPI({
-            title: `Remove copy of file data source "${dataSourceId}"`,
-            dispatch, call, action, requireDoneNotification: true
-        });
+                    title: `Remove copy of file data source "${dataSourceId}"`,
+                    dispatch, call, action, requireDoneNotification: true
+                });
     }
 }
 
@@ -1110,18 +1114,18 @@ export function newWorkspace(workspacePath: string | null): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                type: 'error',
-                title: 'New Workspace',
-                message: 'Failed to create new workspace.',
-                detail: jobFailure.message
-            });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'New Workspace',
+                                        message: 'Failed to create new workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
-            title: 'New workspace' + (workspacePath ? ` "${workspacePath}"` : ''),
-            dispatch, call, action, planB, requireDoneNotification: true
-        });
+                    title: 'New workspace' + (workspacePath ? ` "${workspacePath}"` : ''),
+                    dispatch, call, action, planB, requireDoneNotification: true
+                });
     }
 }
 
@@ -1154,9 +1158,9 @@ export function openWorkspace(workspacePath?: string | null): ThunkAction {
         }
 
         callAPI({
-            title: `Open workspace "${workspacePath}"`,
-            dispatch, call, action, planB, requireDoneNotification: true
-        });
+                    title: `Open workspace "${workspacePath}"`,
+                    dispatch, call, action, planB, requireDoneNotification: true
+                });
     }
 }
 
@@ -1179,9 +1183,9 @@ export function closeWorkspace(): ThunkAction {
         }
 
         callAPI({
-            title: 'Close workspace',
-            dispatch, call, action, requireDoneNotification: true
-        });
+                    title: 'Close workspace',
+                    dispatch, call, action, requireDoneNotification: true
+                });
     }
 }
 
@@ -1210,18 +1214,18 @@ export function saveWorkspace(): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                type: 'error',
-                title: 'Save Workspace',
-                message: 'Failed to save workspace.',
-                detail: jobFailure.message
-            });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Save Workspace',
+                                        message: 'Failed to save workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
-            title: 'Save workspace',
-            dispatch, call, action, planB, requireDoneNotification: true
-        });
+                    title: 'Save workspace',
+                    dispatch, call, action, planB, requireDoneNotification: true
+                });
     }
 }
 
@@ -1244,18 +1248,18 @@ export function saveWorkspaceAs(workspacePath: string): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                type: 'error',
-                title: 'Save Workspace As',
-                message: 'Failed to save workspace.',
-                detail: jobFailure.message
-            });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Save Workspace As',
+                                        message: 'Failed to save workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
-            title: `Save workspace as "${workspacePath}"`,
-            dispatch, call, action, planB, requireDoneNotification: true
-        });
+                    title: `Save workspace as "${workspacePath}"`,
+                    dispatch, call, action, planB, requireDoneNotification: true
+                });
     }
 }
 
@@ -1279,9 +1283,9 @@ export function cleanWorkspace(): ThunkAction {
         }
 
         callAPI({
-            title: `Clean workspace "${baseDir}"`,
-            dispatch, call, action, requireDoneNotification: true
-        });
+                    title: `Clean workspace "${baseDir}"`,
+                    dispatch, call, action, requireDoneNotification: true
+                });
     }
 }
 
@@ -1306,9 +1310,9 @@ export function deleteResource(resName: string): ThunkAction {
         }
 
         callAPI({
-            title: `Delete step/resource "${resName}"`, dispatch, call, action,
-            requireDoneNotification: true
-        });
+                    title: `Delete step/resource "${resName}"`, dispatch, call, action,
+                    requireDoneNotification: true
+                });
     }
 }
 
@@ -1325,9 +1329,9 @@ export function deleteWorkspace(workspaceName: string, deleteEntireWorkspace = t
         }
 
         callAPI({
-            title: `Delete step/workspace "${workspaceName}"`, dispatch, call,
-            requireDoneNotification: true
-        });
+                    title: `Delete step/workspace "${workspaceName}"`, dispatch, call,
+                    requireDoneNotification: true
+                });
     }
 }
 
@@ -1362,10 +1366,10 @@ function deleteRemoteWorkspace(dispatch: (action: (Action | ThunkAction)) => voi
 function openLocalWorkspace(dispatch: (action: (Action | ThunkAction)) => void,
                             getState: () => State) {
     const workspacePath = showSingleFileOpenDialog({
-        title: 'Open Workspace - Select Directory',
-        buttonLabel: 'Open',
-        properties: ['openDirectory'],
-    });
+                                                       title: 'Open Workspace - Select Directory',
+                                                       buttonLabel: 'Open',
+                                                       properties: ['openDirectory'],
+                                                   });
     if (workspacePath) {
         const workspace = getState().data.workspace;
         let ok = true;
@@ -1376,15 +1380,15 @@ function openLocalWorkspace(dispatch: (action: (Action | ThunkAction)) => void,
                 //     message: 'Workspace is already open.'
                 // }, MESSAGE_BOX_NO_REPLY);
                 showToast({
-                    type: 'warning',
-                    text: 'Workspace is already open.',
-                });
+                              type: 'warning',
+                              text: 'Workspace is already open.',
+                          });
                 return;
             }
             ok = maybeSaveCurrentWorkspace(dispatch, getState,
-                'Open Workspace',
-                'Would you like to save the current workspace before opening the new one?',
-                'Press "Cancel" to cancel opening a new workspace.'
+                                           'Open Workspace',
+                                           'Would you like to save the current workspace before opening the new one?',
+                                           'Press "Cancel" to cancel opening a new workspace.'
             );
         }
         if (ok) {
@@ -1431,9 +1435,9 @@ export function deleteWorkspaceInteractive(): ThunkAction {
 export function closeWorkspaceInteractive(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const ok = maybeSaveCurrentWorkspace(dispatch, getState,
-            'Close Workspace',
-            'Would you like to save the current workspace before closing it?',
-            'Press "Cancel" to cancel closing the workspace.'
+                                             'Close Workspace',
+                                             'Would you like to save the current workspace before closing it?',
+                                             'Press "Cancel" to cancel closing the workspace.'
         );
         if (ok) {
             dispatch(closeWorkspace())
@@ -1448,18 +1452,19 @@ export function closeWorkspaceInteractive(): ThunkAction {
  */
 export function cleanWorkspaceInteractive(): ThunkAction {
     return (dispatch: Dispatch) => {
-        const answer = showMessageBox({
-            type: 'question',
-            title: 'Clean Workspace',
-            message: 'Do you really want to clean this workspace?',
-            detail: 'This will delete all resources and workflow steps.\nYou will not be able to undo this operation.',
-            buttons: ['Yes', 'No'],
-            defaultId: 1,
-            cancelId: 1,
-        });
-        if (answer && answer.buttonIndex === 0) {
-            dispatch(cleanWorkspace());
-        }
+        dispatch(showMessageBox({
+                                    type: 'question',
+                                    title: 'Clean Workspace',
+                                    message: 'Do you really want to clean this workspace?',
+                                    detail: 'This will delete all resources and workflow steps.\nYou will not be able to undo this operation.',
+                                    buttons: ['Yes', 'No'],
+                                    defaultId: 1,
+                                    cancelId: 1,
+                                }, (answer) => {
+            if (answer && answer.buttonIndex === 0) {
+                dispatch(cleanWorkspace());
+            }
+        }));
     };
 }
 
@@ -1470,19 +1475,20 @@ export function cleanWorkspaceInteractive(): ThunkAction {
  */
 export function deleteResourceInteractive(resName: string): ThunkAction {
     return (dispatch: Dispatch) => {
-        const answer = showMessageBox({
-            type: 'question',
-            title: 'Remove Resource and Workflow Step',
-            message: `Do you really want to delete resource and step "${resName}"?`,
-            detail: 'This will also delete the workflow step that created it.\n' +
-                'You will not be able to undo this operation.',
-            buttons: ['Yes', 'No'],
-            defaultId: 1,
-            cancelId: 1,
-        });
-        if (answer && answer.buttonIndex === 0) {
-            dispatch(deleteResource(resName));
-        }
+        dispatch(showMessageBox({
+                                    type: 'question',
+                                    title: 'Remove Resource and Workflow Step',
+                                    message: `Do you really want to delete resource and step "${resName}"?`,
+                                    detail: 'This will also delete the workflow step that created it.\n' +
+                                            'You will not be able to undo this operation.',
+                                    buttons: ['Yes', 'No'],
+                                    defaultId: 1,
+                                    cancelId: 1,
+                                }, answer => {
+            if (answer && answer.buttonIndex === 0) {
+                dispatch(deleteResource(resName));
+            }
+        }));
     };
 }
 
@@ -1521,28 +1527,30 @@ function maybeSaveCurrentWorkspace(dispatch, getState: GetState, title: string, 
     if (workspace) {
         const maySave = workspace.workflow.steps.length && (workspace.isModified || !workspace.isSaved);
         if (maySave) {
-            const answer = showMessageBox({
-                type: 'question',
-                title,
-                message,
-                detail,
-                buttons: ['Yes', 'No', 'Cancel'],
-                defaultId: 0,
-                cancelId: 2,
-            });
-            if (answer) {
-                if (answer.buttonIndex === 0) {
-                    if (workspace.isScratch) {
-                        dispatch(saveWorkspaceAsInteractive());
-                    } else {
-                        dispatch(saveWorkspace());
+            dispatch(showMessageBox({
+                                        type: 'question',
+                                        title,
+                                        message,
+                                        detail,
+                                        buttons: ['Yes', 'No', 'Cancel'],
+                                        defaultId: 0,
+                                        cancelId: 2,
+                                    }, answer => {
+
+                if (answer) {
+                    if (answer.buttonIndex === 0) {
+                        if (workspace.isScratch) {
+                            dispatch(saveWorkspaceAsInteractive());
+                        } else {
+                            dispatch(saveWorkspace());
+                        }
+                    } else if (answer.buttonIndex === 2) {
+                        return false;
                     }
-                } else if (answer.buttonIndex === 2) {
+                } else {
                     return false;
                 }
-            } else {
-                return false;
-            }
+            }));
         }
     }
     return true;
@@ -1571,8 +1579,8 @@ export function setSelectedWorkspaceResourceName(selectedWorkspaceResourceName: 
                 if (resource && resource.variables && resource.variables.length) {
                     const variable = resource.variables.find(variable => !!variable.isDefault);
                     dispatch(setSelectedVariable(resource,
-                        variable || resource.variables[0],
-                        selectors.savedLayersSelector(getState())));
+                                                 variable || resource.variables[0],
+                                                 selectors.savedLayersSelector(getState())));
                 }
             }
         }
@@ -1612,11 +1620,11 @@ export function setWorkspaceResource(opName: string,
 
         function call(onProgress) {
             return selectors.workspaceAPISelector(getState()).setWorkspaceResource(baseDir,
-                opName,
-                opArgs,
-                resName,
-                overwrite,
-                onProgress);
+                                                                                   opName,
+                                                                                   opArgs,
+                                                                                   resName,
+                                                                                   overwrite,
+                                                                                   onProgress);
         }
 
         function action(result: [WorkspaceState, string]) {
@@ -1695,10 +1703,10 @@ export function getWorkspaceVariableStatistics(resName: string,
 
         function call(onProgress) {
             return selectors.workspaceAPISelector(getState()).getWorkspaceVariableStatistics(baseDir,
-                resName,
-                varName,
-                varIndex,
-                onProgress);
+                                                                                             resName,
+                                                                                             varName,
+                                                                                             varIndex,
+                                                                                             onProgress);
         }
 
         function action2(statistics: ImageStatisticsState) {
@@ -1869,15 +1877,15 @@ export function notifySelectedEntityChange(viewId: string, layer: LayerState | n
         dispatch(setSelectedEntityId(viewId, isDefined(selectedEntityId) ? selectedEntityId : null));
 
         if (selectedEntity
-            && isNumber(selectedEntity._simp)
-            && isNumber(selectedEntity._resId)
-            && isNumber(selectedEntity._idx)) {
-            const isGeometrySimplified = (selectedEntity._simp & 0x01) !== 0;
+            && isNumber(selectedEntity['_simp'])
+            && isNumber(selectedEntity['_resId'])
+            && isNumber(selectedEntity['_idx'])) {
+            const isGeometrySimplified = (selectedEntity['_simp'] & 0x01) !== 0;
             if (isGeometrySimplified) {
                 const workspace = selectors.workspaceSelector(getState());
                 if (workspace) {
-                    const resId = selectedEntity._resId;
-                    const featureIndex = +selectedEntity._idx;
+                    const resId = selectedEntity['_resId'];
+                    const featureIndex = +selectedEntity['_idx'];
                     const baseUrl = selectors.webAPIRestUrlSelector(getState());
                     const baseDir = workspace.baseDir;
                     const featureUrl = getFeatureUrl(baseUrl, baseDir, {resId}, featureIndex);
@@ -1951,12 +1959,12 @@ export function loadTableViewData(viewId: string, resName: string, varName: stri
             const csvUrl = getCsvUrl(restUrl, baseDir, {resId: resource.id}, varName);
             dispatch(updateTableViewData(viewId, resName, varName, null, null, true));
             d3.csv(csvUrl)
-                .then((dataRows: any[]) => {
-                    dispatch(updateTableViewData(viewId, resName, varName, dataRows, null, false));
-                })
-                .catch((error: any) => {
-                    dispatch(updateTableViewData(viewId, resName, varName, null, error, false));
-                });
+              .then((dataRows: any[]) => {
+                  dispatch(updateTableViewData(viewId, resName, varName, dataRows, null, false));
+              })
+              .catch((error: any) => {
+                  dispatch(updateTableViewData(viewId, resName, varName, null, error, false));
+              });
         }
     }
 }
@@ -2155,72 +2163,6 @@ export interface OpenDialogOptions extends FileDialogOptions {
     normalizeAccessKeys?: boolean;
 }
 
-// TODO (forman): Replace by electron.MessageBoxOptions
-
-/**
- * See dialog.showMessageBox() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface MessageBoxOptions {
-    /**
-     * Can be "none", "info", "error", "question" or "warning". On Windows, "question" displays the same icon as "info", unless you set an icon using the "icon" option.
-     */
-    type?: string;
-
-    /**
-     * Array of texts for buttons. On Windows, an empty array will result in one button labeled "OK".
-     */
-    buttons?: string[];
-
-    /**
-     * Title of the message box, some platforms will not show it.
-     */
-    title?: string;
-
-    /**
-     * Content of the message box.
-     */
-    message: string;
-
-    /**
-     * Extra information of the message.
-     */
-    detail?: string;
-
-    /**
-     *  NativeImage: https://github.com/electron/electron/blob/master/docs/api/native-image.md
-     */
-    icon?: any;
-
-    /**
-     * Index of the button in the buttons array which will be selected by default when the message box opens.
-     */
-    defaultId?: number;
-
-    /**
-     * The value will be returned when user cancels the dialog instead of clicking the buttons of the dialog.
-     * By default it is the index of the buttons that have "cancel" or "no" as label, or 0 if there is no such buttons.
-     * On macOS and Windows the index of the "Cancel" button will always be used as cancelId even if it is specified.
-     */
-    cancelId?: number;
-
-    /**
-     * On Windows Electron will try to figure out which one of the buttons are common buttons (like "Cancel" or "Yes"),
-     * and show the others as command links in the dialog. This can make the dialog appear in the style of modern
-     * Windows apps. If you don't like this behavior, you can set noLink to true.
-     */
-    noLink?: boolean;
-
-    /**
-     * If provided, the message box will include a checkbox with the given label.
-     * The checkbox state can be inspected only when using callback.
-     */
-    checkboxLabel?: string;
-
-    /**
-     * Initial checked state of the checkbox. false by default.
-     */
-    checkboxChecked?: boolean;
-}
 
 /**
  * Shows a native file-open dialog.
@@ -2309,34 +2251,33 @@ export function showFileSaveDialog(saveDialogOptions: SaveDialogOptions,
     return null;
 }
 
-/**
- * Shows a native message box.
- * Note, this is not an action.
- *
- * @param messageBoxOptions the message dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with (buttonIndex, checkboxChecked)
- * @returns null, if no button was selected or the callback function is defined. Otherwise an object {buttonIndex, checkboxChecked}.
- */
-export function showMessageBox(messageBoxOptions: MessageBoxOptions,
-                               callback?: (buttonIndex: number,
-                                           checkboxChecked: boolean) => void): { buttonIndex: number, checkboxChecked: boolean } | null {
-    if (hasElectron('showMessageBox')) {
-        const actionName = 'show-message-box';
-        if (!messageBoxOptions.buttons) {
-            messageBoxOptions = {...messageBoxOptions, buttons: ['OK']};
-        }
-        if (callback) {
-            electron.ipcRenderer.send(actionName, messageBoxOptions, false);
-            electron.ipcRenderer.once(actionName + '-reply', (event, buttonIndex: number, checkboxChecked: boolean) => {
-                callback(buttonIndex, checkboxChecked);
-            });
-            return null;
-        } else {
-            return electron.ipcRenderer.sendSync(actionName, messageBoxOptions, true) as any;
-        }
-    }
-    return null;
+export const OPEN_MESSAGE_BOX = 'OPEN_MESSAGE_BOX';
+export const CLOSE_MESSAGE_BOX = 'CLOSE_MESSAGE_BOX';
+
+
+function openMessageBox(options: MessageBoxOptions,
+                        onClose: (result: MessageBoxResult | null) => void): Action {
+    return {type: OPEN_MESSAGE_BOX, payload: {options, onClose}};
 }
+
+function closeMessageBox(result: MessageBoxResult | null) {
+    return {type: CLOSE_MESSAGE_BOX, payload: {result}};
+}
+
+export function showMessageBox(messageBoxOptions: MessageBoxOptions,
+                               onClose?: (result: MessageBoxResult | null) => void): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: MessageBoxResult | null) => {
+            dispatch(closeMessageBox(result));
+            if (onClose) {
+                onClose(result);
+            }
+        };
+        dispatch(openMessageBox(messageBoxOptions, handleClose));
+        desktopActions.showMessageBox(messageBoxOptions, handleClose);
+    };
+}
+
 
 //noinspection JSUnusedGlobalSymbols
 /**

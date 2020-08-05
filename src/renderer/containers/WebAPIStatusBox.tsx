@@ -71,15 +71,15 @@ interface IStatusBoxProps {
 }
 
 const DIALOG_P_STYLE: React.CSSProperties = {marginTop: 12};
-const DIALOG_ICON_STYLE: React.CSSProperties = {marginTop: 6, textAlign:'center', width: '100%'};
+const DIALOG_ICON_STYLE: React.CSSProperties = {marginTop: 6, textAlign: 'center', width: '100%'};
 
 const StatusBox: React.FC<IStatusBoxProps> = ({
-                                                message,
-                                                icon,
-                                                isWaiting,
-                                                onRetry,
-                                                onCancel,
-                                            }) => {
+                                                  message,
+                                                  icon,
+                                                  isWaiting,
+                                                  onRetry,
+                                                  onCancel,
+                                              }) => {
 
     let progress;
     if (isWaiting) {
@@ -105,7 +105,7 @@ const StatusBox: React.FC<IStatusBoxProps> = ({
             canOutsideClickClose={false}
         >
             <div className={Classes.DIALOG_BODY}>
-                <div  style={DIALOG_ICON_STYLE}><Icon icon={icon} iconSize={32}/></div>
+                <div style={DIALOG_ICON_STYLE}><Icon icon={icon} iconSize={32}/></div>
                 <div style={DIALOG_P_STYLE}>{message}</div>
                 {progress}
             </div>

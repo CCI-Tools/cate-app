@@ -105,8 +105,7 @@ export class GeometryDialog extends React.Component<IGeometryDialogProps, IGeome
         let helpText;
         if (this.props.geometryType === 'Point') {
             helpText = (<p>Use <code>lon, lat</code> or use {this.props.geometryType} {WKT_LINK} syntax.</p>);
-        }
-        else if (this.props.geometryType === 'Polygon') {
+        } else if (this.props.geometryType === 'Polygon') {
             helpText = (
                 <p>Use <code>west, south, east, north</code> or use {this.props.geometryType} {WKT_LINK} syntax.</p>);
         } else {

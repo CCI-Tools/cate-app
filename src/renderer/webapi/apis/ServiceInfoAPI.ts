@@ -1,5 +1,5 @@
-import { HttpError } from '../HttpError';
 import { WebAPIServiceInfo } from '../../state';
+import { HttpError } from '../HttpError';
 
 
 export class ServiceInfoAPI {

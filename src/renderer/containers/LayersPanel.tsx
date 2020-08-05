@@ -63,7 +63,12 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
 
     static readonly SLIDER_DIV_STYLE_10 = {width: '100%', paddingLeft: '1em', paddingRight: '1em'};
     static readonly LABEL_SPAN_STYLE_100 = {flexBasis: '100px', paddingLeft: '5px'};
-    static readonly LAYER_DIV_STYLE = {display: 'flex', alignItems: 'center', justifyContent: 'flex-start', height: '100%'};
+    static readonly LAYER_DIV_STYLE = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        height: '100%'
+    };
     static readonly LAYER_LABEL_ELEMENT_STYLE = {marginLeft: '0.5em'};
 
     constructor(props: ILayersPanelProps & DispatchProp<State>) {

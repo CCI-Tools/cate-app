@@ -1,10 +1,11 @@
-import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
-import { PanelContainerLayout } from './components/PanelContainer';
-import { ViewLayoutState, ViewState } from './components/ViewState';
-import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { IconName } from '@blueprintjs/core';
+import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
+import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
+import { PanelContainerLayout } from './components/PanelContainer';
+import { ViewLayoutState, ViewState } from './components/ViewState';
+import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
 import { User } from './webapi/apis/AuthAPI';
 
 /**
@@ -674,6 +675,9 @@ export interface ControlState {
     // A map that stores the last state of any dialog given a dialogId
     dialogs: { [dialogId: string]: DialogState };
 
+    // Message box
+    messageBox: MessageBoxState;
+
     // Take care, workspace objects come from Python back-end, therefore must preserve view settings.
     viewLayout: ViewLayoutState;
     views: ViewState<any>[];
@@ -687,6 +691,12 @@ export interface ControlState {
 
 export interface DialogState {
     isOpen?: boolean;
+}
+
+export interface MessageBoxState extends DialogState {
+    onClose?: (result: MessageBoxResult | null) => any;
+    options?: MessageBoxOptions;
+    result?: MessageBoxResult | null;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,3 @@
-
 export class TypedStorage {
 
     readonly storage: Storage;

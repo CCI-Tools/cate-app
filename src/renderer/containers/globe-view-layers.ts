@@ -172,7 +172,7 @@ function createImageryProvider(viewer: Cesium.Viewer, imageryProviderOptions): C
  * @param viewer the Cesium viewer
  * @param dataSourceOptions see https://cesiumjs.org/Cesium/Build/Documentation/GeoJsonDataSource.html
  */
-function createGeoJsonDataSource(viewer: Cesium.Viewer, dataSourceOptions): Cesium.DataSource {
+function createGeoJsonDataSource(viewer: Cesium.Viewer, dataSourceOptions): Promise<Cesium.DataSource> {
     const style = simpleStyleToCesium(dataSourceOptions.style || EMPTY_OBJECT);
     return Cesium.GeoJsonDataSource.load(dataSourceOptions.data, style);
 }
@@ -183,7 +183,7 @@ function createGeoJsonDataSource(viewer: Cesium.Viewer, dataSourceOptions): Cesi
  * @param viewer the Cesium viewer
  * @param dataSourceOptions see https://cesiumjs.org/Cesium/Build/Documentation/GeoJsonDataSource.html
  */
-function createResourceGeoJSONDataSource(viewer: Cesium.Viewer, dataSourceOptions) {
+function createResourceGeoJSONDataSource(viewer: Cesium.Viewer, dataSourceOptions): Cesium.DataSource {
     return createResourceGeoJSONDataSourceImpl(dataSourceOptions.data, dataSourceOptions.resId, dataSourceOptions.style);
 }
 
@@ -262,31 +262,31 @@ const createResourceGeoJSONDataSourceImpl: ResourceGeoJSONDataSourceFactory =
 
                               const pixelSize = pixelSizeMin + ratio * (pixelSizeMax - pixelSizeMin);
 
-                              entity = {
-                                  id: entity.id,
-                                  position: entity.position,
-                                  description: entity.description,
-                                  properties: entity.properties,
-                                  // Cesium will turn _simp and _resId into ES6 Property instances (get/set).
-                                  _simp: feature._simp,
-                                  _resId: feature._resId,
-                                  _idx: feature._idx,
-                                  point: {
-                                      // Style for points symbolizing a more complex geometry
-                                      color: pointColor,
-                                      outlineColor: pointOutlineColor,
-                                      outlineWidth: 10,
-                                      // pixelSize will multiply by the scale factor, so in this
-                                      // example the size will range from pixelSize (near) to 0.1*pixelSize (far).
-                                      pixelSize,
-                                      scaleByDistance,
-                                      translucencyByDistance,
-                                  }
-                              };
+                              entity = new Cesium.Entity({
+                                                             id: entity.id,
+                                                             position: entity.position,
+                                                             description: entity.description,
+                                                             properties: entity.properties,
+                                                             point: {
+                                                                 // Style for points symbolizing a more complex geometry
+                                                                 color: pointColor,
+                                                                 outlineColor: pointOutlineColor,
+                                                                 outlineWidth: 10,
+                                                                 // pixelSize will multiply by the scale factor, so in this
+                                                                 // example the size will range from pixelSize (near) to 0.1*pixelSize (far).
+                                                                 pixelSize,
+                                                                 scaleByDistance,
+                                                                 translucencyByDistance,
+                                                             }
+                                                         });
+
+                              entity['_simp'] = feature._simp;
+                              entity['_resId'] = feature._resId;
+                              entity['_idx'] = feature._idx;
                           }
 
                           try {
-                              entity = customDataSource.entities.add(entity);
+                              customDataSource.entities.add(entity);
                               // console.log("added entity: ", entity);
                           } catch (e) {
                               console.error('failed to add entity: ', entity, e);
@@ -324,9 +324,9 @@ export function transferEntityGeometry(fromEntity: Cesium.Entity, toEntity: Cesi
     }
     if (newGeomPropertyName) {
         toEntity[newGeomPropertyName] = fromEntity[newGeomPropertyName];
-        if (isNumber(toEntity._simp)) {
+        if (isNumber(toEntity['_simp'])) {
             // clear geometry simplification flag
-            toEntity._simp &= ~0x01;
+            toEntity['_simp'] &= ~0x01;
         }
     }
 }

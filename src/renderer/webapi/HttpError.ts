@@ -1,14 +1,10 @@
 export class HttpError extends Error {
-    private _status: number;
-
-    static fromResponse(response: Response): HttpError {
-        return new HttpError(response.status, response.statusText);
-    }
-
     constructor(status: number, statusText: string) {
         super(statusText);
         this._status = status;
     }
+
+    private _status: number;
 
     get status(): number {
         return this._status;
@@ -16,5 +12,9 @@ export class HttpError extends Error {
 
     get statusText(): string {
         return this.message;
+    }
+
+    static fromResponse(response: Response): HttpError {
+        return new HttpError(response.status, response.statusText);
     }
 }

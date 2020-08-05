@@ -50,21 +50,11 @@ export class WebSocketMock implements WebSocketMin {
     onopen: (this: this, ev: any) => any;
     onerror: (this: this, ev: any) => any;
     onclose: (this: this, ev: any) => any;
-
-    send(data: string) {
-        this.messageLog.push(data);
-        this.maybeUseServiceObj(data);
-    }
-
-    close(code?: number, reason?: string): void {
-        this.onclose({code, reason});
-    }
+    readonly messageLog: string[] = [];
+    readonly serviceObj: any;
 
     // <<<< WebSocketMin implementation
     ////////////////////////////////////////////
-
-    readonly messageLog: string[] = [];
-    readonly serviceObj: any;
     readonly asyncCalls: boolean;
     readonly cancelledJobsIds: Set<number> = new Set();
 
@@ -78,6 +68,15 @@ export class WebSocketMock implements WebSocketMin {
         }
         this.serviceObj = serviceObj;
         this.asyncCalls = asyncCalls;
+    }
+
+    send(data: string) {
+        this.messageLog.push(data);
+        this.maybeUseServiceObj(data);
+    }
+
+    close(code?: number, reason?: string): void {
+        this.onclose({code, reason});
     }
 
     emulateIncomingMessages(...messages: Object[]) {

@@ -1,5 +1,5 @@
-import * as assert from './assert';
 import { expect } from 'chai';
+import * as assert from './assert';
 
 describe('assert.ok', function () {
 
@@ -10,8 +10,7 @@ describe('assert.ok', function () {
     function shouldFail(condition) {
         try {
             assert.ok(condition);
-        }
-        catch (e) {
+        } catch (e) {
             expect(e).to.be.instanceof(Error);
             expect(e.message).to.equal('assertion failed');
         }

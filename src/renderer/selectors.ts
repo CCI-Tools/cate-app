@@ -51,7 +51,7 @@ import { GeometryWKTGetter } from './containers/editor/ValueEditor';
 import { entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
-import {RemoteStorage} from "../remoteStorage";
+import { RemoteStorage } from "./remoteStorage";
 
 const electron = requireElectron();
 
@@ -114,7 +114,7 @@ function getMPLWebSocketsUrl(webAPIServiceURL: string): string {
 }
 
 function makeURL(url: string, ws: boolean, path: string): string {
-    console.log(`>> makeUrl: [${url}] [${ws}] [${path}]`);
+    // console.log(`>> makeUrl: [${url}] [${ws}] [${path}]`);
     const _url = new URL(url);
     const protocol = ws ? (_url.protocol === 'https:' ? 'wss:' : 'ws:') : _url.protocol;
     const pathname = _url.pathname;
@@ -128,7 +128,7 @@ function makeURL(url: string, ws: boolean, path: string): string {
         }
         newUrl += path
     }
-    console.log(`<< makeUrl: [${newUrl}]`);
+    // console.log(`<< makeUrl: [${newUrl}]`);
     return newUrl;
 }
 
