@@ -313,7 +313,6 @@ export function connectWebAPIClient(): ThunkAction {
             dispatch(loadColorMaps());
             dispatch(loadDataStores());
             dispatch(loadOperations());
-            dispatch(loadInitialWorkspace());
             dispatch(loadPreferences());
         };
 
@@ -438,7 +437,7 @@ export function loadPreferences(): ThunkAction {
 
         function action(session: SessionState) {
             dispatch(updateSessionState(session));
-            dispatch(sendPreferencesToMain());
+            dispatch(loadInitialWorkspace(session.reopenLastWorkspace, session.lastWorkspacePath));
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1079,10 +1078,8 @@ export function updateWorkspaceNames(workspaceNames: string[]): Action {
  *
  * @returns a Redux thunk action
  */
-export function loadInitialWorkspace(): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const reopenLastWorkspace = getState().session.reopenLastWorkspace;
-        const lastWorkspacePath = getState().session.lastWorkspacePath;
+export function loadInitialWorkspace(reopenLastWorkspace: boolean, lastWorkspacePath: string): ThunkAction {
+    return (dispatch: Dispatch) => {
         if (reopenLastWorkspace && lastWorkspacePath) {
             dispatch(openWorkspace(lastWorkspacePath));
         } else {
