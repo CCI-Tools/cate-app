@@ -214,10 +214,11 @@ export function logout(): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
         const username = getState().communication.username;
         const token = getState().communication.token;
+
         if (username === null || token === null) {
             return;
         }
-        // dispatch(storePreferences());
+
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
         const authAPI = new AuthAPI();
@@ -346,6 +347,8 @@ export function connectWebAPIClient(): ThunkAction {
 function disconnectWebAPIClient(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const webAPIClient = getState().communication.webAPIClient;
+        const session = getState().session;
+        updatePreferences(session);
         if (webAPIClient !== null) {
             webAPIClient.close();
         }

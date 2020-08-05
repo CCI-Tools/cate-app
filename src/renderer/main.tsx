@@ -9,7 +9,7 @@ import { requireElectron } from './electron';
 import { State } from './state';
 import * as actions from './actions'
 import { stateReducer } from './reducers';
-// import {loadPreferences, updatePreferences} from "./actions";
+import {updatePreferences} from "./actions";
 
 const electron = requireElectron();
 
@@ -100,6 +100,15 @@ export function main() {
     document.addEventListener('dragover', function (event: any) {
         event.preventDefault();
         event.stopPropagation();
+    });
+
+    window.addEventListener('beforeunload', (event: any) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const state = store.getState();
+        if (state.communication.webAPIClient) {
+            store.dispatch(updatePreferences(state.session) as any);
+        }
     });
 }
 
