@@ -79,6 +79,14 @@ export function getFilenameExtension(name: string): string {
     return '';
 }
 
+export function getParentDir(path: string): string {
+    const components = path.split('/');
+    if (components.length === 1) {
+        return '';
+    }
+    return components.slice(0, components.length - 1).join('/');
+}
+
 export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter) {
     const extSet = new Set<string>(fileFilter.extensions);
     if (extSet.has('*')) {

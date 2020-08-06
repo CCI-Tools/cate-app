@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ITreeNode, Tree } from "@blueprintjs/core";
 
-import { FileNode, getFileNodeIcon, isPathValidAtIndex } from './file-system';
+import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './file-system';
 
 
 type IFileTreeNode = ITreeNode<FileNode>;
@@ -12,8 +12,8 @@ export interface IFileTreeProps {
     selectedPath?: string | null;
     onSelectedPathChange?: (selectedPath: string | null) => void;
 
-    expandedPaths?: string[] | null;
-    onExpandedPathsChange?: (expandedPaths: string[] | null) => void;
+    expandedPaths?: string[];
+    onExpandedPathsChange?: (expandedPaths: string[]) => void;
 
     showFiles?: boolean;
 }
@@ -28,9 +28,11 @@ const FileTree: React.FC<IFileTreeProps> = (
         showFiles
     }
 ) => {
+    console.log('expandedPaths:', expandedPaths);
+
     const treeNodes = getTreeNodes(fileNodes,
-                                   selectedPath || null,
-                                   expandedPaths || null,
+                                   selectedPath,
+                                   expandedPaths.length > 0 ? expandedPaths : null,
                                    showFiles);
 
     const handleNodeClick = (treeNode: IFileTreeNode, nodePath: number[]) => {
@@ -46,8 +48,9 @@ const FileTree: React.FC<IFileTreeProps> = (
         if (treeNode.nodeData.isDirectory) {
             const path = getFileNodePath(fileNodes, nodePath);
             if (onExpandedPathsChange) {
-                const paths = (expandedPaths || []).filter(p => p !== path);
-                onExpandedPathsChange(paths.length > 0 ? paths : null);
+                const cleanedPaths = expandedPaths.filter(p => p !== path && !p.startsWith(path + '/'));
+                const parentDir = getParentDir(path);
+                onExpandedPathsChange(parentDir !== '' ? [...cleanedPaths, parentDir] : cleanedPaths);
             }
         }
     };
@@ -56,7 +59,8 @@ const FileTree: React.FC<IFileTreeProps> = (
         if (treeNode.nodeData.isDirectory) {
             const path = getFileNodePath(fileNodes, nodePath);
             if (onExpandedPathsChange) {
-                onExpandedPathsChange([...expandedPaths, path]);
+                const cleanedPaths = expandedPaths.filter(p => p !== path && !path.startsWith(p + '/'));
+                onExpandedPathsChange([...cleanedPaths, path]);
             }
         }
     };
@@ -96,7 +100,6 @@ function _getTreeNodes(fileNodes: FileNode[],
     if (!includeFiles) {
         fileNodes = fileNodes.filter(node => node.isDirectory);
     }
-    console.log('selectedPath', selectedPath);
     return fileNodes.map(node => {
 
 
@@ -108,8 +111,6 @@ function _getTreeNodes(fileNodes: FileNode[],
             _selectedPath = null;
         }
 
-        //console.log('_selectedPath, depth, node.name, isSelected', _selectedPath, depth, node.name, isSelected);
-
         let _expandedPaths = expandedPaths;
         let isExpanded = false;
         if (_expandedPaths) {
@@ -119,8 +120,6 @@ function _getTreeNodes(fileNodes: FileNode[],
         } else {
             _expandedPaths = null;
         }
-
-        console.log('_expandedPaths, depth, node.name, isExpanded', _expandedPaths, depth, node.name, isExpanded);
 
         const id = idGen[0];
         idGen[0] = id + 1;
@@ -133,11 +132,17 @@ function _getTreeNodes(fileNodes: FileNode[],
                                        depth + 1,
                                        idGen);
         }
+        let hasCaret;
+        if (includeFiles) {
+            hasCaret = node.isDirectory && Boolean(childNodes && childNodes.find(n => n.isDirectory));
+        } else {
+            hasCaret = node.isDirectory && Boolean(childNodes && childNodes.length);
+        }
         return {
             id,
             label: node.name,
             icon: getFileNodeIcon(node),
-            hasCaret: node.isDirectory && Boolean(childNodes && childNodes.length),
+            hasCaret,
             isSelected,
             isExpanded,
             childNodes,

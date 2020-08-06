@@ -112,6 +112,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                     {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
                     {name: 'Vector data', extensions: ['geojson', 'shp']}
                 ]}
+                defaultPath={'Dir-2/Dir-21/File-212.nc'}
             />
         </div>
     );

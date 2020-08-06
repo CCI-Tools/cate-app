@@ -1,14 +1,13 @@
 import * as React from 'react';
-import { Breadcrumb, Breadcrumbs, Button, ButtonGroup, Classes, Colors, HTMLSelect, Label } from '@blueprintjs/core';
+import { Breadcrumbs, Button, ButtonGroup, Classes, Colors, HTMLSelect } from '@blueprintjs/core';
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
-import { Splitter } from '../../Splitter';
 import INITIAL_STATE from './data';
-import { FileNode } from './file-system';
+import { FileNode, getParentDir } from './file-system';
 import FileTree from './FileTree';
 import FileList from './FileList';
-import { FileFilter, OpenDialogOptions } from '../types';
+import { OpenDialogOptions } from '../types';
 
 
 export interface IOpenDialogProps extends OpenDialogOptions {
@@ -28,12 +27,14 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
         properties,
     }) => {
 
+    const parentDirPath = defaultPath && getParentDir(defaultPath);
+
     const [fileNodes, setFileNodes] = React.useState<FileNode[]>(INITIAL_STATE);
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
     const [fileFilterIndex, setFileFilterIndex] = React.useState(0);
-    const [selectedDirPath, setSelectedDirPath] = React.useState<string | null>(defaultPath || null);
-    const [selectedPaths, setSelectedPaths] = React.useState<string[] | null>((defaultPath && [defaultPath]) || null);
-    const [expandedPaths, setExpandedPaths] = React.useState<string[] | null>((defaultPath && [defaultPath]) || null);
+    const [selectedDirPath, setSelectedDirPath] = React.useState<string | null>(parentDirPath || null);
+    const [selectedPaths, setSelectedPaths] = React.useState<string[]>((defaultPath && [defaultPath]) || []);
+    const [expandedPaths, setExpandedPaths] = React.useState<string[]>((parentDirPath && [parentDirPath]) || []);
 
     if (!isOpen) {
         return null;
@@ -103,12 +104,14 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
                 <SplitPane dir="hor" initialSize={fileTreeWidth} onChange={handleFileTreeWidthChange}>
                     <FileTree
                         fileNodes={fileNodes}
-                        selectedPath={'Dir-2/Dir-21'}
-                        expandedPaths={['Dir-2']}
+                        selectedPath={selectedDirPath}
+                        onSelectedPathChange={path => setSelectedDirPath(path)}
+                        expandedPaths={expandedPaths}
+                        onExpandedPathsChange={paths => setExpandedPaths(paths)}
                     />
                     <FileList
                         fileNodes={fileNodes}
-                        selectedDirPath='Dir-2/Dir-21'
+                        selectedDirPath={selectedDirPath}
                         selectedPaths={selectedPaths}
                         onSelectedPathsChange={paths => setSelectedPaths(paths)}
                         fileFilter={filters && filters.length > 0 && filters[fileFilterIndex]}
@@ -135,3 +138,4 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
         </ModalDialog>
     );
 };
+

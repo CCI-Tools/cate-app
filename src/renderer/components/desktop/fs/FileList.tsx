@@ -52,7 +52,7 @@ const FileList: React.FC<IFileListProps> = (
 
     const selectedPathSet = new Set(selectedPaths);
 
-    const getFileNodeForRow = (rowIndex: number): FileNode => {
+    const getNodeForRow = (rowIndex: number): FileNode => {
         const sortedRowIndex = sortedIndexMap[rowIndex];
         if (typeof sortedRowIndex === 'number') {
             rowIndex = sortedRowIndex;
@@ -61,7 +61,7 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     const getCellData = (rowIndex: number, columnIndex: number) => {
-        const fileNode = getFileNodeForRow(rowIndex);
+        const fileNode = getNodeForRow(rowIndex);
         if (columnIndex === 0) {
             return fileNode.name;
         }
@@ -74,11 +74,11 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     const getRowIcon = (rowIndex: number): IconName | null => {
-        return getFileNodeIcon(getFileNodeForRow(rowIndex));
+        return getFileNodeIcon(getNodeForRow(rowIndex));
     };
 
-    const getPathForRow = (rowIndex: number): string => {
-        let node = getFileNodeForRow(rowIndex);
+    const getRowPath = (rowIndex: number): string => {
+        let node = getNodeForRow(rowIndex);
         let path = node.name;
         if (selectedDirPath) {
             path = selectedDirPath + '/' + node.name;
@@ -87,7 +87,7 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     const isRowSelected = (rowIndex: number): boolean => {
-        return selectedPathSet.has(getPathForRow(rowIndex));
+        return selectedPathSet.has(getRowPath(rowIndex));
     };
 
     const sortColumn = (columnIndex: number, comparator: (a: FileNode, b: FileNode) => number) => {
@@ -104,7 +104,7 @@ const FileList: React.FC<IFileListProps> = (
         for (let selectedRegion of selectedRegions) {
             const rows = selectedRegion.rows;
             for (let rowIndex = rows[0]; rowIndex <= rows[1]; rowIndex++) {
-                const path = getPathForRow(rowIndex);
+                const path = getRowPath(rowIndex);
                 if (!selectedPathSet.has(path)) {
                     newSelectedPathSet.add(path);
                 }
