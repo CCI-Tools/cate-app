@@ -1,6 +1,9 @@
 import * as React from 'react';
-import { CSSProperties } from 'react';
+import { CSSProperties, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
+
+import { FileSystem } from '../components/desktop/fs/file-system';
+import OpenDialog from '../components/desktop/fs/OpenDialog';
 import { isElectron } from '../electron';
 import AppBar from './AppBar';
 import AppLoginPage from './AppLoginPage';
@@ -79,6 +82,7 @@ interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
     isSignedIn: boolean | null;
     forceAppBar?: boolean;
+    fileSystem: FileSystem | null;
 }
 
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
@@ -86,61 +90,75 @@ function mapStateToPropsApplication(state: State): IApplicationPageProps {
         webAPIProvision: state.communication.webAPIProvision,
         isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
+        fileSystem: selectors.fileSystemSelector(state),
     };
 }
 
-//noinspection JSUnusedLocalSymbols
-class _ApplicationPage extends React.PureComponent<IApplicationPageProps & IDispatch, null> {
-    static readonly ROOT_DIV_STYLE: CSSProperties = {
-        display: 'flex',
-        flexFlow: 'column nowrap',
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden'
-    };
-    static readonly MAIN_DIV_STYLE: CSSProperties = {
-        display: 'flex',
-        flexFlow: 'row nowrap',
-        flex: 'auto',
-        height: '100%',
-        overflow: 'hidden'
-    };
 
-    render() {
-        if (this.props.webAPIProvision === null) {
-            return (<AppModePage/>);
-        }
+const ROOT_DIV_STYLE: CSSProperties = {
+    display: 'flex',
+    flexFlow: 'column nowrap',
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden'
+};
 
-        if (this.props.webAPIProvision === 'CateHub' && !this.props.isSignedIn) {
-            return (<AppLoginPage/>);
-        }
+const MAIN_DIV_STYLE: CSSProperties = {
+    display: 'flex',
+    flexFlow: 'row nowrap',
+    flex: 'auto',
+    height: '100%',
+    overflow: 'hidden'
+};
 
-        let appBar;
-        if (!isElectron() || !!this.props.forceAppBar) {
-            appBar = <AppBar/>;
-        }
+const _ApplicationPage: React.FC<IApplicationPageProps & IDispatch> = (
+    {
+        webAPIProvision,
+        isSignedIn,
+        forceAppBar,
+        fileSystem,
+    }) => {
+    const [openDialogOpen, setOpenDialogOpen] = useState(true);
 
-        return (
-            <div className={'bp3-dark'} style={_ApplicationPage.ROOT_DIV_STYLE}>
-                {appBar}
-                <div style={_ApplicationPage.MAIN_DIV_STYLE}>
-                    <LeftPanel/>
-                    <CenterPanel/>
-                    <RightPanel/>
-                </div>
-                <StatusBar/>
-                <PreferencesDialog/>
-                <NewWorkspaceDialog/>
-                <SaveWorkspaceAsDialog/>
-                <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
-                <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
-                <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
-                <JobFailureDialog/>
-                <WebAPIStatusBox/>
-                {!desktopActions.isNativeUI && <MessageBox/>}
-            </div>
-        );
+    if (webAPIProvision === null) {
+        return (<AppModePage/>);
     }
+
+    if (webAPIProvision === 'CateHub' && !isSignedIn) {
+        return (<AppLoginPage/>);
+    }
+
+    let appBar;
+    if (!isElectron() || !!forceAppBar) {
+        appBar = <AppBar/>;
+    }
+
+    return (
+        <div className={'bp3-dark'} style={ROOT_DIV_STYLE}>
+            {appBar}
+            <div style={MAIN_DIV_STYLE}>
+                <LeftPanel/>
+                <CenterPanel/>
+                <RightPanel/>
+            </div>
+            <StatusBar/>
+            <PreferencesDialog/>
+            <NewWorkspaceDialog/>
+            <SaveWorkspaceAsDialog/>
+            <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
+            <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
+            <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
+            <JobFailureDialog/>
+            <WebAPIStatusBox/>
+            {!desktopActions.isNativeUI && <MessageBox/>}
+            {fileSystem && <OpenDialog
+                isOpen={openDialogOpen}
+                onClose={() => setOpenDialogOpen(false)}
+                fileSystem={fileSystem}
+                defaultPath={'Dir-2/Dir-21/File-212.nc'}
+            />}
+        </div>
+    );
 }
 
 const ApplicationPage = connect(mapStateToPropsApplication)(_ApplicationPage);

@@ -28,20 +28,20 @@ export interface FileSystem {
      * After completion the status will be "ready".
      * Any status changes will be reflected in a new instance of `rootNode`.
      */
-    updateNode: (path?: string) => any;
+    updateNode: (path?: string) => Promise<FileNode>;
 
     /**
      * Create empty directory given by `dirPath`.
      * @param dirPath Absolute directory path
      */
-    createDir: (dirPath: string) => any;
+    createDir: (dirPath: string) => Promise<FileNode>;
 
     /**
      * Delete given file or directories given by `paths`.
      * Directories must be empty to be deletable.
      * @param paths Absolute file or directory paths
      */
-    deleteNodes: (paths: string[]) => any;
+    deleteNodes: (paths: string[]) => Promise<boolean[]>;
 }
 
 export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};

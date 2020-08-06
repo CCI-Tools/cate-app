@@ -46,6 +46,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
 
     const [webAPIServiceURL, setWebAPIServiceURL] = useState(props.webAPIServiceURL);
     const [openDialogOpen, setOpenDialogOpen] = useState(true);
+    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
     useEffect(() => {
         setWebAPIServiceURL(props.webAPIServiceURL);
@@ -108,8 +109,10 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
             </div>
             <OpenDialog
                 isOpen={openDialogOpen}
-                onClose={() => setOpenDialogOpen(false)}
-                rootNode={testFileSystem.getRootNode()}
+                onClose={() => {
+                    setOpenDialogOpen(false);
+                    setSaveDialogOpen(true);
+                }}
                 fileSystem={testFileSystem}
                 filters={[
                     {name: 'All files', extensions: ['*']},
@@ -120,9 +123,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 defaultPath={'Dir-2/Dir-21/File-212.nc'}
             />
             <SaveDialog
-                isOpen={!openDialogOpen}
-                onClose={() => setOpenDialogOpen(true)}
-                rootNode={testFileSystem.getRootNode()}
+                isOpen={saveDialogOpen}
+                onClose={() => setSaveDialogOpen(false)}
                 fileSystem={testFileSystem}
                 filters={[
                     {name: 'All files', extensions: ['*']},

@@ -92,7 +92,7 @@ class TestFileSystem implements FileSystem {
         return Promise.resolve(this._rootNode);
     }
 
-    deleteNodes(paths: string[]): Promise<FileNode> {
+    deleteNodes(paths: string[]): Promise<boolean[]> {
         throw new Error('not implemented')
     }
 }

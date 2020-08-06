@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Colors, HTMLTable, Icon } from '@blueprintjs/core';
+import { Colors, HTMLTable, Icon, Spinner } from '@blueprintjs/core';
 
 import { FileFilter } from '../types';
 import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './file-system';
@@ -48,6 +48,13 @@ const FileList: React.FC<IFileListProps> = (
                 currentFileNodes = selectedFileNodes[selectedFileNodes.length - 1].childNodes;
             }
         }
+    }
+
+    if (!currentFileNodes) {
+        return (
+            // TODO (forman): center spinner
+            <Spinner size={48}/>
+        );
     }
 
     if (currentFileNodes) {
@@ -143,7 +150,7 @@ const FileList: React.FC<IFileListProps> = (
                 </thead>
                 <tbody>
                 {
-                    currentFileNodes.map((node, rowIndex) => {
+                    currentFileNodes && currentFileNodes.map((node, rowIndex) => {
                         return (
                             <tr
                                 style={isRowSelected(rowIndex) ? ROW_SELECTED_STYLE : ROW_DEFAULT_STYLE}

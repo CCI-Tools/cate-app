@@ -1,3 +1,4 @@
+import DefaultFileSystem from './default-fs';
 import { requireElectron } from './electron';
 import {
     ColorMapCategoryState,
@@ -67,7 +68,7 @@ export const offlineModeSelector = (state: State): boolean => state.session.offl
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Remote API selectors
 
-export const webAPIClientSelector = (state: State): WebAPIClient => state.communication.webAPIClient;
+export const webAPIClientSelector = (state: State): WebAPIClient | null => state.communication.webAPIClient;
 export const webAPIServiceURLSelector = (state: State): string => state.communication.webAPIServiceURL;
 
 export const isLocalFSAccessAllowedSelector = (state: State): boolean => {
@@ -175,6 +176,13 @@ export const colorMapsAPISelector = createSelector(
     webAPIClientSelector,
     (webAPIClient) => {
         return new ColorMapsAPI(webAPIClient);
+    }
+);
+
+export const fileSystemSelector = createSelector(
+    webAPIClientSelector,
+    (webAPIClient) => {
+        return webAPIClient ? new DefaultFileSystem(webAPIClient) : null;
     }
 );
 

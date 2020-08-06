@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ITreeNode, Tree } from "@blueprintjs/core";
+import { ITreeNode, Spinner, Tree } from "@blueprintjs/core";
 
 import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './file-system';
 
@@ -28,6 +28,13 @@ const FileTree: React.FC<IFileTreeProps> = (
         showFiles
     }
 ) => {
+    if (!rootNode.childNodes) {
+        return (
+            // TODO (forman): center spinner
+            <Spinner size={48}/>
+        );
+    }
+
     const treeNodes = getTreeNodes(rootNode,
                                    selectedPath,
                                    expandedPaths.length > 0 ? expandedPaths : null,
@@ -102,7 +109,6 @@ function _getTreeNodes(fileNodes: FileNode[],
         fileNodes = fileNodes.filter(node => node.isDirectory);
     }
     return fileNodes.map(node => {
-
 
         let _selectedPath = selectedPath;
         let isSelected = false;
