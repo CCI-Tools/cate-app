@@ -1,12 +1,11 @@
-import { IconName } from '@blueprintjs/core';
-import { SelectionModes, Table, Utils } from "@blueprintjs/table";
-import { IRegion } from '@blueprintjs/table/src/regions';
 import * as React from "react";
+import { Colors, HTMLTable, Icon, IconName } from '@blueprintjs/core';
+
 import { FileFilter } from '../types';
+import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './file-system';
 
-import SortableColumn from './SortableColumn';
-import { applyFileFilter, FileNode, getFileNodeIcon, getFileNodePath } from './file-system';
-
+const ROW_DEFAULT_STYLE: React.CSSProperties = {};
+const ROW_SELECTED_STYLE: React.CSSProperties = {...ROW_DEFAULT_STYLE, backgroundColor: Colors.BLUE3};
 
 interface IFileListProps {
     fileNodes: FileNode[];
@@ -15,8 +14,8 @@ interface IFileListProps {
     fileFilter?: FileFilter;
     multipleSelection?: boolean;
 
-    selectedPaths?: string[] | null;
-    onSelectedPathsChange?: (selectedPaths: string[] | null) => void;
+    selectedPaths?: string[];
+    onSelectedPathsChange?: (selectedPaths: string[]) => void;
 }
 
 const FileList: React.FC<IFileListProps> = (
@@ -46,11 +45,107 @@ const FileList: React.FC<IFileListProps> = (
         }
     }
 
-    if (currentFileNodes && fileFilter) {
-        currentFileNodes = applyFileFilter(currentFileNodes, fileFilter);
+    if (currentFileNodes) {
+        if (fileFilter) {
+            currentFileNodes = applyFileFilter(currentFileNodes, fileFilter);
+        }
+        currentFileNodes = currentFileNodes.sort(compareFileNames);
     }
 
     const selectedPathSet = new Set(selectedPaths);
+
+    const getRowFileNode = (rowIndex: number): FileNode => {
+        const sortedRowIndex = sortedIndexMap[rowIndex];
+        if (typeof sortedRowIndex === 'number') {
+            rowIndex = sortedRowIndex;
+        }
+        return currentFileNodes[rowIndex];
+    };
+
+    const getRowIcon = (rowIndex: number): IconName | null => {
+        return getFileNodeIcon(getRowFileNode(rowIndex));
+    };
+
+    const getRowPath = (rowIndex: number): string => {
+        let node = getRowFileNode(rowIndex);
+        let path = node.name;
+        if (selectedDirPath) {
+            path = selectedDirPath + '/' + node.name;
+        }
+        return path;
+    };
+
+    const isRowSelected = (rowIndex: number): boolean => {
+        return selectedPathSet.has(getRowPath(rowIndex));
+    };
+
+    const renderFileNodeName = (rowIndex: number) => {
+        const node = getRowFileNode(rowIndex);
+        return <span><Icon icon={getFileNodeIcon(node)}/>&nbsp;{node.name}</span>;
+    };
+
+    const renderFileNodeLastModified = (rowIndex: number) => {
+        const node = getRowFileNode(rowIndex);
+        return <span>{node.lastModified}</span>;
+    };
+
+    const renderFileNodeSize = (rowIndex: number) => {
+        const node = getRowFileNode(rowIndex);
+        return <span>{node.size}</span>;
+    };
+
+    const handleRowClick = (fileNode: FileNode, rowIndex: number, event: any) => {
+        const path = getRowPath(rowIndex);
+        const newSelectedPathSet = new Set<string>(selectedPathSet);
+        if (newSelectedPathSet.has(path)) {
+            newSelectedPathSet.delete(path);
+        } else {
+            if (multipleSelection) {
+                newSelectedPathSet.add(path);
+            } else {
+                newSelectedPathSet.clear();
+                newSelectedPathSet.add(path);
+            }
+        }
+        if (onSelectedPathsChange) {
+            onSelectedPathsChange(Array.from(newSelectedPathSet));
+        }
+    };
+
+    return (
+        <div style={{height: '100%', overflow: 'auto'}}>
+            <HTMLTable className="bp3-html-table-condensed bp3-interactive" style={{width: '100%'}}>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Last modified</th>
+                    <th>Size</th>
+                </tr>
+                </thead>
+                <tbody>
+                {
+                    currentFileNodes.map((node, rowIndex) => {
+                        return (
+                            <tr
+                                style={isRowSelected(rowIndex) ? ROW_SELECTED_STYLE : ROW_DEFAULT_STYLE}
+                                onClick={(e) => handleRowClick(node, rowIndex, e)}
+                            >
+                                <td>{renderFileNodeName(rowIndex)}</td>
+                                <td>{renderFileNodeLastModified(rowIndex)}</td>
+                                <td>{renderFileNodeSize(rowIndex)}</td>
+                            </tr>
+                        );
+                    })
+                }
+                </tbody>
+            </HTMLTable>
+        </div>
+    );
+}
+
+export default FileList;
+
+/*
 
     const getNodeForRow = (rowIndex: number): FileNode => {
         const sortedRowIndex = sortedIndexMap[rowIndex];
@@ -115,89 +210,4 @@ const FileList: React.FC<IFileListProps> = (
         }
     };
 
-    return (
-        <Table
-            numRows={currentFileNodes ? currentFileNodes.length : 0}
-            selectionModes={SelectionModes.ROWS_AND_CELLS}
-            enableRowHeader={false}
-            enableColumnReordering={false}
-            enableColumnResizing={true}
-            enableMultipleSelection={multipleSelection}
-            onSelection={handleSelection}
-            selectedRegions={[]}
-        >
-            {
-                [
-                    SortableColumn({
-                                       name: "Name",
-                                       index: 0,
-                                       getCellData,
-                                       sortColumn,
-                                       getRowIcon,
-                                       isRowSelected,
-                                       comparator: nameComparator,
-                                   }),
-                    SortableColumn({
-                                       name: "Last Modified",
-                                       index: 1,
-                                       getCellData,
-                                       sortColumn,
-                                       isRowSelected,
-                                       comparator: dateComparator,
-                                   }),
-                    SortableColumn({
-                                       name: "Size",
-                                       index: 2,
-                                       getCellData,
-                                       sortColumn,
-                                       isRowSelected,
-                                       comparator: sizeComparator,
-                                   }),
-                ]
-            }
-        </Table>
-    );
-}
-
-export default FileList;
-
-function nameComparator(a: FileNode, b: FileNode) {
-    if (a.isDirectory) {
-        if (!b.isDirectory) {
-            return -1;
-        }
-    } else if (b.isDirectory) {
-        return 1;
-    }
-    return a.name.localeCompare(b.name);
-}
-
-function dateComparator(a: FileNode, b: FileNode) {
-    if (a.isDirectory) {
-        if (!b.isDirectory) {
-            return -1;
-        }
-    } else if (b.isDirectory) {
-        return 1;
-    }
-    if (a.lastModified === b.lastModified) {
-        return a.name.localeCompare(b.name);
-    }
-    return a.lastModified.localeCompare(b.lastModified);
-}
-
-
-function sizeComparator(a: FileNode, b: FileNode) {
-    if (a.isDirectory) {
-        if (!b.isDirectory) {
-            return -1;
-        }
-    } else if (b.isDirectory) {
-        return 1;
-    }
-    if (a.size === b.size) {
-        return a.name.localeCompare(b.name);
-    }
-    return a.size - b.size;
-}
-
+ */

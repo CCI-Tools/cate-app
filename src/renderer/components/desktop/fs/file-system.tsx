@@ -16,11 +16,11 @@ export function isPathValidAtIndex(path: string[], index: number, name: string):
     return index < path.length && path[index] === name;
 }
 
-export function getFileNodePath(nodes: FileNode[], path: string): FileNode[] | null  {
+export function getFileNodePath(nodes: FileNode[], path: string): FileNode[] | null {
     return _getFileNodePath(nodes, path.split('/'));
 }
 
-export function _getFileNodePath(nodes: FileNode[], path: string[]): FileNode[] | null  {
+export function _getFileNodePath(nodes: FileNode[], path: string[]): FileNode[] | null {
     let childNodes = nodes;
     let result: FileNode[] | null = null;
     for (let depth = 0; depth < path.length; depth++) {
@@ -101,3 +101,43 @@ export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter) {
         return extSet.has(ext);
     });
 }
+
+export function compareFileNames(a: FileNode, b: FileNode) {
+    if (a.isDirectory) {
+        if (!b.isDirectory) {
+            return -1;
+        }
+    } else if (b.isDirectory) {
+        return 1;
+    }
+    return a.name.localeCompare(b.name);
+}
+
+export function compareFileLastModified(a: FileNode, b: FileNode) {
+    if (a.isDirectory) {
+        if (!b.isDirectory) {
+            return -1;
+        }
+    } else if (b.isDirectory) {
+        return 1;
+    }
+    if (a.lastModified === b.lastModified) {
+        return a.name.localeCompare(b.name);
+    }
+    return a.lastModified.localeCompare(b.lastModified);
+}
+
+export function compareFileSize(a: FileNode, b: FileNode) {
+    if (a.isDirectory) {
+        if (!b.isDirectory) {
+            return -1;
+        }
+    } else if (b.isDirectory) {
+        return 1;
+    }
+    if (a.size === b.size) {
+        return a.name.localeCompare(b.name);
+    }
+    return a.size - b.size;
+}
+
