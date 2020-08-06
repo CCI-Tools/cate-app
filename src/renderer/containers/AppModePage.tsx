@@ -5,7 +5,8 @@ import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
 import * as actions from '../actions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
-import { OpenDialog } from '../components/desktop/fs/FileChooser';
+import OpenDialog from '../components/desktop/fs/OpenDialog';
+import SaveDialog from '../components/desktop/fs/SaveDialog';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
@@ -106,6 +107,17 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
             <OpenDialog
                 isOpen={openDialogOpen}
                 onClose={() => setOpenDialogOpen(false)}
+                filters={[
+                    {name: 'All files', extensions: ['*']},
+                    {name: 'Images', extensions: ['jpg', 'png', 'gif']},
+                    {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
+                    {name: 'Vector data', extensions: ['geojson', 'shp']}
+                ]}
+                defaultPath={'Dir-2/Dir-21/File-212.nc'}
+            />
+            <SaveDialog
+                isOpen={!openDialogOpen}
+                onClose={() => setOpenDialogOpen(true)}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},

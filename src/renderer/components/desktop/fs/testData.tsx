@@ -15,7 +15,7 @@ const newFileNode = (name, childNodes?: FileNode[]): FileNode => {
     };
 };
 
-const DATA: FileNode[] = [
+const testData: FileNode[] = [
     newFileNode('Dir-1.zarr', [
         newFileNode('.zgroup'),
         newFileNode('.zattrs'),
@@ -57,4 +57,4 @@ const DATA: FileNode[] = [
     newFileNode('File-3.txt'),
 ];
 
-export default DATA;
+export default testData;

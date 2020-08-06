@@ -6,29 +6,36 @@ import {
     ButtonGroup,
     Classes,
     Colors,
-    HTMLSelect,
-    IBreadcrumbProps, Icon,
-    InputGroup, MenuItem
+    IBreadcrumbProps,
+    MenuItem
 } from '@blueprintjs/core';
 import { ItemRenderer, Select } from '@blueprintjs/select';
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
-import INITIAL_STATE from './data';
+import testData from './testData';
 import { ALL_FILES_FILTER, FileNode, getParentDir } from './file-system';
 import FileTree from './FileTree';
 import FileList from './FileList';
-import { FileFilter, OpenDialogOptions } from '../types';
+import { FileDialogOptions, FileFilter } from '../types';
+
 
 const FileFilterSelect = Select.ofType<FileFilter>();
 
-export interface IOpenDialogProps extends OpenDialogOptions {
+export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> {
     isOpen?: boolean;
     onClose?: (filePaths: string[] | null) => any;
+    saveFile?: boolean;
+    // from properties
+    openFile?: boolean;
+    openDirectory?: boolean;
+    multiSelections?: boolean;
+    createDirectory?: boolean,
+    showHiddenFiles?: boolean;
 }
 
 
-export const OpenDialog: React.FC<IOpenDialogProps> = (
+const FileDialog: React.FC<IFileDialogProps> = (
     {
         isOpen,
         onClose,
@@ -36,13 +43,34 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
         defaultPath,
         buttonLabel,
         filters,
-        properties,
+        saveFile,
+        openFile,
+        openDirectory,
+        multiSelections,
+        createDirectory,
+        showHiddenFiles,
     }) => {
+
+    if ((saveFile && openFile) || (saveFile && openDirectory) || (saveFile && multiSelections)) {
+        throw new Error('saveFile flag cannot be used with openFile, openDirectory, multiSelections flags');
+    }
+    if (openDirectory) {
+        // TODO (forman): regognize openDirectory
+        console.warn('openDirectory flag ignored (not implemented yet))');
+    }
+    if (createDirectory) {
+        // TODO (forman): regognize createDirectory
+        console.warn('createDirectory flag ignored (not implemented yet))');
+    }
+    if (showHiddenFiles) {
+        // TODO (forman): regognize showHiddenFiles
+        console.warn('showHiddenFiles flag ignored (not implemented yet))');
+    }
 
     filters = filters || [ALL_FILES_FILTER];
     const parentDirPath = defaultPath && getParentDir(defaultPath);
 
-    const [fileNodes, setFileNodes] = React.useState<FileNode[]>(INITIAL_STATE);
+    const [fileNodes, setFileNodes] = React.useState<FileNode[]>(testData);
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
     const [selectedFileFilter, setSelectedFileFilter] = React.useState(filters[0]);
     const [selectedDirPath, setSelectedDirPath] = React.useState<string | null>(parentDirPath || null);
@@ -94,13 +122,9 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
         // TODO (forman): implement me!
     };
 
-    const handleShowFileFilters = () => {
-        // TODO (forman): implement me!
-    };
-
     const handleSyncSelectedDir = () => {
         // TODO (forman): implement me!
-        setFileNodes(INITIAL_STATE);
+        setFileNodes(testData);
     };
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {
@@ -119,9 +143,9 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
 
     return (
         <ModalDialog
-            confirmTitle={buttonLabel || "Open File"}
             isOpen={isOpen}
-            title={title || "Open File"}
+            title={title || getDefaultFileActionText(saveFile, openDirectory)}
+            confirmTitle={buttonLabel || getDefaultFileActionText(saveFile, openDirectory)}
             onConfirm={handleConfirm}
             onCancel={handleCancel}
             canConfirm={canConfirm}
@@ -156,6 +180,7 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
                         selectedPaths={selectedPaths}
                         onSelectedPathsChange={paths => setSelectedPaths(paths)}
                         fileFilter={selectedFileFilter}
+                        multiSelections={multiSelections}
                     />
                 </SplitPane>
                 <div
@@ -192,6 +217,8 @@ export const OpenDialog: React.FC<IOpenDialogProps> = (
     );
 };
 
+export default FileDialog;
+
 const fileFilterItemRenderer: ItemRenderer<FileFilter> = (fileFilter: FileFilter, itemProps: IItemRendererProps) => {
     const {modifiers, handleClick} = itemProps;
     const text = getFileFilterText(fileFilter);
@@ -226,4 +253,14 @@ function getFileInputText(selectedDirPath: string, selectedPaths: string[]): str
 
 function getFileFilterText(fileFilter: FileFilter): string {
     return `${fileFilter.name} (${fileFilter.extensions.map(e => "*." + e).join(", ")})`;
+}
+
+function getDefaultFileActionText(saveFile, openDirectory) {
+    if (saveFile) {
+        return 'Save File';
+    }
+    if (openDirectory) {
+        return 'Open Directory';
+    }
+    return 'Open File';
 }

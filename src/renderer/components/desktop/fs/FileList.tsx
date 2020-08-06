@@ -12,7 +12,7 @@ interface IFileListProps {
     selectedDirPath?: string | null;
 
     fileFilter?: FileFilter;
-    multipleSelection?: boolean;
+    multiSelections?: boolean;
 
     selectedPaths?: string[];
     onSelectedPathsChange?: (selectedPaths: string[]) => void;
@@ -22,7 +22,7 @@ const FileList: React.FC<IFileListProps> = (
     {
         fileNodes,
         fileFilter,
-        multipleSelection,
+        multiSelections,
         selectedDirPath,
         /**
          * Convention: the selectedPath's parent determines the nodes in fileNodes to be listed.
@@ -100,7 +100,7 @@ const FileList: React.FC<IFileListProps> = (
         if (newSelectedPathSet.has(path)) {
             newSelectedPathSet.delete(path);
         } else {
-            if (multipleSelection) {
+            if (multiSelections) {
                 newSelectedPathSet.add(path);
             } else {
                 newSelectedPathSet.clear();
