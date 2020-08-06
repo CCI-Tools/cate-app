@@ -218,10 +218,11 @@ export function logout(): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
         const username = getState().communication.username;
         const token = getState().communication.token;
+
         if (username === null || token === null) {
             return;
         }
-        // dispatch(storePreferences());
+
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
         const authAPI = new AuthAPI();
@@ -312,7 +313,6 @@ export function connectWebAPIClient(): ThunkAction {
             dispatch(loadColorMaps());
             dispatch(loadDataStores());
             dispatch(loadOperations());
-            dispatch(loadInitialWorkspace());
             dispatch(loadPreferences());
         };
 
@@ -350,6 +350,8 @@ export function connectWebAPIClient(): ThunkAction {
 function disconnectWebAPIClient(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const webAPIClient = getState().communication.webAPIClient;
+        const session = getState().session;
+        updatePreferences(session);
         if (webAPIClient !== null) {
             webAPIClient.close();
         }
@@ -435,7 +437,7 @@ export function loadPreferences(): ThunkAction {
 
         function action(session: SessionState) {
             dispatch(updateSessionState(session));
-            dispatch(sendPreferencesToMain());
+            dispatch(loadInitialWorkspace(session.reopenLastWorkspace, session.lastWorkspacePath));
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1076,10 +1078,8 @@ export function updateWorkspaceNames(workspaceNames: string[]): Action {
  *
  * @returns a Redux thunk action
  */
-export function loadInitialWorkspace(): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const reopenLastWorkspace = getState().session.reopenLastWorkspace;
-        const lastWorkspacePath = getState().session.lastWorkspacePath;
+export function loadInitialWorkspace(reopenLastWorkspace: boolean, lastWorkspacePath: string): ThunkAction {
+    return (dispatch: Dispatch) => {
         if (reopenLastWorkspace && lastWorkspacePath) {
             dispatch(openWorkspace(lastWorkspacePath));
         } else {

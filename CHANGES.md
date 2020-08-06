@@ -1,3 +1,7 @@
+### Changes in v2.0.0-dev.5
+
+* Fixed storing of preferences
+
 ### Changes in v2.0.0-dev.4
 
 * The UI uses now web versions of native (electron) message boxes. (#47)
