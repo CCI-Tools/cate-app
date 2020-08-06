@@ -7,8 +7,10 @@ import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
 import OpenDialog from '../components/desktop/fs/OpenDialog';
 import SaveDialog from '../components/desktop/fs/SaveDialog';
+import { testFileSystem } from '../components/desktop/fs/testing';
 
 import cateIcon from '../resources/cate-icon-512.png';
+
 
 
 const CENTER_DIV_STYLE: CSSProperties = {
@@ -107,6 +109,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
             <OpenDialog
                 isOpen={openDialogOpen}
                 onClose={() => setOpenDialogOpen(false)}
+                rootNode={testFileSystem.getRootNode()}
+                fileSystem={testFileSystem}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},
@@ -118,6 +122,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
             <SaveDialog
                 isOpen={!openDialogOpen}
                 onClose={() => setOpenDialogOpen(true)}
+                rootNode={testFileSystem.getRootNode()}
+                fileSystem={testFileSystem}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},

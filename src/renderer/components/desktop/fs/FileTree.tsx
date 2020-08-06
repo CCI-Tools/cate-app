@@ -7,7 +7,7 @@ import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './f
 type IFileTreeNode = ITreeNode<FileNode>;
 
 export interface IFileTreeProps {
-    fileNodes: FileNode[];
+    rootNode: FileNode;
 
     selectedPath?: string | null;
     onSelectedPathChange?: (selectedPath: string | null) => void;
@@ -20,7 +20,7 @@ export interface IFileTreeProps {
 
 const FileTree: React.FC<IFileTreeProps> = (
     {
-        fileNodes,
+        rootNode,
         selectedPath,
         onSelectedPathChange,
         expandedPaths,
@@ -28,16 +28,14 @@ const FileTree: React.FC<IFileTreeProps> = (
         showFiles
     }
 ) => {
-    console.log('expandedPaths:', expandedPaths);
-
-    const treeNodes = getTreeNodes(fileNodes,
+    const treeNodes = getTreeNodes(rootNode,
                                    selectedPath,
                                    expandedPaths.length > 0 ? expandedPaths : null,
                                    showFiles);
 
     const handleNodeClick = (treeNode: IFileTreeNode, nodePath: number[]) => {
         if (treeNode.nodeData.isDirectory) {
-            const path = getFileNodePath(fileNodes, nodePath);
+            const path = getFileNodePath(rootNode, nodePath);
             if (onSelectedPathChange) {
                 onSelectedPathChange(path !== selectedPath ? path : null);
             }
@@ -46,7 +44,7 @@ const FileTree: React.FC<IFileTreeProps> = (
 
     const handleNodeCollapse = (treeNode: IFileTreeNode, nodePath: number[]) => {
         if (treeNode.nodeData.isDirectory) {
-            const path = getFileNodePath(fileNodes, nodePath);
+            const path = getFileNodePath(rootNode, nodePath);
             if (onExpandedPathsChange) {
                 const cleanedPaths = expandedPaths.filter(p => p !== path && !p.startsWith(path + '/'));
                 const parentDir = getParentDir(path);
@@ -57,7 +55,7 @@ const FileTree: React.FC<IFileTreeProps> = (
 
     const handleNodeExpand = (treeNode: IFileTreeNode, nodePath: number[]) => {
         if (treeNode.nodeData.isDirectory) {
-            const path = getFileNodePath(fileNodes, nodePath);
+            const path = getFileNodePath(rootNode, nodePath);
             if (onExpandedPathsChange) {
                 const cleanedPaths = expandedPaths.filter(p => p !== path && !path.startsWith(p + '/'));
                 onExpandedPathsChange([...cleanedPaths, path]);
@@ -78,12 +76,15 @@ const FileTree: React.FC<IFileTreeProps> = (
 export default FileTree;
 
 
-function getTreeNodes(fileNodes: FileNode[],
+function getTreeNodes(rootNode: FileNode,
                       selectedPath: string | null,
                       expandedPaths: string[] | null,
                       includeFiles: boolean): IFileTreeNode[] {
+    if (!rootNode.childNodes) {
+        return [];
+    }
     const idGen: [number] = [0];
-    return _getTreeNodes(fileNodes,
+    return _getTreeNodes(rootNode.childNodes,
                          selectedPath ? selectedPath.split('/') : [],
                          expandedPaths ? expandedPaths.map(p => p.split('/')) : [],
                          includeFiles,
@@ -151,10 +152,13 @@ function _getTreeNodes(fileNodes: FileNode[],
     });
 }
 
-function getFileNodePath(fileNodes: FileNode[],
+function getFileNodePath(rootNode: FileNode,
                          nodePath: number[]): string | null {
     let fileNodePath = null;
-    let childNodes = fileNodes;
+    let childNodes = rootNode.childNodes;
+    if (!childNodes) {
+        return null;
+    }
     for (let depth = 0; depth < nodePath.length; depth++) {
         let childIndex = nodePath[depth];
         let childNode = childNodes[childIndex];

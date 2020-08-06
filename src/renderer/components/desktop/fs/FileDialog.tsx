@@ -1,4 +1,3 @@
-import { IItemRendererProps } from '@blueprintjs/select/src/common/itemRenderer';
 import * as React from 'react';
 import {
     Breadcrumbs,
@@ -9,12 +8,15 @@ import {
     IBreadcrumbProps,
     MenuItem
 } from '@blueprintjs/core';
-import { ItemRenderer, Select } from '@blueprintjs/select';
+import {
+    ItemRenderer,
+    Select,
+    IItemRendererProps
+} from '@blueprintjs/select';
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
-import testData from './testData';
-import { ALL_FILES_FILTER, FileNode, getParentDir } from './file-system';
+import { ALL_FILES_FILTER, FileNode, FileSystem, getFileNode, getParentDir } from './file-system';
 import FileTree from './FileTree';
 import FileList from './FileList';
 import { FileDialogOptions, FileFilter } from '../types';
@@ -25,6 +27,8 @@ const FileFilterSelect = Select.ofType<FileFilter>();
 export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> {
     isOpen?: boolean;
     onClose?: (filePaths: string[] | null) => any;
+    rootNode: FileNode,
+    fileSystem: FileSystem;
     saveFile?: boolean;
     // from properties
     openFile?: boolean;
@@ -39,6 +43,8 @@ const FileDialog: React.FC<IFileDialogProps> = (
     {
         isOpen,
         onClose,
+        rootNode,
+        fileSystem,
         title,
         defaultPath,
         buttonLabel,
@@ -55,27 +61,41 @@ const FileDialog: React.FC<IFileDialogProps> = (
         throw new Error('saveFile flag cannot be used with openFile, openDirectory, multiSelections flags');
     }
     if (openDirectory) {
-        // TODO (forman): regognize openDirectory
+        // TODO (forman): recognize openDirectory
         console.warn('openDirectory flag ignored (not implemented yet))');
     }
     if (createDirectory) {
-        // TODO (forman): regognize createDirectory
+        // TODO (forman): recognize createDirectory
         console.warn('createDirectory flag ignored (not implemented yet))');
     }
     if (showHiddenFiles) {
-        // TODO (forman): regognize showHiddenFiles
+        // TODO (forman): recognize showHiddenFiles
         console.warn('showHiddenFiles flag ignored (not implemented yet))');
     }
 
     filters = filters || [ALL_FILES_FILTER];
     const parentDirPath = defaultPath && getParentDir(defaultPath);
 
-    const [fileNodes, setFileNodes] = React.useState<FileNode[]>(testData);
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
     const [selectedFileFilter, setSelectedFileFilter] = React.useState(filters[0]);
     const [selectedDirPath, setSelectedDirPath] = React.useState<string | null>(parentDirPath || null);
     const [selectedPaths, setSelectedPaths] = React.useState<string[]>((defaultPath && [defaultPath]) || []);
     const [expandedPaths, setExpandedPaths] = React.useState<string[]>((parentDirPath && [parentDirPath]) || []);
+
+    React.useEffect(() => {
+        if (!rootNode.childNodes && !rootNode.status) {
+            fileSystem.updateNode();
+        }
+    });
+
+    React.useEffect(() => {
+        if (rootNode.childNodes && selectedDirPath) {
+            const node = getFileNode(rootNode, selectedDirPath)
+            if (!node.childNodes && !rootNode.status) {
+                fileSystem.updateNode(selectedDirPath);
+            }
+        }
+    }, [selectedDirPath]);
 
     if (!isOpen) {
         return null;
@@ -123,8 +143,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleSyncSelectedDir = () => {
-        // TODO (forman): implement me!
-        setFileNodes(testData);
+        fileSystem.updateNode(selectedDirPath ? selectedDirPath : undefined);
     };
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {
@@ -135,6 +154,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         return pathComponents.map((dirName, index) => {
             let onClick;
             if (index < pathComponents.length - 1) {
+                // TODO (forman): onClick must also add to expanded paths
                 onClick = () => setSelectedDirPath(pathComponents.slice(0, index + 1).join('/'));
             }
             return {text: dirName, onClick};
@@ -154,33 +174,36 @@ const FileDialog: React.FC<IFileDialogProps> = (
             <div style={{width: '100%', height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
                 <div style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 10}}>
                     <ButtonGroup minimal={true}>
-                        <Button icon="arrow-left" onClick={handleNavigateBack}/>
-                        <Button icon="arrow-right" onClick={handleNavigateForward}/>
-                        <Button icon="arrow-up" onClick={handleNavigateUp}/>
+                        <Button disabled={true} icon="arrow-left" onClick={handleNavigateBack}/>
+                        <Button disabled={true} icon="arrow-right" onClick={handleNavigateForward}/>
+                        <Button disabled={true} icon="arrow-up" onClick={handleNavigateUp}/>
                     </ButtonGroup>
                     <div style={{flexGrow: 1, backgroundColor: Colors.DARK_GRAY5, paddingLeft: 10, paddingRight: 10}}>
                         <Breadcrumbs className="bp3-small" items={getBreadcrumbs()}/>
                     </div>
                     <ButtonGroup minimal={true}>
-                        <Button icon="caret-down" onClick={handleShowRecentDirs}/>
+                        <Button disabled={true} icon="caret-down" onClick={handleShowRecentDirs}/>
                         <Button icon="refresh" onClick={handleSyncSelectedDir}/>
                     </ButtonGroup>
                 </div>
                 <SplitPane dir="hor" initialSize={fileTreeWidth} onChange={handleFileTreeWidthChange}>
                     <FileTree
-                        fileNodes={fileNodes}
+                        rootNode={rootNode}
                         selectedPath={selectedDirPath}
                         onSelectedPathChange={path => setSelectedDirPath(path)}
                         expandedPaths={expandedPaths}
                         onExpandedPathsChange={paths => setExpandedPaths(paths)}
                     />
                     <FileList
-                        fileNodes={fileNodes}
+                        rootNode={rootNode}
                         selectedDirPath={selectedDirPath}
                         selectedPaths={selectedPaths}
                         onSelectedPathsChange={paths => setSelectedPaths(paths)}
+                        // TODO (forman): onSelectedDirPathChange must also add to expanded paths
+                        onSelectedDirPathChange={path => setSelectedDirPath(path)}
                         fileFilter={selectedFileFilter}
                         multiSelections={multiSelections}
+                        openDirectory={openDirectory}
                     />
                 </SplitPane>
                 <div
@@ -190,13 +213,15 @@ const FileDialog: React.FC<IFileDialogProps> = (
                         className={Classes.INPUT}
                         style={{flexGrow: 1, marginLeft: 10, overflow: 'hidden'}}
                         type="text"
-                        value={getFileInputText(selectedDirPath, selectedPaths)}
+                        value={toFileInputText(selectedDirPath, selectedPaths)}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => setSelectedPaths(fromFileInputText(selectedDirPath, event.target.value))}
                     />
                     <ButtonGroup>
                         <Button
                             icon="caret-down"
                             onClick={handleShowRecentPaths}
                             minimal={true}
+                            disabled={true}
                         />
                         <FileFilterSelect
                             popoverProps={{minimal: true}}
@@ -235,7 +260,7 @@ const fileFilterItemRenderer: ItemRenderer<FileFilter> = (fileFilter: FileFilter
 };
 
 
-function getFileInputText(selectedDirPath: string, selectedPaths: string[]): string | null {
+function toFileInputText(selectedDirPath: string | null, selectedPaths: string[]): string | null {
     if (selectedPaths.length === 0) {
         return null;
     }
@@ -248,6 +273,25 @@ function getFileInputText(selectedDirPath: string, selectedPaths: string[]): str
         return relPaths[0]
     }
     return relPaths.map(p => `"${p}"`).join(' ');
+}
+
+function fromFileInputText(selectedDirPath: string | null, path: string): string[] {
+    while (path.indexOf('//') > 0) {
+        path = path.replace('//', '/')
+    }
+    while (path.indexOf('\\') > 0) {
+        path = path.replace('\\', '/')
+    }
+    if (path.startsWith('/')) {
+        path = path.substring(1);
+    }
+    if (path.endsWith('/')) {
+        path = path.substring(0, path.length - 1);
+    }
+    if (path === '') {
+        return [];
+    }
+    return [selectedDirPath ? selectedDirPath + '/' + path : path];
 }
 
 

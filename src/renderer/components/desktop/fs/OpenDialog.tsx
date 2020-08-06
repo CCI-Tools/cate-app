@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { FileNode, FileSystem } from './file-system';
 
 import FileDialog from './FileDialog';
 import { OpenDialogOptions } from '../types';
@@ -7,6 +8,8 @@ import { OpenDialogOptions } from '../types';
 export interface IOpenDialogProps extends OpenDialogOptions {
     isOpen?: boolean;
     onClose?: (filePaths: string[] | null) => any;
+    rootNode: FileNode,
+    fileSystem: FileSystem;
 }
 
 const OpenDialog: React.FC<IOpenDialogProps> = (props) => {

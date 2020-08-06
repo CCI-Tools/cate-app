@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Colors, HTMLTable, Icon, IconName } from '@blueprintjs/core';
+import { Colors, HTMLTable, Icon } from '@blueprintjs/core';
 
 import { FileFilter } from '../types';
 import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './file-system';
@@ -8,21 +8,25 @@ const ROW_DEFAULT_STYLE: React.CSSProperties = {};
 const ROW_SELECTED_STYLE: React.CSSProperties = {...ROW_DEFAULT_STYLE, backgroundColor: Colors.BLUE3};
 
 interface IFileListProps {
-    fileNodes: FileNode[];
+    rootNode: FileNode;
     selectedDirPath?: string | null;
 
     fileFilter?: FileFilter;
     multiSelections?: boolean;
+    openDirectory?: boolean;
 
     selectedPaths?: string[];
-    onSelectedPathsChange?: (selectedPaths: string[]) => void;
+    onSelectedPathsChange?: (selectedPaths: string[]) => any;
+
+    onSelectedDirPathChange?: (selectedDirPath: string | null) => any;
 }
 
 const FileList: React.FC<IFileListProps> = (
     {
-        fileNodes,
+        rootNode,
         fileFilter,
         multiSelections,
+        openDirectory,
         selectedDirPath,
         /**
          * Convention: the selectedPath's parent determines the nodes in fileNodes to be listed.
@@ -31,13 +35,14 @@ const FileList: React.FC<IFileListProps> = (
          */
         selectedPaths,
         onSelectedPathsChange,
+        onSelectedDirPathChange
     }
 ) => {
-    const [sortedIndexMap, setSortedIndexMap] = React.useState<number[]>([]);
+    // const [sortedIndexMap, setSortedIndexMap] = React.useState<number[]>([]);
 
-    let currentFileNodes = fileNodes;
+    let currentFileNodes = rootNode.childNodes;
     if (selectedDirPath) {
-        const selectedFileNodes = getFileNodePath(fileNodes, selectedDirPath);
+        const selectedFileNodes = getFileNodePath(rootNode, selectedDirPath);
         if (selectedFileNodes) {
             if (selectedFileNodes.length > 0) {
                 currentFileNodes = selectedFileNodes[selectedFileNodes.length - 1].childNodes;
@@ -55,15 +60,14 @@ const FileList: React.FC<IFileListProps> = (
     const selectedPathSet = new Set(selectedPaths);
 
     const getRowFileNode = (rowIndex: number): FileNode => {
+        // TODO (forman): implement sorting
+        /*
         const sortedRowIndex = sortedIndexMap[rowIndex];
         if (typeof sortedRowIndex === 'number') {
             rowIndex = sortedRowIndex;
         }
+        */
         return currentFileNodes[rowIndex];
-    };
-
-    const getRowIcon = (rowIndex: number): IconName | null => {
-        return getFileNodeIcon(getRowFileNode(rowIndex));
     };
 
     const getRowPath = (rowIndex: number): string => {
@@ -94,13 +98,19 @@ const FileList: React.FC<IFileListProps> = (
         return <span>{node.size}</span>;
     };
 
-    const handleRowClick = (fileNode: FileNode, rowIndex: number, event: any) => {
+    const handleRowClick = (fileNode: FileNode, rowIndex: number, event: React.MouseEvent<HTMLTableRowElement>) => {
+        if (!openDirectory) {
+            const node = getRowFileNode(rowIndex);
+            if (node.isDirectory) {
+                return;
+            }
+        }
         const path = getRowPath(rowIndex);
         const newSelectedPathSet = new Set<string>(selectedPathSet);
         if (newSelectedPathSet.has(path)) {
             newSelectedPathSet.delete(path);
         } else {
-            if (multiSelections) {
+            if (multiSelections && event.ctrlKey) {
                 newSelectedPathSet.add(path);
             } else {
                 newSelectedPathSet.clear();
@@ -109,6 +119,15 @@ const FileList: React.FC<IFileListProps> = (
         }
         if (onSelectedPathsChange) {
             onSelectedPathsChange(Array.from(newSelectedPathSet));
+        }
+    };
+
+    const handleRowDoubleClick = (fileNode: FileNode, rowIndex: number) => {
+        if (onSelectedDirPathChange) {
+            const node = getRowFileNode(rowIndex);
+            if (node.isDirectory) {
+                onSelectedDirPathChange(getRowPath(rowIndex));
+            }
         }
     };
 
@@ -129,6 +148,7 @@ const FileList: React.FC<IFileListProps> = (
                             <tr
                                 style={isRowSelected(rowIndex) ? ROW_SELECTED_STYLE : ROW_DEFAULT_STYLE}
                                 onClick={(e) => handleRowClick(node, rowIndex, e)}
+                                onDoubleClick={() => handleRowDoubleClick(node, rowIndex)}
                             >
                                 <td>{renderFileNodeName(rowIndex)}</td>
                                 <td>{renderFileNodeLastModified(rowIndex)}</td>

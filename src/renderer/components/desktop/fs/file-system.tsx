@@ -1,6 +1,7 @@
 import { IconName } from '@blueprintjs/core';
 import { FileFilter } from '../types';
 
+
 export interface FileNode {
     name: string;
     lastModified: string;
@@ -10,18 +11,54 @@ export interface FileNode {
     childNodes?: FileNode[];
 }
 
+export interface FileSystem {
+    /**
+     * Get the node representing the file system.
+     * Any updates and changes in children of the root node will be reflected
+     * in a new instance of the root node.
+     */
+    getRootNode: () => FileNode;
+
+    /**
+     * Schedule an update of node given by `path`.
+     * If the node is a directory, children are listed too.
+     * If `path` is not provided, root entries should be updated.
+     *
+     * Immediately sets the status of specified node to "updating".
+     * After completion the status will be "ready".
+     * Any status changes will be reflected in a new instance of `rootNode`.
+     */
+    updateNode: (path?: string) => any;
+
+    /**
+     * Create empty directory given by `dirPath`.
+     * @param dirPath Absolute directory path
+     */
+    createDir: (dirPath: string) => any;
+
+    /**
+     * Delete given file or directories given by `paths`.
+     * Directories must be empty to be deletable.
+     * @param paths Absolute file or directory paths
+     */
+    deleteNodes: (paths: string[]) => any;
+}
+
 export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};
 
 export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
     return index < path.length && path[index] === name;
 }
 
-export function getFileNodePath(nodes: FileNode[], path: string): FileNode[] | null {
-    return _getFileNodePath(nodes, path.split('/'));
+export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | null {
+    return _getFileNodePath(rootNode.childNodes, path.split('/'));
 }
 
-export function _getFileNodePath(nodes: FileNode[], path: string[]): FileNode[] | null {
-    let childNodes = nodes;
+export function _getFileNodePath(rootNodes: FileNode[], path: string[]): FileNode[] | null {
+    let childNodes = rootNodes;
+    if (!childNodes) {
+        return null;
+    }
     let result: FileNode[] | null = null;
     for (let depth = 0; depth < path.length; depth++) {
         const name = path[depth];
@@ -49,6 +86,29 @@ export function _getFileNodePath(nodes: FileNode[], path: string[]): FileNode[] 
     return null;
 }
 
+export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | null {
+    if (!rootNode.childNodes) {
+        return null;
+    }
+    const fileNodePath = getFileNodePath(rootNode, dirPath);
+    if (fileNodePath && fileNodePath.length > 0) {
+        return fileNodePath[fileNodePath.length - 1];
+    }
+    return null;
+}
+
+export function cloneFileNodes(rootNodes: FileNode[]): FileNode[] {
+    return rootNodes.map(cloneFileNode);
+}
+
+export function cloneFileNode(node: FileNode): FileNode {
+    let childNodes = node.childNodes;
+    if (node.childNodes) {
+        childNodes = cloneFileNodes(childNodes);
+    }
+    return {...node, childNodes};
+}
+
 /*
 export function filterFileNodes<T>(nodes: FileNode[],
                                    predicate: (node: FileNode, index: number) => boolean,
@@ -72,20 +132,28 @@ export function getFileNodeIcon(node: FileNode): IconName {
     return node.isDirectory ? "folder-close" : "document";
 }
 
-export function getFilenameExtension(name: string): string {
-    const index = name.lastIndexOf('.');
+export function getParentDir(path: string): string {
+    const index = path.lastIndexOf('/');
     if (index > 0) {
-        return name.substr(index + 1);
+        return path.substring(0, index);
     }
-    return '';
+    return "";
 }
 
-export function getParentDir(path: string): string {
-    const components = path.split('/');
-    if (components.length === 1) {
-        return '';
+export function getBasename(path: string): string {
+    const index = path.lastIndexOf('/');
+    if (index >= 0) {
+        return path.substring(index + 1);
     }
-    return components.slice(0, components.length - 1).join('/');
+    return path;
+}
+
+export function getBasenameExtension(basename: string): string {
+    const index = basename.lastIndexOf('.');
+    if (index > 0) {
+        return basename.substring(index + 1);
+    }
+    return '';
 }
 
 export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter) {
@@ -97,7 +165,7 @@ export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter) {
         if (node.isDirectory) {
             return true;
         }
-        const ext = getFilenameExtension(node.name);
+        const ext = getBasenameExtension(node.name);
         return extSet.has(ext);
     });
 }

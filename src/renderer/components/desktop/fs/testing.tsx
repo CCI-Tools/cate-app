@@ -1,7 +1,7 @@
-import { FileNode } from './file-system';
+import { cloneFileNode, cloneFileNodes, FileNode, FileSystem, getBasename, getFileNode } from './file-system';
 
 function x2(n: number, off?): string {
-    const i = Math.round(Math.random()  * n) + (off || 0);
+    const i = Math.round(Math.random() * n) + (off || 0);
     return i < 10 ? '0' + i : '' + i;
 }
 
@@ -11,11 +11,12 @@ const newFileNode = (name, childNodes?: FileNode[]): FileNode => {
         lastModified: `2020-${x2(12, 1)}-${x2(30, 1)} ${x2(24)}:${x2(60)}:${x2(24)}`,
         size: Math.round(100000 * Math.random()),
         isDirectory: Boolean(childNodes),
+        status: 'ready',
         childNodes,
     };
 };
 
-const testData: FileNode[] = [
+export const testData: FileNode[] = [
     newFileNode('Dir-1.zarr', [
         newFileNode('.zgroup'),
         newFileNode('.zattrs'),
@@ -57,4 +58,43 @@ const testData: FileNode[] = [
     newFileNode('File-3.txt'),
 ];
 
-export default testData;
+class TestFileSystem implements FileSystem {
+    private _rootNode: FileNode;
+
+    constructor(rootNodes: FileNode[]) {
+        this._rootNode = {
+            name: '',
+            lastModified: new Date(Date.now()).toLocaleString(),
+            isDirectory: true,
+            size: 0,
+            status:'ready',
+            childNodes: cloneFileNodes(rootNodes)
+        };
+    }
+
+    getRootNode(): FileNode {
+        return this._rootNode;
+    }
+
+    updateNode(dirPath?: string): Promise<FileNode> {
+        this._rootNode = cloneFileNode(this._rootNode);
+        return Promise.resolve(this._rootNode);
+    }
+
+    createDir(dirPath: string): Promise<FileNode> {
+        const fileNode = getFileNode(this._rootNode, dirPath);
+        if (!fileNode.isDirectory) {
+            return Promise.reject(new Error(`${dirPath} not a directory`));
+        }
+        const newFileNode = {name: getBasename(dirPath), lastModified: '?', isDirectory: true, size: 0};
+        fileNode.childNodes = [newFileNode, ...fileNode.childNodes];
+        this._rootNode = cloneFileNode(this._rootNode);
+        return Promise.resolve(this._rootNode);
+    }
+
+    deleteNodes(paths: string[]): Promise<FileNode> {
+        throw new Error('not implemented')
+    }
+}
+
+export const testFileSystem = new TestFileSystem(testData);
