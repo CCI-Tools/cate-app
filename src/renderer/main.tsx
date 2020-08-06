@@ -103,7 +103,6 @@ export function main() {
 
     window.addEventListener('beforeunload', (event: any) => {
         event.preventDefault();
-        event.stopPropagation();
         const state = store.getState();
         if (state.communication.webAPIClient) {
             store.dispatch(updatePreferences(state.session) as any);
