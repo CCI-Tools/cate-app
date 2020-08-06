@@ -9,7 +9,7 @@ import ApplicationPage from './containers/ApplicationPage'
 import { requireElectron } from './electron';
 import { State } from './state';
 import { stateReducer } from './reducers';
-import {updatePreferences} from "./actions";
+import { updatePreferences } from "./actions";
 const electron = requireElectron();
 
 export function main() {
@@ -137,4 +137,3 @@ function readDroppedFile(file: File, dispatch: Dispatch<State>) {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
 }
-
