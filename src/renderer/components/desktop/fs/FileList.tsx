@@ -36,18 +36,18 @@ const FileList: React.FC<IFileListProps> = (
 ) => {
     const [sortedIndexMap, setSortedIndexMap] = React.useState<number[]>([]);
 
-    let parentFileNodes = fileNodes;
+    let currentFileNodes = fileNodes;
     if (selectedDirPath) {
         const selectedFileNodes = getFileNodePath(fileNodes, selectedDirPath);
         if (selectedFileNodes) {
             if (selectedFileNodes.length > 0) {
-                parentFileNodes = selectedFileNodes[selectedFileNodes.length - 1].childNodes;
+                currentFileNodes = selectedFileNodes[selectedFileNodes.length - 1].childNodes;
             }
         }
     }
 
-    if (parentFileNodes && fileFilter) {
-        parentFileNodes = applyFileFilter(parentFileNodes, fileFilter);
+    if (currentFileNodes && fileFilter) {
+        currentFileNodes = applyFileFilter(currentFileNodes, fileFilter);
     }
 
     const selectedPathSet = new Set(selectedPaths);
@@ -57,7 +57,7 @@ const FileList: React.FC<IFileListProps> = (
         if (typeof sortedRowIndex === 'number') {
             rowIndex = sortedRowIndex;
         }
-        return parentFileNodes[rowIndex];
+        return currentFileNodes[rowIndex];
     };
 
     const getCellData = (rowIndex: number, columnIndex: number) => {
@@ -91,9 +91,9 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     const sortColumn = (columnIndex: number, comparator: (a: FileNode, b: FileNode) => number) => {
-        const newSortedIndexMap = [...Utils.times(parentFileNodes.length, (i: number) => i)];
+        const newSortedIndexMap = [...Utils.times(currentFileNodes.length, (i: number) => i)];
         newSortedIndexMap.sort((a: number, b: number) => {
-            return comparator(parentFileNodes[a], parentFileNodes[b]);
+            return comparator(currentFileNodes[a], currentFileNodes[b]);
         });
         setSortedIndexMap(newSortedIndexMap);
     };
@@ -117,7 +117,7 @@ const FileList: React.FC<IFileListProps> = (
 
     return (
         <Table
-            numRows={parentFileNodes ? parentFileNodes.length : 0}
+            numRows={currentFileNodes ? currentFileNodes.length : 0}
             selectionModes={SelectionModes.ROWS_AND_CELLS}
             enableRowHeader={false}
             enableColumnReordering={false}

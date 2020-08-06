@@ -10,6 +10,7 @@ export interface FileNode {
     childNodes?: FileNode[];
 }
 
+export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};
 
 export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
     return index < path.length && path[index] === name;
