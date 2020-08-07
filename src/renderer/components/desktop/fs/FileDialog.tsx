@@ -16,7 +16,7 @@ import {
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
-import { ALL_FILES_FILTER, FileNode, getFileNode, getParentDir } from './file-system';
+import { ALL_FILES_FILTER, FileNode, getFileNode, getParentDir, sanitizePath } from './FileNode';
 import FileTree from './FileTree';
 import FileList from './FileList';
 import { FileDialogOptions, FileFilter } from '../types';
@@ -84,8 +84,17 @@ const FileDialog: React.FC<IFileDialogProps> = (
     const [expandedPaths, setExpandedPaths] = React.useState<string[]>((parentDirPath && [parentDirPath]) || []);
 
     React.useEffect(() => {
-        const node = selectedDirPath ? getFileNode(rootNode, selectedDirPath) : rootNode;
-        if (!node.childNodes && !rootNode.status) {
+        let selectedDirNode;
+        if (selectedDirPath && selectedDirPath !== '') {
+            selectedDirNode = getFileNode(rootNode, selectedDirPath);
+        } else {
+            selectedDirNode = rootNode;
+        }
+        if (selectedDirNode === null) {
+            console.error('selectedDirPath not found:', selectedDirPath);
+            return;
+        }
+        if (!selectedDirNode.childNodes && !selectedDirNode.status) {
             updateFileNode(selectedDirPath);
         }
     }, [selectedDirPath]);
@@ -254,7 +263,7 @@ const fileFilterItemRenderer: ItemRenderer<FileFilter> = (fileFilter: FileFilter
 
 function toFileInputText(selectedDirPath: string | null, selectedPaths: string[]): string | null {
     if (selectedPaths.length === 0) {
-        return null;
+        return '';
     }
     let relPaths = selectedPaths;
     if (selectedDirPath) {
@@ -268,18 +277,7 @@ function toFileInputText(selectedDirPath: string | null, selectedPaths: string[]
 }
 
 function fromFileInputText(selectedDirPath: string | null, path: string): string[] {
-    while (path.indexOf('//') > 0) {
-        path = path.replace('//', '/')
-    }
-    while (path.indexOf('\\') > 0) {
-        path = path.replace('\\', '/')
-    }
-    if (path.startsWith('/')) {
-        path = path.substring(1);
-    }
-    if (path.endsWith('/')) {
-        path = path.substring(0, path.length - 1);
-    }
+    path = sanitizePath(path);
     if (path === '') {
         return [];
     }

@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { ITreeNode, Spinner, Tree } from "@blueprintjs/core";
 
-import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './file-system';
+import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './FileNode';
+import RootNodeLoading from './RootNodeLoading';
 
 
 type IFileTreeNode = ITreeNode<FileNode>;
@@ -29,10 +30,7 @@ const FileTree: React.FC<IFileTreeProps> = (
     }
 ) => {
     if (!rootNode.childNodes) {
-        return (
-            // TODO (forman): center spinner
-            <Spinner size={48}/>
-        );
+        return <RootNodeLoading rootNode={rootNode}/>;
     }
 
     const treeNodes = getTreeNodes(rootNode,

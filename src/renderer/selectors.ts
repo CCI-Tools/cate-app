@@ -181,7 +181,7 @@ export const colorMapsAPISelector = createSelector(
 export const fileSystemAPISelector = createSelector(
     webAPIClientSelector,
     (webAPIClient) => {
-        return new FileSystemAPI(webAPIClient);
+        return webAPIClient !== null ? new FileSystemAPI(webAPIClient) : null;
     }
 );
 

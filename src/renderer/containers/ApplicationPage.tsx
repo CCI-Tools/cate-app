@@ -2,7 +2,7 @@ import * as React from 'react';
 import { CSSProperties, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
 
-import { FileNode } from '../components/desktop/fs/file-system';
+import { FileNode } from '../components/desktop/fs/FileNode';
 import OpenDialog from '../components/desktop/fs/OpenDialog';
 import { isElectron } from '../electron';
 import AppBar from './AppBar';
@@ -166,7 +166,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
                 onClose={() => setOpenDialogOpen(false)}
                 rootNode={fsRootNode}
                 updateFileNode={updateFileNode}
-                defaultPath={'Dir-2/Dir-21/File-212.nc'}
+                //defaultPath={}
             />
         </div>
     );

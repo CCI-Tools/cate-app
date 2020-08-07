@@ -3,7 +3,7 @@ import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
-import { FileNode } from './components/desktop/fs/file-system';
+import { FileNode } from './components/desktop/fs/FileNode';
 
 import {
     BackendConfigState,
@@ -745,10 +745,16 @@ function updateFsRootNode(path: string, updatedFileNode: FileNode): Action {
     return {type: UPDATE_FS_ROOT_NODE, payload: {path, updatedFileNode}};
 }
 
-export function updateFileNode(path: string) : ThunkAction {
+export function updateFileNode(path: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
+        const api = selectors.fileSystemAPISelector(getState());
+        if (api === null) {
+            console.error('fileSystemAPI not ready');
+            return;
+        }
+
         function call() {
-            return selectors.fileSystemAPISelector(getState()).updateFileNode(path);
+            return api.updateFileNode(path);
         }
 
         function action(updateFileNode: FileNode) {

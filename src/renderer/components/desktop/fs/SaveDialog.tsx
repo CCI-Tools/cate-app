@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FileNode, FileSystem } from './file-system';
+import { FileNode } from './FileNode';
 
 import FileDialog from './FileDialog';
 import { SaveDialogOptions } from '../types';

@@ -19,6 +19,7 @@ export const INITIAL_DATA_STATE: DataState = {
     operations: null,
     workspace: null,
     colorMaps: null,
+    fsRootNode: {name: '', isDirectory: true, lastModified: '', size: 0},
     workspaceNames: null,
     hasWebGL: hasWebGL(),
 };

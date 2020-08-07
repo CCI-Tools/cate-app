@@ -2,7 +2,9 @@ import * as React from "react";
 import { Colors, HTMLTable, Icon, Spinner } from '@blueprintjs/core';
 
 import { FileFilter } from '../types';
-import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './file-system';
+import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './FileNode';
+import RootNodeLoading from './RootNodeLoading';
+
 
 const ROW_DEFAULT_STYLE: React.CSSProperties = {};
 const ROW_SELECTED_STYLE: React.CSSProperties = {...ROW_DEFAULT_STYLE, backgroundColor: Colors.BLUE3};
@@ -50,11 +52,8 @@ const FileList: React.FC<IFileListProps> = (
         }
     }
 
-    if (!currentFileNodes) {
-        return (
-            // TODO (forman): center spinner
-            <Spinner size={48}/>
-        );
+    if (!rootNode.childNodes) {
+        return <RootNodeLoading rootNode={rootNode}/>;
     }
 
     if (currentFileNodes) {
@@ -153,6 +152,7 @@ const FileList: React.FC<IFileListProps> = (
                     currentFileNodes && currentFileNodes.map((node, rowIndex) => {
                         return (
                             <tr
+                                key={rowIndex}
                                 style={isRowSelected(rowIndex) ? ROW_SELECTED_STYLE : ROW_DEFAULT_STYLE}
                                 onClick={(e) => handleRowClick(node, rowIndex, e)}
                                 onDoubleClick={() => handleRowDoubleClick(node, rowIndex)}

@@ -2,7 +2,7 @@ import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
-import { FileNode } from './components/desktop/fs/file-system';
+import { FileNode } from './components/desktop/fs/FileNode';
 import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
 import { PanelContainerLayout } from './components/PanelContainer';
 import { ViewLayoutState, ViewState } from './components/ViewState';

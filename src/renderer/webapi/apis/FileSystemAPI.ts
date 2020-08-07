@@ -1,6 +1,6 @@
 import { WebAPIClient } from '../WebAPIClient';
 import { JobPromise } from '../Job';
-import { FileNode } from '../../components/desktop/fs/file-system';
+import { FileNode } from '../../components/desktop/fs/FileNode';
 
 
 export class FileSystemAPI {

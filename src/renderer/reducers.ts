@@ -1,4 +1,5 @@
 import { combineReducers, Reducer } from 'redux';
+import { updateFileNode } from './components/desktop/fs/FileNode';
 import {
     CommunicationState,
     ControlState,
@@ -11,7 +12,7 @@ import {
     VectorLayerBase
 } from './state';
 import * as actions from './actions';
-import { Action } from './actions';
+import { Action, UPDATE_FS_ROOT_NODE } from './actions';
 import * as assert from '../common/assert';
 import { updateObject, updatePropertyObject } from '../common/objutil';
 import {
@@ -87,6 +88,10 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
         case actions.SET_CURRENT_WORKSPACE: {
             const workspace = action.payload.workspace;
             return {...state, workspace};
+        }
+        case UPDATE_FS_ROOT_NODE: {
+            const {path, updatedFileNode} = action.payload;
+            return {...state, fsRootNode: updateFileNode(state.fsRootNode, path, updatedFileNode)};
         }
         case actions.UPDATE_COLOR_MAPS: {
             const colorMaps = action.payload.colorMaps;

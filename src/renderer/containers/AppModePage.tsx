@@ -7,7 +7,7 @@ import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
 import OpenDialog from '../components/desktop/fs/OpenDialog';
 import SaveDialog from '../components/desktop/fs/SaveDialog';
-import { testFileSystem } from '../components/desktop/fs/testing';
+import { testData } from '../components/desktop/fs/testData';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
@@ -113,7 +113,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                     setOpenDialogOpen(false);
                     setSaveDialogOpen(true);
                 }}
-                fileSystem={testFileSystem}
+                rootNode={testData}
+                updateFileNode={() => {}}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},
@@ -125,7 +126,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
             <SaveDialog
                 isOpen={saveDialogOpen}
                 onClose={() => setSaveDialogOpen(false)}
-                fileSystem={testFileSystem}
+                rootNode={testData}
+                updateFileNode={() => {}}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},

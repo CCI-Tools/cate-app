@@ -11,79 +11,74 @@ export interface FileNode {
     childNodes?: FileNode[];
 }
 
-export interface FileSystem {
-    /**
-     * Get the node representing the file system.
-     * Any updates and changes in children of the root node will be reflected
-     * in a new instance of the root node.
-     */
-    getRootNode: () => FileNode;
-
-    /**
-     * Schedule an update of node given by `path`.
-     * If the node is a directory, children are listed too.
-     * If `path` is not provided, root entries should be updated.
-     *
-     * Immediately sets the status of specified node to "updating".
-     * After completion the status will be "ready".
-     * Any status changes will be reflected in a new instance of `rootNode`.
-     */
-    updateNode: (path?: string) => Promise<FileNode>;
-
-    /**
-     * Create empty directory given by `dirPath`.
-     * @param dirPath Absolute directory path
-     */
-    createDir: (dirPath: string) => Promise<FileNode>;
-
-    /**
-     * Delete given file or directories given by `paths`.
-     * Directories must be empty to be deletable.
-     * @param paths Absolute file or directory paths
-     */
-    deleteNodes: (paths: string[]) => Promise<boolean[]>;
-}
-
 export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};
 
-export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
-    return index < path.length && path[index] === name;
+/**
+ * Returns a new `rootNode` where `updatedFileNode` is inserted at position given by `path`.
+ * @param rootNode
+ * @param path
+ * @param updatedFileNode
+ */
+export function updateFileNode(rootNode: FileNode, path: string, updatedFileNode: FileNode): FileNode {
+    return _updateFileNode(rootNode, sanitizePath(path).split('/'), updatedFileNode);
 }
 
-export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | null {
-    return _getFileNodePath(rootNode.childNodes, path.split('/'));
-}
-
-export function _getFileNodePath(rootNodes: FileNode[], path: string[]): FileNode[] | null {
-    let childNodes = rootNodes;
-    if (!childNodes) {
+function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: FileNode): FileNode | null {
+    if (!rootNode.childNodes) {
+        // can't work without child nodes
         return null;
     }
-    let result: FileNode[] | null = null;
+    updatedFileNode = !updatedFileNode.status ? {...updatedFileNode, status: 'ready'} : updatedFileNode;
+    const newRootNode: FileNode = {...rootNode, childNodes: [...rootNode.childNodes]};
+    let currentNode:FileNode = newRootNode;
     for (let depth = 0; depth < path.length; depth++) {
-        const name = path[depth];
-        if (name === '' && depth === path.length - 1) {
-            // If the last path component is "", this means path ended with a "/".
-            return result;
-        }
-        const node = childNodes.find(n => n.name.localeCompare(name) === 0);
-        if (!node) {
+        if (!currentNode.childNodes) {
+            // can't work without child nodes
             return null;
         }
-        if (result === null) {
-            result = [node];
-        } else {
-            result.push(node);
+        const name = path[depth];
+        const childIndex = currentNode.childNodes.findIndex(n => n.name.localeCompare(name) === 0);
+        if (childIndex < 0) {
+            // node does not exist
+            return null;
         }
         if (depth === path.length - 1) {
-            return result;
-        }
-        childNodes = node.childNodes;
-        if (!childNodes || childNodes.length === 0) {
-            return result;
+            currentNode.childNodes[childIndex] = updatedFileNode;
+        } else {
+            currentNode.childNodes[childIndex] = {...currentNode, childNodes: [...currentNode.childNodes]};
+            currentNode = currentNode.childNodes[childIndex];
         }
     }
-    return null;
+    return newRootNode;
+}
+
+/**
+ * Get file node path excluding the `rootNode`.
+ * @param rootNode
+ * @param path
+ */
+export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | null {
+    return _getFileNodePath(rootNode.childNodes, sanitizePath(path).split('/'));
+}
+
+function _getFileNodePath(rootNodes: FileNode[], path: string[]): FileNode[] | null {
+    let childNodes = rootNodes;
+    let fileNodePath: FileNode[] = [];
+    for (let depth = 0; depth < path.length; depth++) {
+        if (!childNodes) {
+            // can't work without child nodes
+            return null;
+        }
+        const name = path[depth];
+        const node = childNodes.find(n => n.name.localeCompare(name) === 0);
+        if (!node) {
+            // node does not exist
+            return null;
+        }
+        fileNodePath.push(node);
+        childNodes = node.childNodes;
+    }
+    return fileNodePath;
 }
 
 export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | null {
@@ -91,8 +86,12 @@ export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | nul
         return null;
     }
     const fileNodePath = getFileNodePath(rootNode, dirPath);
-    if (fileNodePath && fileNodePath.length > 0) {
-        return fileNodePath[fileNodePath.length - 1];
+    if (fileNodePath) {
+        if (fileNodePath.length === 0) {
+            return rootNode;
+        } else {
+            return fileNodePath[fileNodePath.length - 1];
+        }
     }
     return null;
 }
@@ -156,7 +155,11 @@ export function getBasenameExtension(basename: string): string {
     return '';
 }
 
-export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter) {
+export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
+    return index < path.length && path[index] === name;
+}
+
+export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter): FileNode[] {
     const extSet = new Set<string>(fileFilter.extensions);
     if (extSet.has('*')) {
         return nodes;
@@ -168,6 +171,22 @@ export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter) {
         const ext = getBasenameExtension(node.name);
         return extSet.has(ext);
     });
+}
+
+export function sanitizePath(path: string): string {
+    while (path.indexOf('\\') >= 0) {
+        path = path.replace('\\', '/')
+    }
+    while (path.indexOf('//') >= 0) {
+        path = path.replace('//', '/')
+    }
+    while (path.startsWith('/')) {
+        path = path.substring(1);
+    }
+    while (path.endsWith('/')) {
+        path = path.substring(0, path.length - 1);
+    }
+    return path;
 }
 
 export function compareFileNames(a: FileNode, b: FileNode) {
