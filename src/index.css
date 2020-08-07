@@ -134,6 +134,7 @@ ul.cate-list-box li.cate-selected {
 
 .cate-split-pane-hor {
     width: 100%;
+    height: 100%;
     display: flex;
     flex-flow: row nowrap;
     flex: auto; /* same as "flex: 1 1 auto;" */

@@ -95,7 +95,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
             return;
         }
         if (!selectedDirNode.childNodes && !selectedDirNode.status) {
-            updateFileNode(selectedDirPath);
+            updateFileNode(selectedDirPath || '');
         }
     }, [selectedDirPath]);
 
@@ -144,7 +144,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleSyncSelectedDir = () => {
-        updateFileNode(selectedDirPath ? selectedDirPath : null);
+        updateFileNode(selectedDirPath || '');
     };
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {
@@ -170,9 +170,9 @@ const FileDialog: React.FC<IFileDialogProps> = (
             onConfirm={handleConfirm}
             onCancel={handleCancel}
             canConfirm={canConfirm}
-            style={{width: 800, height: 600}}
+            style={{width: 800}}
         >
-            <div style={{width: '100%', height: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
+            <div style={{width: '100%', height: 480, display: 'flex', flexFlow: 'column nowrap'}}>
                 <div style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 10}}>
                     <ButtonGroup minimal={true}>
                         <Button disabled={true} icon="arrow-left" onClick={handleNavigateBack}/>
@@ -187,28 +187,31 @@ const FileDialog: React.FC<IFileDialogProps> = (
                         <Button icon="refresh" onClick={handleSyncSelectedDir}/>
                     </ButtonGroup>
                 </div>
-                <SplitPane dir="hor" initialSize={fileTreeWidth} onChange={handleFileTreeWidthChange}>
-                    <FileTree
-                        rootNode={rootNode}
-                        selectedPath={selectedDirPath}
-                        onSelectedPathChange={path => setSelectedDirPath(path)}
-                        expandedPaths={expandedPaths}
-                        onExpandedPathsChange={paths => setExpandedPaths(paths)}
-                    />
-                    <FileList
-                        rootNode={rootNode}
-                        selectedDirPath={selectedDirPath}
-                        selectedPaths={selectedPaths}
-                        onSelectedPathsChange={paths => setSelectedPaths(paths)}
-                        // TODO (forman): onSelectedDirPathChange must also add to expanded paths
-                        onSelectedDirPathChange={path => setSelectedDirPath(path)}
-                        fileFilter={selectedFileFilter}
-                        multiSelections={multiSelections}
-                        openDirectory={openDirectory}
-                    />
-                </SplitPane>
+                <div style={{height: 400, flexGrow: 0}}>
+                    <SplitPane dir="hor" initialSize={fileTreeWidth} onChange={handleFileTreeWidthChange}>
+                        <FileTree
+                            rootNode={rootNode}
+                            selectedPath={selectedDirPath}
+                            onSelectedPathChange={path => setSelectedDirPath(path)}
+                            expandedPaths={expandedPaths}
+                            onExpandedPathsChange={paths => setExpandedPaths(paths)}
+                        />
+                        <FileList
+                            rootNode={rootNode}
+                            selectedDirPath={selectedDirPath}
+                            selectedPaths={selectedPaths}
+                            onSelectedPathsChange={paths => setSelectedPaths(paths)}
+                            // TODO (forman): onSelectedDirPathChange must also add to expanded paths
+                            onSelectedDirPathChange={path => setSelectedDirPath(path)}
+                            fileFilter={selectedFileFilter}
+                            multiSelections={multiSelections}
+                            openDirectory={openDirectory}
+                        />
+                    </SplitPane>
+                </div>
                 <div
-                    style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', marginTop: 10}}>
+                    style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', marginTop: 10}}
+                >
                     <span>Filename:</span>
                     <input
                         className={Classes.INPUT}
@@ -252,10 +255,10 @@ const fileFilterItemRenderer: ItemRenderer<FileFilter> = (fileFilter: FileFilter
         <MenuItem
             active={modifiers.active}
             disabled={modifiers.disabled}
-            label={text}
             key={fileFilter.name}
+            text={fileFilter.name}
+            label={`(${fileFilter.extensions.map(e => "*." + e).join(", ")})`}
             onClick={handleClick}
-            text={text}
         />
     );
 };

@@ -10,7 +10,7 @@ export class FileSystemAPI {
         this.webAPIClient = webAPI;
     }
 
-    updateFileNode(dirPath?: string): JobPromise<FileNode> {
-        return this.webAPIClient.call<FileNode>('update_file_node', [dirPath || null]);
+    updateFileNode(path: string): JobPromise<FileNode> {
+        return this.webAPIClient.call<FileNode>('update_file_node', [path]);
     }
 }

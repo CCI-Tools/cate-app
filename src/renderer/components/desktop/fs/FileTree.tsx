@@ -69,12 +69,14 @@ const FileTree: React.FC<IFileTreeProps> = (
     };
 
     return (
-        <Tree
-            contents={treeNodes}
-            onNodeClick={handleNodeClick}
-            onNodeCollapse={handleNodeCollapse}
-            onNodeExpand={handleNodeExpand}
-        />
+        <div style={{width: '100%', height: '100%', overflow: 'auto'}}>
+            <Tree
+                contents={treeNodes}
+                onNodeClick={handleNodeClick}
+                onNodeCollapse={handleNodeCollapse}
+                onNodeExpand={handleNodeExpand}
+            />
+        </div>
     );
 }
 

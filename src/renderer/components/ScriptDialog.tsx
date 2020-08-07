@@ -47,7 +47,6 @@ export class ScriptDialog extends React.Component<IScriptDialogProps, IScriptDia
     }
 
     onChange(value: string) {
-        console.log('onChange: value =', value);
         this.setState(this.toState(value));
     }
 

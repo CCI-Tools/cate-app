@@ -91,7 +91,8 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
         }
         case UPDATE_FS_ROOT_NODE: {
             const {path, updatedFileNode} = action.payload;
-            return {...state, fsRootNode: updateFileNode(state.fsRootNode, path, updatedFileNode)};
+            const fsRootNode = updateFileNode(state.fsRootNode, path, updatedFileNode);
+            return {...state, fsRootNode};
         }
         case actions.UPDATE_COLOR_MAPS: {
             const colorMaps = action.payload.colorMaps;

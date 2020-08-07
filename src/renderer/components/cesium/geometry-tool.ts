@@ -122,7 +122,6 @@ export class CesiumToolContext extends ToolContextBase {
 
     addToolEntity(entity: Cesium.Entity): void {
         this._toolDataSource.entities.add(entity);
-        console.log("addToolEntity: _toolDataSource =", this._toolDataSource);
     }
 
     removeAllToolEntities(): void {

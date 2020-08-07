@@ -277,7 +277,7 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
 function updateWebAPIInfoInMain(webAPIProvision: WebAPIProvision, webAPIServiceURL: string, user: User | null) {
     if (hasElectron('updateWebAPIInfoInMain')) {
         const webAPIInfo = {webAPIProvision, webAPIServiceURL, user};
-        console.log('webAPIInfo:', webAPIInfo);
+        console.info('webAPIInfo:', webAPIInfo);
         electron.ipcRenderer.send('update-webapi-info', webAPIInfo);
     }
 }
@@ -757,8 +757,8 @@ export function updateFileNode(path: string): ThunkAction {
             return api.updateFileNode(path);
         }
 
-        function action(updateFileNode: FileNode) {
-            dispatch(updateFsRootNode(path, updateFileNode));
+        function action(updatedFileNode: FileNode) {
+            dispatch(updateFsRootNode(path, updatedFileNode));
         }
 
         function planB(jobFailure: JobFailure) {
@@ -2446,7 +2446,6 @@ function invokeUntil(callback: () => Promise<any>,
         let result;
         try {
             result = await callback();
-            console.log(attempt, 'result =', result);
         } catch (e) {
             error = e;
         }

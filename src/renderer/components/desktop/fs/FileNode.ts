@@ -20,32 +20,39 @@ export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};
  * @param updatedFileNode
  */
 export function updateFileNode(rootNode: FileNode, path: string, updatedFileNode: FileNode): FileNode {
-    return _updateFileNode(rootNode, sanitizePath(path).split('/'), updatedFileNode);
+    path = sanitizePath(path);
+    if (path === '') {
+        return {...rootNode, ...updatedFileNode, status: 'ready'};
+    }
+    return _updateFileNode(rootNode, path.split('/'), updatedFileNode);
 }
 
 function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: FileNode): FileNode | null {
     if (!rootNode.childNodes) {
         // can't work without child nodes
-        return null;
+        console.error('_updateFileNode: root node without child nodes');
+        return rootNode;
     }
     updatedFileNode = !updatedFileNode.status ? {...updatedFileNode, status: 'ready'} : updatedFileNode;
     const newRootNode: FileNode = {...rootNode, childNodes: [...rootNode.childNodes]};
     let currentNode:FileNode = newRootNode;
     for (let depth = 0; depth < path.length; depth++) {
         if (!currentNode.childNodes) {
-            // can't work without child nodes
-            return null;
+            console.error(`_updateFileNode: no child nodes at index ${depth} in "${path.join('/')}"`);
+            return rootNode;
         }
         const name = path[depth];
-        const childIndex = currentNode.childNodes.findIndex(n => n.name.localeCompare(name) === 0);
+        const childIndex = currentNode.childNodes.findIndex(n => name.localeCompare(n.name) === 0);
         if (childIndex < 0) {
-            // node does not exist
-            return null;
+            console.error(`_updateFileNode: invalid path component "${name}" at index ${depth} in "${path.join('/')}"`);
+            return rootNode;
         }
+        const childNode = currentNode.childNodes[childIndex];
         if (depth === path.length - 1) {
             currentNode.childNodes[childIndex] = updatedFileNode;
         } else {
-            currentNode.childNodes[childIndex] = {...currentNode, childNodes: [...currentNode.childNodes]};
+            const childNode = currentNode.childNodes[childIndex];
+            currentNode.childNodes[childIndex] = {...childNode, childNodes: [...childNode.childNodes]};
             currentNode = currentNode.childNodes[childIndex];
         }
     }
@@ -58,7 +65,8 @@ function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: Fi
  * @param path
  */
 export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | null {
-    return _getFileNodePath(rootNode.childNodes, sanitizePath(path).split('/'));
+    path = sanitizePath(path);
+    return _getFileNodePath(rootNode.childNodes, path.split('/'));
 }
 
 function _getFileNodePath(rootNodes: FileNode[], path: string[]): FileNode[] | null {

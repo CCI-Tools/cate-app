@@ -5,6 +5,7 @@ import { connect, Dispatch } from 'react-redux';
 import { FileNode } from '../components/desktop/fs/FileNode';
 import OpenDialog from '../components/desktop/fs/OpenDialog';
 import { isElectron } from '../electron';
+import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
 import AppLoginPage from './AppLoginPage';
 import AppModePage from './AppModePage';
@@ -82,8 +83,8 @@ interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
     isSignedIn: boolean | null;
     forceAppBar?: boolean;
-    // Temp. for testing only
     fsRootNode: FileNode;
+    fileSystemAPI: FileSystemAPI | null,
 }
 
 interface IApplicationPageDispatch {
@@ -96,6 +97,7 @@ function mapStateToPropsApplication(state: State): IApplicationPageProps {
         isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
         fsRootNode: state.data.fsRootNode,
+        fileSystemAPI: selectors.fileSystemAPISelector(state),
     };
 }
 
@@ -127,6 +129,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
         forceAppBar,
         fsRootNode,
         updateFileNode,
+        fileSystemAPI,
     }) => {
     const [openDialogOpen, setOpenDialogOpen] = useState(true);
 
@@ -161,13 +164,13 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             <JobFailureDialog/>
             <WebAPIStatusBox/>
             {!desktopActions.isNativeUI && <MessageBox/>}
-            <OpenDialog
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<OpenDialog
                 isOpen={openDialogOpen}
                 onClose={() => setOpenDialogOpen(false)}
                 rootNode={fsRootNode}
                 updateFileNode={updateFileNode}
                 //defaultPath={}
-            />
+            />)}
         </div>
     );
 }
