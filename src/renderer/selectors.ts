@@ -1,4 +1,3 @@
-import DefaultFileSystem from './default-fs';
 import { requireElectron } from './electron';
 import {
     ColorMapCategoryState,
@@ -30,7 +29,7 @@ import {
 } from './state';
 import { createSelector, Selector } from 'reselect';
 import { JobStatusEnum, WebAPIClient } from './webapi';
-import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI } from './webapi/apis';
+import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi/apis';
 import { PanelContainerLayout } from './components/PanelContainer';
 import {
     EXTERNAL_OBJECT_STORE,
@@ -179,10 +178,10 @@ export const colorMapsAPISelector = createSelector(
     }
 );
 
-export const fileSystemSelector = createSelector(
+export const fileSystemAPISelector = createSelector(
     webAPIClientSelector,
     (webAPIClient) => {
-        return webAPIClient ? new DefaultFileSystem(webAPIClient) : null;
+        return new FileSystemAPI(webAPIClient);
     }
 );
 

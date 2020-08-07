@@ -16,7 +16,7 @@ import {
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
-import { ALL_FILES_FILTER, FileSystem, getFileNode, getParentDir } from './file-system';
+import { ALL_FILES_FILTER, FileNode, getFileNode, getParentDir } from './file-system';
 import FileTree from './FileTree';
 import FileList from './FileList';
 import { FileDialogOptions, FileFilter } from '../types';
@@ -27,7 +27,9 @@ const FileFilterSelect = Select.ofType<FileFilter>();
 export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> {
     isOpen?: boolean;
     onClose?: (filePaths: string[] | null) => any;
-    fileSystem: FileSystem;
+    rootNode: FileNode;
+    updateFileNode: (path: string) => any;
+    // dialog type
     saveFile?: boolean;
     // from properties
     openFile?: boolean;
@@ -41,7 +43,8 @@ const FileDialog: React.FC<IFileDialogProps> = (
     {
         isOpen,
         onClose,
-        fileSystem,
+        rootNode,
+        updateFileNode,
         title,
         defaultPath,
         buttonLabel,
@@ -70,7 +73,6 @@ const FileDialog: React.FC<IFileDialogProps> = (
         console.warn('showHiddenFiles flag ignored (not implemented yet))');
     }
 
-    const rootNode = fileSystem.getRootNode();
     const parentDirPath = defaultPath && getParentDir(defaultPath);
 
     filters = filters || [ALL_FILES_FILTER];
@@ -80,27 +82,13 @@ const FileDialog: React.FC<IFileDialogProps> = (
     const [selectedDirPath, setSelectedDirPath] = React.useState<string | null>(parentDirPath || null);
     const [selectedPaths, setSelectedPaths] = React.useState<string[]>((defaultPath && [defaultPath]) || []);
     const [expandedPaths, setExpandedPaths] = React.useState<string[]>((parentDirPath && [parentDirPath]) || []);
-    const [updateCounter, setUpdateCounter] = React.useState(0);
-
-    const incUpdateCounter = React.useCallback(() => setUpdateCounter(updateCounter + 1),
-                                               [updateCounter, setUpdateCounter]);
 
     React.useEffect(() => {
-        console.log('effect 1')
-        if (!rootNode.childNodes && !rootNode.status) {
-            fileSystem.updateNode().then(incUpdateCounter);
+        const node = selectedDirPath ? getFileNode(rootNode, selectedDirPath) : rootNode;
+        if (!node.childNodes && !rootNode.status) {
+            updateFileNode(selectedDirPath);
         }
-    }, [fileSystem, rootNode, incUpdateCounter]);
-
-    React.useEffect(() => {
-        console.log('effect 2')
-        if (rootNode.childNodes && selectedDirPath) {
-            const node = getFileNode(rootNode, selectedDirPath)
-            if (!node.childNodes && !rootNode.status) {
-                fileSystem.updateNode(selectedDirPath).then(incUpdateCounter);
-            }
-        }
-    }, [fileSystem, rootNode, incUpdateCounter, selectedDirPath]);
+    }, [selectedDirPath]);
 
     if (!isOpen) {
         return null;
@@ -112,7 +100,6 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     const handleConfirm = () => {
         if (onClose) {
-            // TODO
             onClose(selectedPaths);
         }
     }
@@ -148,7 +135,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleSyncSelectedDir = () => {
-        fileSystem.updateNode(selectedDirPath ? selectedDirPath : undefined).then(incUpdateCounter);
+        updateFileNode(selectedDirPath ? selectedDirPath : null);
     };
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {

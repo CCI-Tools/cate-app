@@ -6,7 +6,7 @@ export interface FileNode {
     name: string;
     lastModified: string;
     size: number;
-    status?: 'fetching' | 'ready';
+    status?: 'fetching' | 'ready' | 'error';
     isDirectory: boolean;
     childNodes?: FileNode[];
 }

@@ -3,6 +3,7 @@ import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
+import { FileNode } from './components/desktop/fs/file-system';
 
 import {
     BackendConfigState,
@@ -426,7 +427,6 @@ export function updateControlState(controlState: Partial<ControlState>): Action 
     return {type: UPDATE_CONTROL_STATE, payload: controlState};
 }
 
-
 export function loadPreferences(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
@@ -733,6 +733,41 @@ export function setGlobeViewPosition(position: GeographicPosition): ThunkAction 
         } else {
             dispatch(setGlobeViewPositionImpl(null, null));
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File-system actions
+
+export const UPDATE_FS_ROOT_NODE = 'UPDATE_FS_ROOT_NODE';
+
+function updateFsRootNode(path: string, updatedFileNode: FileNode): Action {
+    return {type: UPDATE_FS_ROOT_NODE, payload: {path, updatedFileNode}};
+}
+
+export function updateFileNode(path: string) : ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        function call() {
+            return selectors.fileSystemAPISelector(getState()).updateFileNode(path);
+        }
+
+        function action(updateFileNode: FileNode) {
+            dispatch(updateFsRootNode(path, updateFileNode));
+        }
+
+        function planB(jobFailure: JobFailure) {
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'File System Update',
+                                        message: 'Failed updating file in file system.',
+                                        detail: jobFailure.message
+                                    }));
+        }
+
+        callAPI({
+                    title: `Updating Files`,
+                    dispatch, call, action, planB, requireDoneNotification: false
+                });
     }
 }
 

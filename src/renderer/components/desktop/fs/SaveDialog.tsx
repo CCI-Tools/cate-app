@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FileSystem } from './file-system';
+import { FileNode, FileSystem } from './file-system';
 
 import FileDialog from './FileDialog';
 import { SaveDialogOptions } from '../types';
@@ -8,7 +8,8 @@ import { SaveDialogOptions } from '../types';
 export interface ISaveDialogProps extends SaveDialogOptions {
     isOpen?: boolean;
     onClose?: (filePaths: string[] | null) => any;
-    fileSystem: FileSystem;
+    rootNode: FileNode;
+    updateFileNode: (path: string) => any;
 }
 
 const SaveDialog: React.FC<ISaveDialogProps> = (props) => {

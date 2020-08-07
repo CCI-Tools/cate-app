@@ -2,7 +2,7 @@ import * as React from 'react';
 import { CSSProperties, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
 
-import { FileSystem } from '../components/desktop/fs/file-system';
+import { FileNode } from '../components/desktop/fs/file-system';
 import OpenDialog from '../components/desktop/fs/OpenDialog';
 import { isElectron } from '../electron';
 import AppBar from './AppBar';
@@ -82,7 +82,12 @@ interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
     isSignedIn: boolean | null;
     forceAppBar?: boolean;
-    fileSystem: FileSystem | null;
+    // Temp. for testing only
+    fsRootNode: FileNode;
+}
+
+interface IApplicationPageDispatch {
+    updateFileNode: (path: string) => any;
 }
 
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
@@ -90,9 +95,13 @@ function mapStateToPropsApplication(state: State): IApplicationPageProps {
         webAPIProvision: state.communication.webAPIProvision,
         isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
-        fileSystem: selectors.fileSystemSelector(state),
+        fsRootNode: state.data.fsRootNode,
     };
 }
+
+const mapDispatchToPropsApplication = {
+    updateFileNode: actions.updateFileNode,
+};
 
 
 const ROOT_DIV_STYLE: CSSProperties = {
@@ -111,12 +120,13 @@ const MAIN_DIV_STYLE: CSSProperties = {
     overflow: 'hidden'
 };
 
-const _ApplicationPage: React.FC<IApplicationPageProps & IDispatch> = (
+const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatch> = (
     {
         webAPIProvision,
         isSignedIn,
         forceAppBar,
-        fileSystem,
+        fsRootNode,
+        updateFileNode,
     }) => {
     const [openDialogOpen, setOpenDialogOpen] = useState(true);
 
@@ -151,17 +161,18 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IDispatch> = (
             <JobFailureDialog/>
             <WebAPIStatusBox/>
             {!desktopActions.isNativeUI && <MessageBox/>}
-            {fileSystem && <OpenDialog
+            <OpenDialog
                 isOpen={openDialogOpen}
                 onClose={() => setOpenDialogOpen(false)}
-                fileSystem={fileSystem}
+                rootNode={fsRootNode}
+                updateFileNode={updateFileNode}
                 defaultPath={'Dir-2/Dir-21/File-212.nc'}
-            />}
+            />
         </div>
     );
 }
 
-const ApplicationPage = connect(mapStateToPropsApplication)(_ApplicationPage);
+const ApplicationPage = connect(mapStateToPropsApplication, mapDispatchToPropsApplication)(_ApplicationPage);
 export default ApplicationPage;
 
 interface ILeftPanelProps {
