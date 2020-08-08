@@ -1,9 +1,17 @@
 import * as React from 'react';
-import { Icon, ITreeNode, Spinner, Tree } from "@blueprintjs/core";
+import { Colors, Icon, ITreeNode, Spinner, Tree } from "@blueprintjs/core";
 
 import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './FileNode';
 import RootNodeLoading from './RootNodeLoading';
 
+const TREE_CONTAINER_STYLE: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+    overflow: 'auto',
+    borderColor: Colors.DARK_GRAY2,
+    borderStyle: 'solid',
+    borderWidth: 1
+};
 
 type IFileTreeNode = ITreeNode<FileNode>;
 
@@ -69,7 +77,7 @@ const FileTree: React.FC<IFileTreeProps> = (
     };
 
     return (
-        <div style={{width: '100%', height: '100%', overflow: 'auto'}}>
+        <div style={TREE_CONTAINER_STYLE}>
             <Tree
                 contents={treeNodes}
                 onNodeClick={handleNodeClick}

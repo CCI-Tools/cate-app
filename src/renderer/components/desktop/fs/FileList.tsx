@@ -8,6 +8,15 @@ import RootNodeLoading from './RootNodeLoading';
 
 const ROW_DEFAULT_STYLE: React.CSSProperties = {};
 const ROW_SELECTED_STYLE: React.CSSProperties = {...ROW_DEFAULT_STYLE, backgroundColor: Colors.BLUE3};
+const TABLE_CONTAINER_STYLE: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+    overflow: 'auto',
+    borderColor: Colors.DARK_GRAY2,
+    borderStyle: 'solid',
+    borderWidth: 1
+};
+const TABLE_STYLE: React.CSSProperties = {width: '100%'};
 
 interface IFileListProps {
     rootNode: FileNode;
@@ -134,8 +143,8 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     return (
-        <div style={{width: '100%', height: '100%', overflow: 'auto'}}>
-            <HTMLTable className="bp3-html-table-condensed bp3-interactive" style={{width: '100%'}}>
+        <div style={TABLE_CONTAINER_STYLE}>
+            <HTMLTable className="bp3-html-table-condensed bp3-interactive" style={TABLE_STYLE}>
                 <thead>
                 <tr>
                     <th>Name</th>
