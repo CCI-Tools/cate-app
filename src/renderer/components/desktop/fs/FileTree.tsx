@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ITreeNode, Spinner, Tree } from "@blueprintjs/core";
+import { Icon, ITreeNode, Spinner, Tree } from "@blueprintjs/core";
 
 import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './FileNode';
 import RootNodeLoading from './RootNodeLoading';
@@ -145,11 +145,18 @@ function _getTreeNodes(fileNodes: FileNode[],
         } else {
             hasCaret = node.isDirectory && Boolean(childNodes && childNodes.length);
         }
+        let secondaryLabel;
+        if (node.status === 'updating') {
+            secondaryLabel = <Spinner size={16}/>;
+        } else if (node.status === 'error') {
+            secondaryLabel = <Icon icon='error' iconSize={16}/>;
+        }
         return {
             id,
-            label: node.name,
             icon: getFileNodeIcon(node),
-            hasCaret,
+            label: node.name,
+            secondaryLabel,
+            // hasCaret,
             isSelected,
             isExpanded,
             childNodes,

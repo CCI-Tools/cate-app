@@ -2,11 +2,13 @@ import { IconName } from '@blueprintjs/core';
 import { FileFilter } from '../types';
 
 
+export type FileNodeStatus = 'updating' | 'ready' | 'error';
+
 export interface FileNode {
     name: string;
     lastModified: string;
     size: number;
-    status?: 'fetching' | 'ready' | 'error';
+    status?: FileNodeStatus;
     isDirectory: boolean;
     childNodes?: FileNode[];
 }
@@ -90,8 +92,8 @@ function _getFileNodePath(rootNodes: FileNode[], path: string[]): FileNode[] | n
 }
 
 export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | null {
-    if (!rootNode.childNodes) {
-        return null;
+    if (dirPath === "") {
+        return rootNode;
     }
     const fileNodePath = getFileNodePath(rootNode, dirPath);
     if (fileNodePath) {
@@ -104,6 +106,8 @@ export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | nul
     return null;
 }
 
+
+/*
 export function cloneFileNodes(rootNodes: FileNode[]): FileNode[] {
     return rootNodes.map(cloneFileNode);
 }
@@ -116,7 +120,6 @@ export function cloneFileNode(node: FileNode): FileNode {
     return {...node, childNodes};
 }
 
-/*
 export function filterFileNodes<T>(nodes: FileNode[],
                                    predicate: (node: FileNode, index: number) => boolean,
                                    recursive: boolean = false): FileNode[] {
