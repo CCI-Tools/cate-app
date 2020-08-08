@@ -169,7 +169,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
                 onClose={() => setOpenDialogOpen(false)}
                 rootNode={fsRootNode}
                 updateFileNode={updateFileNode}
-                //defaultPath={}
+                defaultPath={'D:/Projects/cate-webui/public/index.html'}
             />)}
         </div>
     );

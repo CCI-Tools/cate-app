@@ -3,7 +3,7 @@ import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
-import { FileNode, getFileNode } from './components/desktop/fs/FileNode';
+import { FileNode, getFileNode, sanitizePath } from './components/desktop/fs/FileNode';
 
 import {
     BackendConfigState,
@@ -746,37 +746,76 @@ function updateFsRootNode(path: string, updatedFileNode: FileNode): Action {
 }
 
 export function updateFileNode(path: string): ThunkAction {
+    path = sanitizePath(path);
+    const pathComponents = path.split('/');
+
     return (dispatch: Dispatch, getState: GetState) => {
         const api = selectors.fileSystemAPISelector(getState());
         if (api === null) {
             console.error('fileSystemAPI not ready');
             return;
         }
+        // Get all the subPaths of path that must be updated:
+        const subPaths: string[] = [];
+        pathComponents.forEach((name, depth) => {
+            const subPath = pathComponents.slice(0, depth + 1).join('/');
+            if (subPaths.length > 0) {
+                subPaths.push(subPath);
+            } else {
+                const subNode = getFileNode(getState().data.fsRootNode, subPath);
+                if (!subNode || (subNode.isDirectory && !subNode.childNodes)) {
+                    subPaths.push(subPath);
+                }
+            }
+        });
+        dispatch(updateSubPathFileNode(subPaths));
+    }
+}
 
-        const fileNode = getFileNode(getState().data.fsRootNode, path);
-        if (!fileNode) {
-            console.error(`path not found in file system root node: "${path}"`);
+function updateSubPathFileNode(subPaths: string[]): ThunkAction {
+
+    return (dispatch: Dispatch, getState: GetState) => {
+        if (subPaths.length === 0) {
+            // Very unlikely
             return;
         }
 
-        dispatch(updateFsRootNode(path, {...fileNode, status: 'updating'}));
-
-        function call() {
-            return api.updateFileNode(path);
+        const api = selectors.fileSystemAPISelector(getState());
+        if (api === null) {
+            console.error('fileSystemAPI not ready');
+            return;
         }
 
-        function action(updatedFileNode: FileNode) {
-            dispatch(updateFsRootNode(path, updatedFileNode));
+        console.log(`must update:`, subPaths)
+
+        const subPath = subPaths[0];
+        const subNode = getFileNode(getState().data.fsRootNode, subPath);
+        if (!subNode) {
+            console.error(`sub-path not found in file system root node: "${subPath}"`);
+            return;
         }
 
-        function planB(jobFailure: JobFailure) {
+        dispatch(updateFsRootNode(subPath, {...subNode, status: 'updating'}));
+
+        const call = () => {
+            return api.updateFileNode(subPath);
+        };
+
+        const action = (updatedFileNode: FileNode) => {
+            dispatch(updateFsRootNode(subPath, updatedFileNode));
+            if (subPaths.length > 1) {
+                dispatch(updateSubPathFileNode(subPaths.slice(1)));
+            }
+        };
+
+        const planB = (jobFailure: JobFailure) => {
             dispatch(showMessageBox({
                                         type: 'error',
                                         title: 'File System Update',
                                         message: 'Failed updating file in file system.',
                                         detail: jobFailure.message
                                     }));
-        }
+        };
 
         callAPI({
                     title: `Updating Files`,

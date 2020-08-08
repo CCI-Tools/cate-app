@@ -141,9 +141,9 @@ function _getTreeNodes(fileNodes: FileNode[],
         }
         let hasCaret;
         if (includeFiles) {
-            hasCaret = node.isDirectory && Boolean(childNodes && childNodes.find(n => n.isDirectory));
+            hasCaret = node.isDirectory && (!childNodes || childNodes.find(n => n.isDirectory));
         } else {
-            hasCaret = node.isDirectory && Boolean(childNodes && childNodes.length);
+            hasCaret = node.isDirectory && (!childNodes || childNodes.length > 0);
         }
         let secondaryLabel;
         if (node.status === 'updating') {
@@ -156,7 +156,7 @@ function _getTreeNodes(fileNodes: FileNode[],
             icon: getFileNodeIcon(node),
             label: node.name,
             secondaryLabel,
-            // hasCaret,
+            hasCaret,
             isSelected,
             isExpanded,
             childNodes,

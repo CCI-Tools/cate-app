@@ -84,19 +84,10 @@ const FileDialog: React.FC<IFileDialogProps> = (
     const [expandedPaths, setExpandedPaths] = React.useState<string[]>((parentDirPath && [parentDirPath]) || []);
 
     React.useEffect(() => {
-        let selectedDirNode;
-        if (selectedDirPath && selectedDirPath !== '') {
-            selectedDirNode = getFileNode(rootNode, selectedDirPath);
-        } else {
-            selectedDirNode = rootNode;
+        if (!rootNode.childNodes) {
+            updateFileNode('');
         }
-        if (selectedDirNode === null) {
-            console.error('selectedDirPath not found:', selectedDirPath);
-            return;
-        }
-        if (!selectedDirNode.childNodes && !selectedDirNode.status) {
-            updateFileNode(selectedDirPath || '');
-        }
+        updateFileNode(selectedDirPath || '');
     }, [selectedDirPath]);
 
     if (!isOpen) {
