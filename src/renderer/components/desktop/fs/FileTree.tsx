@@ -1,7 +1,13 @@
 import * as React from 'react';
 import { Colors, Icon, ITreeNode, Spinner, Tree } from "@blueprintjs/core";
 
-import { FileNode, getFileNodeIcon, getParentDir, isPathValidAtIndex } from './FileNode';
+import {
+    addExpandedDirPath,
+    FileNode,
+    getFileNodeIcon,
+    isPathValidAtIndex,
+    removeExpandedDirPath
+} from './FileNode';
 import RootNodeLoading from './RootNodeLoading';
 
 const TREE_CONTAINER_STYLE: React.CSSProperties = {
@@ -42,36 +48,33 @@ const FileTree: React.FC<IFileTreeProps> = (
     }
 
     const treeNodes = getTreeNodes(rootNode,
-                                   selectedPath,
-                                   expandedPaths.length > 0 ? expandedPaths : null,
-                                   showFiles);
+                                   selectedPath || null,
+                                   expandedPaths && expandedPaths.length > 0 ? expandedPaths : null,
+                                   Boolean(showFiles));
 
     const handleNodeClick = (treeNode: IFileTreeNode, nodePath: number[]) => {
-        if (treeNode.nodeData.isDirectory) {
-            const path = getFileNodePath(rootNode, nodePath);
-            if (onSelectedPathChange) {
+        if (onSelectedPathChange) {
+            if (treeNode.nodeData!.isDirectory) {
+                const path = getFileNodePath(treeNodes, nodePath);
                 onSelectedPathChange(path !== selectedPath ? path : null);
             }
         }
     };
 
-    const handleNodeCollapse = (treeNode: IFileTreeNode, nodePath: number[]) => {
-        if (treeNode.nodeData.isDirectory) {
-            const path = getFileNodePath(rootNode, nodePath);
-            if (onExpandedPathsChange) {
-                const cleanedPaths = expandedPaths.filter(p => p !== path && !p.startsWith(path + '/'));
-                const parentDir = getParentDir(path);
-                onExpandedPathsChange(parentDir !== '' ? [...cleanedPaths, parentDir] : cleanedPaths);
+    const handleNodeExpand = (treeNode: IFileTreeNode, nodePath: number[]) => {
+        if (onExpandedPathsChange) {
+            if (treeNode.nodeData!.isDirectory) {
+                const path = getFileNodePath(treeNodes, nodePath);
+                onExpandedPathsChange(addExpandedDirPath(expandedPaths || [], path));
             }
         }
     };
 
-    const handleNodeExpand = (treeNode: IFileTreeNode, nodePath: number[]) => {
-        if (treeNode.nodeData.isDirectory) {
-            const path = getFileNodePath(rootNode, nodePath);
-            if (onExpandedPathsChange) {
-                const cleanedPaths = expandedPaths.filter(p => p !== path && !path.startsWith(p + '/'));
-                onExpandedPathsChange([...cleanedPaths, path]);
+    const handleNodeCollapse = (treeNode: IFileTreeNode, nodePath: number[]) => {
+        if (onExpandedPathsChange) {
+            if (treeNode.nodeData!.isDirectory) {
+                const path = getFileNodePath(treeNodes, nodePath);
+                onExpandedPathsChange(removeExpandedDirPath(expandedPaths || [], path));
             }
         }
     };
@@ -81,8 +84,8 @@ const FileTree: React.FC<IFileTreeProps> = (
             <Tree
                 contents={treeNodes}
                 onNodeClick={handleNodeClick}
-                onNodeCollapse={handleNodeCollapse}
                 onNodeExpand={handleNodeExpand}
+                onNodeCollapse={handleNodeCollapse}
             />
         </div>
     );
@@ -147,9 +150,9 @@ function _getTreeNodes(fileNodes: FileNode[],
                                        depth + 1,
                                        idGen);
         }
-        let hasCaret;
+        let hasCaret: boolean;
         if (includeFiles) {
-            hasCaret = node.isDirectory && (!childNodes || childNodes.find(n => n.isDirectory));
+            hasCaret = node.isDirectory && (!childNodes || Boolean(childNodes.find(n => n.nodeData!.isDirectory)));
         } else {
             hasCaret = node.isDirectory && (!childNodes || childNodes.length > 0);
         }
@@ -173,29 +176,25 @@ function _getTreeNodes(fileNodes: FileNode[],
     });
 }
 
-function getFileNodePath(rootNode: FileNode,
-                         nodePath: number[]): string | null {
+function getFileNodePath(rootNodes: IFileTreeNode[],
+                         nodePath: number[]): string {
     let fileNodePath = null;
-    let childNodes = rootNode.childNodes;
-    if (!childNodes) {
-        return null;
-    }
+    let childNodes = rootNodes;
     for (let depth = 0; depth < nodePath.length; depth++) {
+        if (!childNodes) {
+            // Weird!
+            throw new Error(`internal error: missing childNodes at index ${depth} in node path ${nodePath.join()}`);
+        }
         let childIndex = nodePath[depth];
         let childNode = childNodes[childIndex];
 
         if (fileNodePath === null) {
-            fileNodePath = childNode.name;
+            fileNodePath = childNode.nodeData!.name;
         } else {
-            fileNodePath += '/' + childNode.name;
+            fileNodePath += '/' + childNode.nodeData!.name;
         }
 
         childNodes = childNode.childNodes;
-        if (childNodes) {
-            childNodes = childNode.childNodes;
-        } else if (depth < nodePath.length - 1) {
-            return null;
-        }
     }
     return fileNodePath;
 }

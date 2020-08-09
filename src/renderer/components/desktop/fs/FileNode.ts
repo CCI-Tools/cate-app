@@ -29,7 +29,7 @@ export function updateFileNode(rootNode: FileNode, path: string, updatedFileNode
     return _updateFileNode(rootNode, path.split('/'), updatedFileNode);
 }
 
-function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: FileNode): FileNode | null {
+function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: FileNode): FileNode {
     if (!rootNode.childNodes) {
         // can't work without child nodes
         console.error('_updateFileNode: root node without child nodes');
@@ -37,7 +37,7 @@ function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: Fi
     }
     updatedFileNode = !updatedFileNode.status ? {...updatedFileNode, status: 'ready'} : updatedFileNode;
     const newRootNode: FileNode = {...rootNode, childNodes: [...rootNode.childNodes]};
-    let currentNode:FileNode = newRootNode;
+    let currentNode: FileNode = newRootNode;
     for (let depth = 0; depth < path.length; depth++) {
         if (!currentNode.childNodes) {
             console.error(`_updateFileNode: no child nodes at index ${depth} in "${path.join('/')}"`);
@@ -49,17 +49,23 @@ function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: Fi
             console.error(`_updateFileNode: invalid path component "${name}" at index ${depth} in "${path.join('/')}"`);
             return rootNode;
         }
-        const childNode = currentNode.childNodes[childIndex];
         if (depth === path.length - 1) {
             currentNode.childNodes[childIndex] = updatedFileNode;
         } else {
             const childNode = currentNode.childNodes[childIndex];
-            currentNode.childNodes[childIndex] = {...childNode, childNodes: [...childNode.childNodes]};
-            currentNode = currentNode.childNodes[childIndex];
+            let newChildNode;
+            if (childNode.childNodes) {
+                newChildNode = {...childNode, childNodes: [...childNode.childNodes]};
+            } else {
+                newChildNode = {...childNode};
+            }
+            currentNode.childNodes[childIndex] = newChildNode;
+            currentNode = newChildNode;
         }
     }
     return newRootNode;
 }
+
 
 /**
  * Get file node path excluding the `rootNode`.
@@ -68,28 +74,42 @@ function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: Fi
  */
 export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | null {
     path = sanitizePath(path);
-    return _getFileNodePath(rootNode.childNodes, path.split('/'));
+    if (path === '') {
+        return [];
+    }
+    const pathNames = path.split('/');
+    const fileNodePath = _getValidSubFileNodePath(rootNode.childNodes, pathNames);
+    return pathNames.length === fileNodePath.length ? fileNodePath : null;
 }
 
-function _getFileNodePath(rootNodes: FileNode[], path: string[]): FileNode[] | null {
+/**
+ * Get valid sub file node path excluding the `rootNode`.
+ * @param rootNode
+ * @param path
+ */
+export function getValidSubFileNodePath(rootNode: FileNode, path: string): FileNode[] {
+    path = sanitizePath(path);
+    return _getValidSubFileNodePath(rootNode.childNodes, path.split('/'));
+}
+
+function _getValidSubFileNodePath(rootNodes: FileNode[] | undefined, pathNames: string[]): FileNode[] {
     let childNodes = rootNodes;
     let fileNodePath: FileNode[] = [];
-    for (let depth = 0; depth < path.length; depth++) {
+    for (let depth = 0; depth < pathNames.length; depth++) {
         if (!childNodes) {
-            // can't work without child nodes
-            return null;
+            return fileNodePath;
         }
-        const name = path[depth];
+        const name = pathNames[depth];
         const node = childNodes.find(n => n.name.localeCompare(name) === 0);
         if (!node) {
-            // node does not exist
-            return null;
+            return fileNodePath;
         }
         fileNodePath.push(node);
         childNodes = node.childNodes;
     }
     return fileNodePath;
 }
+
 
 export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | null {
     if (dirPath === "") {
@@ -106,37 +126,17 @@ export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | nul
     return null;
 }
 
-
-/*
-export function cloneFileNodes(rootNodes: FileNode[]): FileNode[] {
-    return rootNodes.map(cloneFileNode);
+export function addExpandedDirPath(expandedPaths: string[], path: string): string[] {
+    const parentDir = getParentDir(path);
+    const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || path.startsWith(p + '/')));
+    return [...cleanedPaths, path];
 }
 
-export function cloneFileNode(node: FileNode): FileNode {
-    let childNodes = node.childNodes;
-    if (node.childNodes) {
-        childNodes = cloneFileNodes(childNodes);
-    }
-    return {...node, childNodes};
+export function removeExpandedDirPath(expandedPaths: string[], path: string): string[] {
+    const parentDir = getParentDir(path);
+    const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || p.startsWith(path + '/')));
+    return parentDir !== '' ? [...cleanedPaths, parentDir] : cleanedPaths;
 }
-
-export function filterFileNodes<T>(nodes: FileNode[],
-                                   predicate: (node: FileNode, index: number) => boolean,
-                                   recursive: boolean = false): FileNode[] {
-    let filteredNodes = [...nodes.filter(predicate)];
-    for (let i = 0; i < filteredNodes.length; i++) {
-        const filteredNode = filteredNodes[i];
-        if (filteredNode.childNodes) {
-            const filteredChildNodes = filterFileNodes<T>(filteredNode.childNodes, predicate);
-            if (filteredChildNodes !== filteredNode.childNodes) {
-                filteredNodes[i] = {...filteredNode, childNodes: filteredChildNodes};
-            }
-        }
-    }
-    return filteredNodes;
-}
-*/
-
 
 export function getFileNodeIcon(node: FileNode): IconName {
     return node.isDirectory ? "folder-close" : "document";

@@ -745,7 +745,7 @@ function updateFsRootNode(path: string, updatedFileNode: FileNode): Action {
     return {type: UPDATE_FS_ROOT_NODE, payload: {path, updatedFileNode}};
 }
 
-export function updateFileNode(path: string): ThunkAction {
+export function updateFileNode(path: string, force: boolean): ThunkAction {
     path = sanitizePath(path);
     const pathComponents = path.split('/');
 
@@ -756,27 +756,30 @@ export function updateFileNode(path: string): ThunkAction {
             return;
         }
         // Get all the subPaths of path that must be updated:
-        const subPaths: string[] = [];
+        const subPathsToBeUpdated: string[] = [];
         pathComponents.forEach((name, depth) => {
             const subPath = pathComponents.slice(0, depth + 1).join('/');
-            if (subPaths.length > 0) {
-                subPaths.push(subPath);
-            } else {
+            if (subPathsToBeUpdated.length === 0) {
                 const subNode = getFileNode(getState().data.fsRootNode, subPath);
-                if (!subNode || (subNode.isDirectory && !subNode.childNodes)) {
-                    subPaths.push(subPath);
+                if (!subNode) {
+                    subPathsToBeUpdated.push('');
+                    subPathsToBeUpdated.push(subPath);
+                } else if (!subNode.status || force) {
+                    subPathsToBeUpdated.push(subPath);
                 }
+            } else {
+                // Also add all sub-paths
+                subPathsToBeUpdated.push(subPath);
             }
         });
-        dispatch(updateSubPathFileNode(subPaths));
+        dispatch(updateSubPathFileNode(subPathsToBeUpdated, force));
     }
 }
 
-function updateSubPathFileNode(subPaths: string[]): ThunkAction {
+function updateSubPathFileNode(subPaths: string[], force: boolean): ThunkAction {
 
     return (dispatch: Dispatch, getState: GetState) => {
         if (subPaths.length === 0) {
-            // Very unlikely
             return;
         }
 
@@ -786,14 +789,18 @@ function updateSubPathFileNode(subPaths: string[]): ThunkAction {
             return;
         }
 
-        console.log(`must update:`, subPaths)
-
         const subPath = subPaths[0];
         const subNode = getFileNode(getState().data.fsRootNode, subPath);
         if (!subNode) {
             console.error(`sub-path not found in file system root node: "${subPath}"`);
             return;
         }
+
+        if (subNode.status && !force) {
+            return;
+        }
+
+        console.log(`will update:`, subPaths)
 
         dispatch(updateFsRootNode(subPath, {...subNode, status: 'updating'}));
 
@@ -804,7 +811,7 @@ function updateSubPathFileNode(subPaths: string[]): ThunkAction {
         const action = (updatedFileNode: FileNode) => {
             dispatch(updateFsRootNode(subPath, updatedFileNode));
             if (subPaths.length > 1) {
-                dispatch(updateSubPathFileNode(subPaths.slice(1)));
+                dispatch(updateSubPathFileNode(subPaths.slice(1), force));
             }
         };
 
@@ -1554,7 +1561,7 @@ export function cleanWorkspaceInteractive(): ThunkAction {
 }
 
 /**
- * Ask user whether to delete a resoure/step, then delete it.
+ * Ask user whether to delete a resource/step, then delete it.
  *
  * @returns a Redux thunk action
  */
@@ -2485,13 +2492,14 @@ function invokeUntil(callback: () => Promise<any>,
                      timeout: number) {
     let startTime = new Date().getTime();
     let func: () => void;
-    let attempt = 0;
+    // Uncomment for debugging
+    // let attempt = 0;
     let error: any = null;
-    // noinspection UnnecessaryLocalVariableJS
     const _func = async () => {
-        attempt++;
+        // attempt++;
         let result;
         try {
+            // console.log('attempt:', attempt);
             result = await callback();
         } catch (e) {
             error = e;

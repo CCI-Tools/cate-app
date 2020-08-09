@@ -1,9 +1,8 @@
 import * as React from "react";
-import { Colors, HTMLTable, Icon, Spinner } from '@blueprintjs/core';
+import { Colors, HTMLTable, Icon } from '@blueprintjs/core';
 
 import { FileFilter } from '../types';
 import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './FileNode';
-import RootNodeLoading from './RootNodeLoading';
 
 
 const ROW_DEFAULT_STYLE: React.CSSProperties = {};
@@ -20,16 +19,15 @@ const TABLE_STYLE: React.CSSProperties = {width: '100%'};
 
 interface IFileListProps {
     rootNode: FileNode;
-    selectedDirPath?: string | null;
 
     fileFilter?: FileFilter;
     multiSelections?: boolean;
     openDirectory?: boolean;
 
+    currentDirPath?: string | null;
+    onCurrentDirPathChange?: (selectedDirPath: string) => any;
     selectedPaths?: string[];
     onSelectedPathsChange?: (selectedPaths: string[]) => any;
-
-    onSelectedDirPathChange?: (selectedDirPath: string | null) => any;
 }
 
 const FileList: React.FC<IFileListProps> = (
@@ -38,36 +36,14 @@ const FileList: React.FC<IFileListProps> = (
         fileFilter,
         multiSelections,
         openDirectory,
-        selectedDirPath,
-        /**
-         * Convention: the selectedPath's parent determines the nodes in fileNodes to be listed.
-         * If the selectedPath's basename exists, it will be used to highlight the related node.
-         * If not, and this is the case if selectedPath ends with a "/" nothing will be selected.
-         */
+        currentDirPath,
+        onCurrentDirPathChange,
         selectedPaths,
         onSelectedPathsChange,
-        onSelectedDirPathChange
     }
 ) => {
     // const [sortedIndexMap, setSortedIndexMap] = React.useState<number[]>([]);
-
-    let currentFileNodes = rootNode.childNodes;
-    if (selectedDirPath) {
-        const selectedFileNodes = getFileNodePath(rootNode, selectedDirPath);
-        if (selectedFileNodes) {
-            if (selectedFileNodes.length > 0) {
-                currentFileNodes = selectedFileNodes[selectedFileNodes.length - 1].childNodes;
-            }
-        }
-    }
-
-    if (currentFileNodes) {
-        if (fileFilter) {
-            currentFileNodes = applyFileFilter(currentFileNodes, fileFilter);
-        }
-        currentFileNodes = currentFileNodes.sort(compareFileNames);
-    }
-
+    const currentFileNodes = getCurrentFileNodes(rootNode, currentDirPath, fileFilter);
     const selectedPathSet = new Set(selectedPaths);
 
     const getRowFileNode = (rowIndex: number): FileNode => {
@@ -78,14 +54,14 @@ const FileList: React.FC<IFileListProps> = (
             rowIndex = sortedRowIndex;
         }
         */
-        return currentFileNodes[rowIndex];
+        return currentFileNodes![rowIndex];
     };
 
     const getRowPath = (rowIndex: number): string => {
         let node = getRowFileNode(rowIndex);
         let path = node.name;
-        if (selectedDirPath) {
-            path = selectedDirPath + '/' + node.name;
+        if (currentDirPath) {
+            path = currentDirPath + '/' + node.name;
         }
         return path;
     };
@@ -134,10 +110,10 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     const handleRowDoubleClick = (fileNode: FileNode, rowIndex: number) => {
-        if (onSelectedDirPathChange) {
+        if (onCurrentDirPathChange) {
             const node = getRowFileNode(rowIndex);
             if (node.isDirectory) {
-                onSelectedDirPathChange(getRowPath(rowIndex));
+                onCurrentDirPathChange(getRowPath(rowIndex));
             }
         }
     };
@@ -176,3 +152,28 @@ const FileList: React.FC<IFileListProps> = (
 }
 
 export default FileList;
+
+
+function getCurrentFileNodes(rootNode: FileNode,
+                             currentDirPath?: string | null,
+                             fileFilter?: FileFilter): FileNode[] | undefined {
+    let currentFileNodes = rootNode.childNodes;
+    if (currentDirPath) {
+        const currentFileNodesPath = getFileNodePath(rootNode, currentDirPath);
+        if (currentFileNodesPath) {
+            if (currentFileNodesPath.length > 0) {
+                currentFileNodes = currentFileNodesPath[currentFileNodesPath.length - 1].childNodes;
+            }
+        }
+    }
+
+    if (currentFileNodes) {
+        if (fileFilter) {
+            currentFileNodes = applyFileFilter(currentFileNodes, fileFilter);
+        }
+        currentFileNodes = currentFileNodes.sort(compareFileNames);
+    }
+
+    return currentFileNodes;
+}
+
