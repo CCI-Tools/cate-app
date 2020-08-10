@@ -48,6 +48,7 @@ import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './operation-step-dialog-ids';
 import AnimationView from './AnimationView';
 import JobFailureDialog from './JobFailureDialog';
 import desktopActions from '../components/desktop/actions';
+import FileUploadDialog from "./FileUploadDialog";
 
 
 function renderWorldView(view: ViewState<WorldViewDataState>) {
@@ -150,6 +151,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             <StatusBar/>
             <PreferencesDialog/>
             <NewWorkspaceDialog/>
+            <FileUploadDialog/>
             <SaveWorkspaceAsDialog/>
             <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
             <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
@@ -186,6 +188,7 @@ function mapStateToPropsLeft(state: State): ILeftPanelProps {
 class _LeftPanel extends React.PureComponent<ILeftPanelProps & IDispatch, null> {
 
     constructor(props: ILeftPanelProps & IDispatch) {
+        // noinspection DuplicatedCode
         super(props);
         this.onLeftPanelContainerLayoutChange = this.onLeftPanelContainerLayoutChange.bind(this);
         this.onRightPanelContainerLayoutChange = this.onRightPanelContainerLayoutChange.bind(this);

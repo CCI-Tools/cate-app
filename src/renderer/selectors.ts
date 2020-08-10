@@ -52,6 +52,7 @@ import { entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { RemoteStorage } from "./remoteStorage";
+import { FilesAPI } from "./webapi/apis/FilesApi";
 
 const electron = requireElectron();
 
@@ -74,10 +75,10 @@ export const isLocalFSAccessAllowedSelector = (state: State): boolean => {
     // Note that once we have ChooseWorkspaceDialog and SelectWorkspaceDialog with directory choosers,
     // we can get rid of the electron requirement here.
     return !!electron
-           && !!electron.ipcRenderer
-           && state.communication.webAPIProvision === 'CustomURL'
-           && !!state.communication.webAPIServiceInfo
-           && !state.communication.webAPIServiceInfo.userRootMode;
+        && !!electron.ipcRenderer
+        && state.communication.webAPIProvision === 'CustomURL'
+        && !!state.communication.webAPIServiceInfo
+        && !state.communication.webAPIServiceInfo.userRootMode;
 };
 
 export const webAPIRestUrlSelector = createSelector(
@@ -559,7 +560,9 @@ export const selectedResourceAttributesSelector = createSelector<State, string[]
         const array = [];
         const attributes = selectedResource.attributes;
         for (let attrName in attributes) {
-            array.push([attrName, attributes[attrName]])
+            if (attributes.hasOwnProperty(attrName)) {
+                array.push([attrName, attributes[attrName]])
+            }
         }
         return array;
     }
@@ -865,8 +868,8 @@ export const vectorStyleSelector = createSelector<State, SimpleStyle, ViewState<
                 const entityVectorLayer = getWorldViewVectorLayerForEntity(view, selectedEntity);
                 const entityVectorLayerStyle = entityVectorLayer && entityVectorLayer.style;
                 const savedEntityStyle = entityVectorLayer
-                                         && entityVectorLayer.entityStyles
-                                         && entityVectorLayer.entityStyles[selectedEntity.id];
+                    && entityVectorLayer.entityStyles
+                    && entityVectorLayer.entityStyles[selectedEntity.id];
                 style = {...selectedLayerStyle, ...entityVectorLayerStyle, ...entityStyle, ...savedEntityStyle};
             }
         }
@@ -917,8 +920,8 @@ export const isComputingVariableStatistics = createSelector<State, boolean,
             return false;
         }
         const requestLock = getLockForGetWorkspaceVariableStatistics(selectedResource.name,
-                                                                     selectedVariable.name,
-                                                                     imageLayer.varIndex);
+            selectedVariable.name,
+            imageLayer.varIndex);
         return activeRequestLocks.has(requestLock);
     }
 );
@@ -947,9 +950,19 @@ export const selectedColorMapSelector = createSelector<State, ColorMapState, Col
     }
 );
 
+export const fileAPISelector = createSelector(
+    webAPIClientSelector,
+    (webAPIClient) => {
+        return new FilesAPI(webAPIClient);
+    }
+);
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Utilities
 
 function canFind(array: any[], id: string): boolean {
     return array && array.length && !!id;
 }
+
+
