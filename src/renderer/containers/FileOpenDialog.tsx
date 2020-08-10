@@ -20,7 +20,7 @@ const mapDispatchToProps = {
 };
 
 const FileOpenDialog: React.FC<IOpenDialogProps> = (props) => {
-    return (<OpenDialog {...props}/>);
+    return (props.isOpen) ? (<OpenDialog {...props}/>) : null;
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileOpenDialog);

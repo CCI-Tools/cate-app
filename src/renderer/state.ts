@@ -4,10 +4,11 @@ import { SimpleStyle } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { FileNode } from './components/desktop/fs/FileNode';
 import {
+    FileFilter,
     MessageBoxOptions,
-    MessageBoxResult, OpenDialogOptions,
+    MessageBoxResult, OpenDialogOptions, OpenDialogProperty,
     OpenDialogResult,
-    SaveDialogOptions,
+    SaveDialogOptions, SaveDialogProperty,
     SaveDialogResult
 } from './components/desktop/types';
 import { PanelContainerLayout } from './components/PanelContainer';
@@ -92,13 +93,6 @@ export interface OperationState {
     outputs: OperationOutputState[];
 }
 
-// see https://github.com/electron/electron/blob/master/docs/api/dialog.md
-// see https://github.com/electron/electron/blob/master/docs/api/structures/file-filter.md
-export interface FileFilterState {
-    name: string;
-    extensions: string[];
-}
-
 export interface OperationIOBaseState {
     name: string;
     dataType: string;
@@ -115,8 +109,8 @@ export interface OperationInputState extends OperationIOBaseState {
     valueRange?: [number, number] | [string, string];
     scriptLang?: string;
     fileOpenMode?: 'w' | 'r' | 'rw';
-    fileFilters?: FileFilterState[];
-    fileProps?: string;
+    fileFilters?: FileFilter[];
+    fileProps?: OpenDialogProperty[] | SaveDialogProperty[];
     noUI?: boolean;
 }
 

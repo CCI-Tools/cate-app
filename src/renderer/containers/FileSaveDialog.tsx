@@ -20,7 +20,7 @@ const mapDispatchToProps = {
 };
 
 const FileSaveDialog: React.FC<ISaveDialogProps> = (props) => {
-    return (<SaveDialog {...props}/>);
+    return (props.isOpen) ? (<SaveDialog {...props}/>) : null;
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileSaveDialog);

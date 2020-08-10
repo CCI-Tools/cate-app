@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { CSSProperties, useState } from 'react';
+import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
 
-import { FileNode } from '../components/desktop/fs/FileNode';
 import { isElectron } from '../electron';
 import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
@@ -100,8 +99,7 @@ function mapStateToPropsApplication(state: State): IApplicationPageProps {
     };
 }
 
-const mapDispatchToPropsApplication = {
-};
+const mapDispatchToPropsApplication = {};
 
 
 const ROOT_DIV_STYLE: CSSProperties = {
@@ -127,7 +125,6 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
         forceAppBar,
         fileSystemAPI,
     }) => {
-    const [openDialogOpen, setOpenDialogOpen] = useState(true);
 
     if (webAPIProvision === null) {
         return (<AppModePage/>);

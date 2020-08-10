@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { AnchorButton, ControlGroup, Intent, Switch, Tab, Tabs } from '@blueprintjs/core';
-import { SessionState, State, WebAPIServiceInfo } from '../state';
 import { connect, DispatchProp } from 'react-redux';
+
+import { SessionState, State, WebAPIServiceInfo } from '../state';
 import * as actions from '../actions';
 import { showMessageBox } from '../actions';
 import * as selectors from '../selectors';
@@ -10,7 +11,6 @@ import deepEqual from 'deep-equal';
 import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
-import { OpenDialogProperty } from "../components/desktop/types";
 
 
 const CATE_WEBUI_VERSION = "2.1.0-dev.4";
@@ -268,7 +268,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                     />
                     <AnchorButton
                         intent={Intent.PRIMARY} style={{flex: 'none'}}
-                        onClick={() => PreferencesDialog.showOpenDirectoryDialog(initialValue, onChange)}>
+                        onClick={() => this.showOpenDirectoryDialog(initialValue, onChange)}>
                         ...
                     </AnchorButton>
                 </ControlGroup>
@@ -323,23 +323,13 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         this.setState({backendConfig} as SessionState);
     }
 
-    private static showOpenDirectoryDialog(defaultPath: string, onChange: (value) => void) {
-        const openDialogOptions = {
-            title: 'Select Directory',
-            defaultPath: defaultPath,
-            buttonLabel: 'Select',
-            properties: [
-                'openDirectory' as OpenDialogProperty,
-                'createDirectory' as OpenDialogProperty,
-            ],
-            filter: [],
-        };
-        // TODO (forman): file choosers - need to invoke dispatch() here
-        actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string | null) => {
-            if (dirPath) {
-                onChange(dirPath);
-            }
-        });
+    private showOpenDirectoryDialog(defaultPath: string, onChange: (value) => void) {
+        this.props.dispatch(actions.showDirectorySelectDialog({defaultPath},
+                                                              (dirPath: string | null) => {
+                                                                  if (dirPath) {
+                                                                      onChange(dirPath);
+                                                                  }
+                                                              }) as any);
     }
 }
 

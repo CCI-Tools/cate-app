@@ -2235,7 +2235,12 @@ export function showDirectorySelectDialog(openDialogOptions: OpenDialogOptions,
     propsSet.delete('openFile');
     propsSet.delete('multiSelections');
     propsSet.add('openDirectory');
-    openDialogOptions = {...openDialogOptions, properties: Array.from(propsSet)};
+    openDialogOptions = {
+        ...openDialogOptions,
+        title: openDialogOptions.title || 'Select Directory',
+        buttonLabel: openDialogOptions.buttonLabel || 'Select',
+        properties: Array.from(propsSet)
+    };
     return (dispatch: Dispatch) => {
         const handleClose = (result: OpenDialogResult) => {
             dispatch(closeDirectorySelectDialog(result));

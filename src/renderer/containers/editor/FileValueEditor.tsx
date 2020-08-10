@@ -1,17 +1,23 @@
 import * as React from 'react';
 import { AnchorButton, ControlGroup, Intent } from '@blueprintjs/core';
+import { connect, DispatchProp } from 'react-redux';
+
 import { IValueEditorProps, ValueEditorCallback, ValueEditorValue } from './ValueEditor';
 import * as actions from '../../actions';
-import { OperationInputState } from '../../state';
+import { OperationInputState, State } from '../../state';
 import { TextField } from '../../components/field/TextField';
 import { SaveDialogResult } from "../../components/desktop/types";
 
 interface IFileValueEditorProps extends IValueEditorProps<string> {
 }
 
+function mapStateToProps(state: State, otherProps: IFileValueEditorProps) {
+    return otherProps;
+}
+
 // TODO (forman): complete me, i.e. validate file name
 
-export class FileValueEditor extends React.PureComponent<IFileValueEditorProps, null> {
+class _FileValueEditor extends React.PureComponent<IFileValueEditorProps & DispatchProp<State>> {
 
     private static DIV_STYLE = {width: '20em', display: 'flex'};
     private static TEXT_FIELD_STYLE = {flexGrow: 1};
@@ -24,57 +30,53 @@ export class FileValueEditor extends React.PureComponent<IFileValueEditorProps, 
 
         let showFileDialogCallback;
         if (this.props.input.fileOpenMode === 'w') {
-            showFileDialogCallback = FileValueEditor.showSaveDialog;
+            showFileDialogCallback = this.showSaveDialog;
         } else {
-            showFileDialogCallback = FileValueEditor.showOpenDialog;
+            showFileDialogCallback = this.showOpenDialog;
         }
 
         return (
-            <ControlGroup style={FileValueEditor.DIV_STYLE}>
-                <TextField style={FileValueEditor.TEXT_FIELD_STYLE}
+            <ControlGroup style={_FileValueEditor.DIV_STYLE}>
+                <TextField style={_FileValueEditor.TEXT_FIELD_STYLE}
                            value={value}
                            placeholder="Enter file path"
                            onChange={value => onChange(input, value)}
                            nullable={this.props.input.nullable}
                 />
-                <AnchorButton intent={Intent.PRIMARY} style={FileValueEditor.BUTTON_STYLE}
+                <AnchorButton intent={Intent.PRIMARY} style={_FileValueEditor.BUTTON_STYLE}
                               onClick={() => showFileDialogCallback(input, value, onChange)}>...</AnchorButton>
             </ControlGroup>
         );
     }
 
-    static showOpenDialog(input: OperationInputState,
-                          value: ValueEditorValue<string>,
-                          onChange: ValueEditorCallback<string>) {
+    showOpenDialog(input: OperationInputState,
+                   value: ValueEditorValue<string>,
+                   onChange: ValueEditorCallback<string>) {
         const openDialogOptions = {
-            title: 'Open File',
             defaultPath: value as string,
-            buttonLabel: 'Open',
             filters: input.fileFilters,
             properties: input.fileProps as any,
         };
-        // TODO (forman): file choosers - need to invoke dispatch() here
-        actions.showSingleFileOpenDialog(openDialogOptions, (filePath: string | null) => {
+        this.props.dispatch(actions.showSingleFileOpenDialog(openDialogOptions, (filePath: string | null) => {
             if (filePath) {
                 onChange(input, filePath);
             }
-        });
+        }) as any);
     }
 
-    static showSaveDialog(input: OperationInputState,
-                          value: ValueEditorValue<string>,
-                          onChange: ValueEditorCallback<string>) {
+    showSaveDialog(input: OperationInputState,
+                   value: ValueEditorValue<string>,
+                   onChange: ValueEditorCallback<string>) {
         const saveDialogOptions = {
-            title: 'Save File',
             defaultPath: value as string,
-            buttonLabel: 'Save',
             filters: input.fileFilters,
         };
-        // TODO (forman): file choosers - need to invoke dispatch() here
-        actions.showFileSaveDialog(saveDialogOptions, (result: SaveDialogResult) => {
+        this.props.dispatch(actions.showFileSaveDialog(saveDialogOptions, (result: SaveDialogResult) => {
             if (!result.canceled && result.filePath) {
                 onChange(input, result.filePath);
             }
-        });
+        }) as any);
     }
 }
+
+export const FileValueEditor = connect(mapStateToProps)(_FileValueEditor);
