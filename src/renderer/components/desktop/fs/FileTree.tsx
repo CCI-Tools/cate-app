@@ -198,7 +198,3 @@ function getFileNodePath(rootNodes: IFileTreeNode[],
     }
     return fileNodePath;
 }
-
-
-
-

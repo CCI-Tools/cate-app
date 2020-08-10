@@ -3,7 +3,6 @@ import { CSSProperties, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
 
 import { FileNode } from '../components/desktop/fs/FileNode';
-import OpenDialog from '../components/desktop/fs/OpenDialog';
 import { isElectron } from '../electron';
 import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
@@ -27,6 +26,8 @@ import StylesPanel from './StylesPanel';
 import NewWorkspaceDialog from './NewWorkspaceDialog';
 import SaveWorkspaceAsDialog from './SaveWorkspaceAsDialog';
 import PreferencesDialog from './PreferencesDialog';
+import OpenDialog from './OpenDialog';
+import SaveDialog from "./SaveDialog";
 import MessageBox from './MessageBox';
 import { PanelContainer, PanelContainerLayout } from '../components/PanelContainer';
 import { Panel } from '../components/Panel';
@@ -163,14 +164,9 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
             <JobFailureDialog/>
             <WebAPIStatusBox/>
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<OpenDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<SaveDialog/>)}
             {!desktopActions.isNativeUI && <MessageBox/>}
-            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<OpenDialog
-                isOpen={openDialogOpen}
-                onClose={() => setOpenDialogOpen(false)}
-                rootNode={fsRootNode}
-                updateFileNode={updateFileNode}
-                defaultPath={'C:/Users/Norman/WebstormProjects/cate-webui/src/renderer/containers/ApplicationPage.tsx'}
-            />)}
         </div>
     );
 }

@@ -4,8 +4,8 @@ import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
-import { OpenDialogProperty } from '../actions';
 import * as selectors from '../selectors';
+import { OpenDialogProperty } from "../components/desktop/types";
 
 interface IAddDatasetDialogProps {
     isOpen: boolean;
@@ -73,11 +73,11 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
             ],
             filter: [],
         };
-        actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string) => {
+        this.props.dispatch(actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string | null) => {
             if (dirPath) {
                 this.setState({filePathPattern: dirPath + '/*.nc'} as IAddDatasetDialogState);
             }
-        });
+        }) as any);
     }
 
     render() {

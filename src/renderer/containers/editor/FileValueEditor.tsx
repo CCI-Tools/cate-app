@@ -4,6 +4,7 @@ import { IValueEditorProps, ValueEditorCallback, ValueEditorValue } from './Valu
 import * as actions from '../../actions';
 import { OperationInputState } from '../../state';
 import { TextField } from '../../components/field/TextField';
+import { SaveDialogResult } from "../../components/desktop/types";
 
 interface IFileValueEditorProps extends IValueEditorProps<string> {
 }
@@ -52,7 +53,8 @@ export class FileValueEditor extends React.PureComponent<IFileValueEditorProps, 
             filters: input.fileFilters,
             properties: input.fileProps as any,
         };
-        actions.showSingleFileOpenDialog(openDialogOptions, (filePath: string) => {
+        // TODO (forman): file choosers - need to invoke dispatch() here
+        actions.showSingleFileOpenDialog(openDialogOptions, (filePath: string | null) => {
             if (filePath) {
                 onChange(input, filePath);
             }
@@ -68,9 +70,10 @@ export class FileValueEditor extends React.PureComponent<IFileValueEditorProps, 
             buttonLabel: 'Save',
             filters: input.fileFilters,
         };
-        actions.showFileSaveDialog(saveDialogOptions, (filePath: string) => {
-            if (filePath) {
-                onChange(input, filePath);
+        // TODO (forman): file choosers - need to invoke dispatch() here
+        actions.showFileSaveDialog(saveDialogOptions, (result: SaveDialogResult) => {
+            if (!result.canceled && result.filePath) {
+                onChange(input, result.filePath);
             }
         });
     }

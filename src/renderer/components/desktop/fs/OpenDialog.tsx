@@ -2,14 +2,14 @@ import * as React from 'react';
 import { FileNode } from './FileNode';
 
 import FileDialog from './FileDialog';
-import { OpenDialogOptions } from '../types';
+import { OpenDialogOptions, OpenDialogResult } from '../types';
 
 
 export interface IOpenDialogProps extends OpenDialogOptions {
     isOpen?: boolean;
-    onClose?: (filePaths: string[] | null) => any;
+    onClose?: (result: OpenDialogResult) => any;
     rootNode: FileNode;
-    updateFileNode: (path: string) => any;
+    updateFileNode: (path: string, force: boolean) => any;
 }
 
 const OpenDialog: React.FC<IOpenDialogProps> = (props) => {

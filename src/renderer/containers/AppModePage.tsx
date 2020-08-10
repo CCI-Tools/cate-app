@@ -11,7 +11,7 @@ import { testData } from '../components/desktop/fs/testData';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
-
+const testFileChoosers = false;
 
 const CENTER_DIV_STYLE: CSSProperties = {
     display: 'flex',
@@ -107,14 +107,15 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                     />
                 </div>
             </div>
-            <OpenDialog
+            {testFileChoosers && <OpenDialog
                 isOpen={openDialogOpen}
                 onClose={() => {
                     setOpenDialogOpen(false);
                     setSaveDialogOpen(true);
                 }}
                 rootNode={testData}
-                updateFileNode={() => {}}
+                updateFileNode={() => {
+                }}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},
@@ -123,11 +124,13 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 ]}
                 defaultPath={'Dir-2/Dir-21/File-212.nc'}
             />
-            <SaveDialog
+            }
+            {testFileChoosers && <SaveDialog
                 isOpen={saveDialogOpen}
                 onClose={() => setSaveDialogOpen(false)}
                 rootNode={testData}
-                updateFileNode={() => {}}
+                updateFileNode={() => {
+                }}
                 filters={[
                     {name: 'All files', extensions: ['*']},
                     {name: 'Images', extensions: ['jpg', 'png', 'gif']},
@@ -136,6 +139,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 ]}
                 defaultPath={'Dir-2/Dir-21/File-212.nc'}
             />
+            }
         </div>
     );
 };

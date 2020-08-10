@@ -45,6 +45,14 @@ export interface FileDialogOptions {
 }
 
 /**
+ * See dialog.showOpenDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ */
+export interface FileDialogResult {
+    filePaths: string[];
+    canceled: boolean;
+}
+
+/**
  * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
  */
 export interface SaveDialogOptions extends FileDialogOptions {
@@ -52,6 +60,14 @@ export interface SaveDialogOptions extends FileDialogOptions {
      * Contains which features the save dialog should use.
      */
     properties?: SaveDialogProperty[];
+}
+
+/**
+ * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ */
+export interface SaveDialogResult {
+    filePath: string | null;
+    canceled: boolean;
 }
 
 /**
@@ -71,6 +87,12 @@ export interface OpenDialogOptions extends FileDialogOptions {
      * be selected via Alt-W on Windows and Linux.
      */
     normalizeAccessKeys?: boolean;
+}
+
+/**
+ * See dialog.showOpenDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ */
+export interface OpenDialogResult extends FileDialogResult {
 }
 
 /**
@@ -156,7 +178,7 @@ export interface DesktopActions {
      * @param onClose called when the dialog is closed
      * @returns the array of selected file paths or null, if no file path was selected.
      */
-    showFileOpenDialog(openDialogOptions: OpenDialogOptions, onClose: (filePaths: string[] | null) => any): void;
+    showFileOpenDialog(openDialogOptions: OpenDialogOptions, onClose: (result: OpenDialogResult) => any): void;
 
     /**
      * Shows a  file-save dialog.
@@ -165,7 +187,7 @@ export interface DesktopActions {
      * @param onClose called when the dialog is closed
      * @returns the selected filePath or null, if no file path was selected.
      */
-    showFileSaveDialog(saveDialogOptions: SaveDialogOptions, onClose: (filePath: string | null) => any): void;
+    showFileSaveDialog(saveDialogOptions: SaveDialogOptions, onClose: (result: SaveDialogResult) => any): void;
 
     /**
      * Shows a message box.

@@ -176,4 +176,3 @@ function getCurrentFileNodes(rootNode: FileNode,
 
     return currentFileNodes;
 }
-

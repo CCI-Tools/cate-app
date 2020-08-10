@@ -25,7 +25,7 @@ import {
 } from './FileNode';
 import FileTree from './FileTree';
 import FileList from './FileList';
-import { FileDialogOptions, FileFilter } from '../types';
+import { FileDialogOptions, FileDialogResult, FileFilter } from '../types';
 
 
 interface PathState {
@@ -39,7 +39,7 @@ const FileFilterSelect = Select.ofType<FileFilter>();
 
 export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> {
     isOpen?: boolean;
-    onClose?: (filePaths: string[] | null) => any;
+    onClose?: (result: FileDialogResult) => any;
     rootNode: FileNode;
     updateFileNode: (path: string, force: boolean) => any;
     // dialog type
@@ -138,13 +138,13 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     const handleConfirm = () => {
         if (onClose) {
-            onClose(pathState.selectedPaths);
+            onClose({filePaths: pathState.selectedPaths, canceled: false});
         }
     }
 
     const handleCancel = () => {
         if (onClose) {
-            onClose(null);
+            onClose({filePaths: [], canceled: true});
         }
     }
 

@@ -3,13 +3,14 @@ import { AnchorButton, ControlGroup, Intent, Switch, Tab, Tabs } from '@blueprin
 import { SessionState, State, WebAPIServiceInfo } from '../state';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
-import { OpenDialogProperty, showMessageBox } from '../actions';
+import { showMessageBox } from '../actions';
 import * as selectors from '../selectors';
 import { TextField } from '../components/field/TextField';
 import deepEqual from 'deep-equal';
 import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
+import { OpenDialogProperty } from "../components/desktop/types";
 
 
 const CATE_WEBUI_VERSION = "2.1.0-dev.4";
@@ -333,7 +334,8 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             ],
             filter: [],
         };
-        actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string) => {
+        // TODO (forman): file choosers - need to invoke dispatch() here
+        actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string | null) => {
             if (dirPath) {
                 onChange(dirPath);
             }

@@ -83,7 +83,13 @@ import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { requireElectron } from './electron';
-import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
+import {
+    MessageBoxOptions,
+    MessageBoxResult,
+    OpenDialogOptions, OpenDialogResult,
+    SaveDialogOptions,
+    SaveDialogResult
+} from './components/desktop/types';
 
 import desktopActions from './components/desktop/actions';
 
@@ -1457,36 +1463,38 @@ function deleteRemoteWorkspace(dispatch: (action: (Action | ThunkAction)) => voi
 
 function openLocalWorkspace(dispatch: (action: (Action | ThunkAction)) => void,
                             getState: () => State) {
-    const workspacePath = showSingleFileOpenDialog({
-                                                       title: 'Open Workspace - Select Directory',
-                                                       buttonLabel: 'Open',
-                                                       properties: ['openDirectory'],
-                                                   });
-    if (workspacePath) {
-        const workspace = getState().data.workspace;
-        let ok = true;
-        if (workspace) {
-            if (workspace.baseDir === workspacePath) {
-                // showMessageBox({
-                //     title: 'Open Workspace',
-                //     message: 'Workspace is already open.'
-                // }, MESSAGE_BOX_NO_REPLY);
-                showToast({
-                              type: 'warning',
-                              text: 'Workspace is already open.',
-                          });
-                return;
+    const handleClose = (workspacePath: string | null) => {
+        if (workspacePath) {
+            const workspace = getState().data.workspace;
+            let ok = true;
+            if (workspace) {
+                if (workspace.baseDir === workspacePath) {
+                    // showMessageBox({
+                    //     title: 'Open Workspace',
+                    //     message: 'Workspace is already open.'
+                    // }, MESSAGE_BOX_NO_REPLY);
+                    showToast({
+                                  type: 'warning',
+                                  text: 'Workspace is already open.',
+                              });
+                    return;
+                }
+                ok = maybeSaveCurrentWorkspace(dispatch, getState,
+                                               'Open Workspace',
+                                               'Would you like to save the current workspace before opening the new one?',
+                                               'Press "Cancel" to cancel opening a new workspace.'
+                );
             }
-            ok = maybeSaveCurrentWorkspace(dispatch, getState,
-                                           'Open Workspace',
-                                           'Would you like to save the current workspace before opening the new one?',
-                                           'Press "Cancel" to cancel opening a new workspace.'
-            );
-        }
-        if (ok) {
-            dispatch(openWorkspace(workspacePath));
+            if (ok) {
+                dispatch(openWorkspace(workspacePath));
+            }
         }
     }
+    dispatch(showSingleFileOpenDialog({
+                                          title: 'Open Workspace - Select Directory',
+                                          buttonLabel: 'Open',
+                                          properties: ['openDirectory'],
+                                      }, handleClose) as any);
 }
 
 /**
@@ -1572,7 +1580,7 @@ export function deleteResourceInteractive(resName: string): ThunkAction {
                                     title: 'Remove Resource and Workflow Step',
                                     message: `Do you really want to delete resource and step "${resName}"?`,
                                     detail: 'This will also delete the workflow step that created it.\n' +
-                                            'You will not be able to undo this operation.',
+                                        'You will not be able to undo this operation.',
                                     buttons: ['Yes', 'No'],
                                     defaultId: 1,
                                     cancelId: 1,
@@ -2051,12 +2059,12 @@ export function loadTableViewData(viewId: string, resName: string, varName: stri
             const csvUrl = getCsvUrl(restUrl, baseDir, {resId: resource.id}, varName);
             dispatch(updateTableViewData(viewId, resName, varName, null, null, true));
             d3.csv(csvUrl)
-              .then((dataRows: any[]) => {
-                  dispatch(updateTableViewData(viewId, resName, varName, dataRows, null, false));
-              })
-              .catch((error: any) => {
-                  dispatch(updateTableViewData(viewId, resName, varName, null, error, false));
-              });
+                .then((dataRows: any[]) => {
+                    dispatch(updateTableViewData(viewId, resName, varName, dataRows, null, false));
+                })
+                .catch((error: any) => {
+                    dispatch(updateTableViewData(viewId, resName, varName, null, error, false));
+                });
         }
     }
 }
@@ -2199,148 +2207,105 @@ export function hidePreferencesDialog() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Native, Electron-based dialogs, file choosers and message boxes
+// File choosers and message boxes
 
-export interface FileFilter {
-    name: string;
-    extensions: string[];
+
+export const OPEN_OPEN_DIALOG = 'OPEN_OPEN_DIALOG';
+export const CLOSE_OPEN_DIALOG = 'CLOSE_OPEN_DIALOG';
+
+function openOpenDialog(options: OpenDialogOptions,
+                        onClose: (result: OpenDialogResult) => any): Action {
+    return {type: OPEN_OPEN_DIALOG, payload: {options, onClose}};
 }
 
-export type OpenDialogProperty =
-    'openFile'
-    | 'openDirectory'
-    | 'multiSelections'
-    | 'createDirectory'
-    | 'showHiddenFiles';
-
-/**
- * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface FileDialogOptions {
-    title?: string;
-    defaultPath?: string;
-    /**
-     * Custom label for the confirmation button, when left empty the default label will be used.
-     */
-    buttonLabel?: string;
-    filters?: FileFilter[];
+function closeOpenDialog(result: OpenDialogResult): Action {
+    return {type: CLOSE_OPEN_DIALOG, payload: {result}};
 }
 
-// TODO (forman): Replace by electron.SaveDialogOptions
-
 /**
- * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface SaveDialogOptions extends FileDialogOptions {
-}
-
-// TODO (forman): Replace by electron.OpenDialogOptions
-
-/**
- * See dialog.showOpenDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface OpenDialogOptions extends FileDialogOptions {
-    /**
-     * Contains which features the open dialog should use.
-     */
-    properties?: OpenDialogProperty[];
-    /**
-     * Normalize the keyboard access keys across platforms.
-     * Default is false. Enabling this assumes & is used in the button labels for the placement of the
-     * keyboard shortcut access key and labels will be converted so they work correctly on each platform,
-     * & characters are removed on macOS, converted to _ on Linux, and left untouched on Windows.
-     * For example, a button label of Vie&w will be converted to Vie_w on Linux and View on macOS and can
-     * be selected via Alt-W on Windows and Linux.
-     */
-    normalizeAccessKeys?: boolean;
-}
-
-
-/**
- * Shows a native file-open dialog.
- * Similar to "showFileOpenDialog" but will always return a single path or null.
+ * Shows a file open dialog.
  *
- * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with the selected file path
- * @returns the selected file path or null, if no file path was selected or the callback function is defined
- */
-export function showSingleFileOpenDialog(openDialogOptions: OpenDialogOptions,
-                                         callback?: (filePath: string) => void): string | null {
-    const getFirstFile = (filePaths: string[]) => (filePaths && filePaths.length) ? filePaths[0] : null;
-    let callbackThunk;
-    if (callback) {
-        callbackThunk = (filePaths: string[]) => {
-            return callback(getFirstFile(filePaths));
-        };
-    }
-    return getFirstFile(showFileOpenDialog(openDialogOptions, callbackThunk));
-}
-
-//noinspection JSUnusedGlobalSymbols
-/**
- * Shows a native file-open dialog.
- * Similar to "showFileOpenDialog" but will always return a single path or null.
- *
- * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with the selected file path
- * @returns the selected file path or null, if no file path was selected or the callback function is defined
- */
-export function showMultiFileOpenDialog(openDialogOptions: OpenDialogOptions,
-                                        callback?: (filePaths: string[]) => void): string[] | null {
-    if (openDialogOptions.properties && !openDialogOptions.properties.find((p) => p === 'multiSelections')) {
-        const properties = openDialogOptions.properties.slice();
-        properties.push('multiSelections');
-        openDialogOptions = Object.assign({}, openDialogOptions, {properties});
-    }
-    return showFileOpenDialog(openDialogOptions, callback);
-}
-
-/**
- * Shows a native file-open dialog.
- *
- * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with an array of the selected file paths
- * @returns the array of selected file paths or null, if no file path was selected or the callback function is defined
+ * @param openDialogOptions the file-save dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the open dialog result
+ * @returns a thunk action
  */
 export function showFileOpenDialog(openDialogOptions: OpenDialogOptions,
-                                   callback?: (filePaths: string[]) => void): string[] | null {
-    if (hasElectron('showFileOpenDialog')) {
-        const actionName = 'show-open-dialog';
-        if (callback) {
-            electron.ipcRenderer.send(actionName, openDialogOptions, false);
-            electron.ipcRenderer.once(actionName + '-reply', (event, filePaths: string[]) => {
-                callback(filePaths);
-            });
-            return null;
-        } else {
-            return electron.ipcRenderer.sendSync(actionName, openDialogOptions, true) as any;
-        }
-    }
-    return null;
+                                   onClose: (result: OpenDialogResult) => void): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: OpenDialogResult) => {
+            dispatch(closeOpenDialog(result));
+            onClose(result);
+        };
+        dispatch(openOpenDialog(openDialogOptions, handleClose));
+        desktopActions.showFileOpenDialog(openDialogOptions, handleClose);
+    };
 }
 
 /**
- * Shows a native file-save dialog.
+ * Shows a single-file open dialog.
+ * Similar to "showFileOpenDialog" but will always return a single path or null.
+ *
+ * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the selected file path or null if the dialog was canceled
+ * @returns a thunk action
+ */
+export function showSingleFileOpenDialog(openDialogOptions: OpenDialogOptions,
+                                         onClose: (filePath: string | null) => void): ThunkAction {
+    const props = new Set(openDialogOptions.properties);
+    props.delete('multiSelections')
+    return showFileOpenDialog({...openDialogOptions, properties: Array.from(props)},
+                              (result => {
+                                  onClose(!result.canceled && result.filePaths.length > 0 ? result.filePaths[0] : null);
+                              }));
+}
+
+/**
+ * Shows a multi-file open dialog.
+ * Similar to "showFileOpenDialog" but will always return a single path or null.
+ *
+ * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the selected file paths
+ * @returns a thunk action
+ */
+export function showMultiFileOpenDialog(openDialogOptions: OpenDialogOptions,
+                                        onClose: (filePaths: string[]) => any): ThunkAction {
+    const props = new Set(openDialogOptions.properties);
+    props.add('multiSelections')
+    return showFileOpenDialog({...openDialogOptions, properties: Array.from(props)},
+                              (result => {
+                                  onClose(!result.canceled ? result.filePaths : []);
+                              }));
+}
+
+export const OPEN_SAVE_DIALOG = 'OPEN_SAVE_DIALOG';
+export const CLOSE_SAVE_DIALOG = 'CLOSE_SAVE_DIALOG';
+
+function openSaveDialog(options: SaveDialogOptions,
+                        onClose: (result: SaveDialogResult) => any): Action {
+    return {type: OPEN_SAVE_DIALOG, payload: {options, onClose}};
+}
+
+function closeSaveDialog(result: SaveDialogResult): Action {
+    return {type: CLOSE_SAVE_DIALOG, payload: {result}};
+}
+
+/**
+ * Shows a file save dialog.
  *
  * @param saveDialogOptions the file-save dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with the selected file path
- * @returns the selected filePath or null, if no file path was selected or the callback function is defined
+ * @param onClose a function which is called with the selected file path
+ * @returns a thunk action
  */
 export function showFileSaveDialog(saveDialogOptions: SaveDialogOptions,
-                                   callback?: (filePath: string) => void): string | null {
-    if (hasElectron('showFileSaveDialog')) {
-        const actionName = 'show-save-dialog';
-        if (callback) {
-            electron.ipcRenderer.send(actionName, saveDialogOptions, false);
-            electron.ipcRenderer.once(actionName + '-reply', (event, filePath: string) => {
-                callback(filePath);
-            });
-            return null;
-        } else {
-            return electron.ipcRenderer.sendSync(actionName, saveDialogOptions, true) as any;
-        }
-    }
-    return null;
+                                   onClose: (result: SaveDialogResult) => any): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: SaveDialogResult) => {
+            dispatch(closeSaveDialog(result));
+            onClose(result);
+        };
+        dispatch(openSaveDialog(saveDialogOptions, handleClose));
+        desktopActions.showFileSaveDialog(saveDialogOptions, handleClose);
+    };
 }
 
 export const OPEN_MESSAGE_BOX = 'OPEN_MESSAGE_BOX';
@@ -2352,7 +2317,7 @@ function openMessageBox(options: MessageBoxOptions,
     return {type: OPEN_MESSAGE_BOX, payload: {options, onClose}};
 }
 
-function closeMessageBox(result: MessageBoxResult | null) {
+function closeMessageBox(result: MessageBoxResult | null): Action {
     return {type: CLOSE_MESSAGE_BOX, payload: {result}};
 }
 

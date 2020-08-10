@@ -308,6 +308,18 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
         case actions.CLOSE_MESSAGE_BOX: {
             return {...state, messageBox: {...state.messageBox, ...action.payload, isOpen: false}};
         }
+        case actions.OPEN_OPEN_DIALOG: {
+            return {...state, openDialog: {...state.openDialog, ...action.payload, isOpen: true}};
+        }
+        case actions.CLOSE_OPEN_DIALOG: {
+            return {...state, openDialog: {...state.openDialog, ...action.payload, isOpen: false}};
+        }
+        case actions.OPEN_SAVE_DIALOG: {
+            return {...state, saveDialog: {...state.saveDialog, ...action.payload, isOpen: true}};
+        }
+        case actions.CLOSE_SAVE_DIALOG: {
+            return {...state, saveDialog: {...state.saveDialog, ...action.payload, isOpen: false}};
+        }
         default: {
             const newViews = viewsReducer(state.views, action, state.activeViewId);
             if (newViews !== state.views) {
