@@ -88,9 +88,7 @@ const FileList: React.FC<IFileListProps> = (
     const handleRowClick = (fileNode: FileNode, rowIndex: number, event: React.MouseEvent<HTMLTableRowElement>) => {
         // Disallow directory selection
         const node = getRowFileNode(rowIndex);
-        console.log("GGGsssssssssGGG))))))GGGGG", openDirectory, node.isDirectory);
         if ((!openDirectory && node.isDirectory) || (openDirectory && !node.isDirectory)) {
-            console.log("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
             return;
         }
         const path = getRowPath(rowIndex);
