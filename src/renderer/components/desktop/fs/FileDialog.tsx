@@ -270,7 +270,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
                 <div
                     style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', marginTop: 10}}
                 >
-                    <span>Filename:</span>
+                    <span>{openDirectory && !openFile ? 'Directory:' : 'Filename:'}</span>
                     <input
                         className={Classes.INPUT}
                         style={{flexGrow: 1, marginLeft: 10, overflow: 'hidden'}}
