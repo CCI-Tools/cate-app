@@ -23,7 +23,7 @@ export class FilesAPI {
         return callJsonApi<ResponseStatus>(serviceUrl + '/files/upload',
             undefined,
             {
-                // mode: 'no-cors',
+                mode: 'no-cors',
                 method: 'POST',
                 body: formData,
             });

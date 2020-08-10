@@ -6,6 +6,8 @@ import * as actions from '../actions';
 import * as selectors from '../selectors';
 import Dropzone from 'react-dropzone';
 import { CSSProperties } from "react";
+import { Button } from "@blueprintjs/core";
+import { showDirectorySelectDialog } from "../actions";
 
 
 const baseStyle: CSSProperties = {
@@ -98,6 +100,15 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         this.setState({...this.state, files: files});
     };
 
+    handleOpenDirectoryOnClose = (dir: string) => {
+        console.log(dir);
+    };
+
+    handleOpenDirectoryOpen = () => {
+        this.props.dispatch(
+            showDirectorySelectDialog({title: 'test'}, this.handleOpenDirectoryOnClose) as any);
+    };
+
     private renderBody() {
         const files = this.state.files.map(file => (
             <li key={file.name}>
@@ -110,6 +121,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         }
         return (
             <div>
+                <Button onClick={this.handleOpenDirectoryOpen}>Text</Button>
                 <Dropzone onDrop={this.handleOnDrop}>
                     {({getRootProps, getInputProps}) => (
                         <section className="container">
@@ -118,7 +130,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
                                 <p>Drag 'n' drop some files here, or click to select files</p>
                             </div>
                             <aside>
-                                <h4>Files</h4>
+                                {files.length > 0 ? (<h4>Files</h4>) : ''}
                                 <ul>{files}</ul>
                             </aside>
                         </section>

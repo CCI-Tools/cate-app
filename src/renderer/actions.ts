@@ -2361,6 +2361,7 @@ export function uploadFiles(file: File): ThunkAction {
                 showToast({type: res.status, text: 'Upload finished: ' + res.message});
             })
             .catch((error) => {
+                showToast({type: 'error', text: error.toString()});
                 console.error(error);
             });
     }
