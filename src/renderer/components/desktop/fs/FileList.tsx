@@ -20,7 +20,7 @@ const TABLE_STYLE: React.CSSProperties = {width: '100%'};
 interface IFileListProps {
     rootNode: FileNode;
 
-    fileFilter?: FileFilter;
+    fileFilter?: FileFilter | null;
     multiSelections?: boolean;
     openDirectory?: boolean;
 
@@ -86,11 +86,12 @@ const FileList: React.FC<IFileListProps> = (
     };
 
     const handleRowClick = (fileNode: FileNode, rowIndex: number, event: React.MouseEvent<HTMLTableRowElement>) => {
-        if (!openDirectory) {
-            const node = getRowFileNode(rowIndex);
-            if (node.isDirectory) {
-                return;
-            }
+        // Disallow directory selection
+        const node = getRowFileNode(rowIndex);
+        console.log("GGGsssssssssGGG))))))GGGGG", openDirectory, node.isDirectory);
+        if ((!openDirectory && node.isDirectory) || (openDirectory && !node.isDirectory)) {
+            console.log("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG");
+            return;
         }
         const path = getRowPath(rowIndex);
         const newSelectedPathSet = new Set<string>(selectedPathSet);
@@ -156,7 +157,7 @@ export default FileList;
 
 function getCurrentFileNodes(rootNode: FileNode,
                              currentDirPath?: string | null,
-                             fileFilter?: FileFilter): FileNode[] | undefined {
+                             fileFilter?: FileFilter | null): FileNode[] | undefined {
     let currentFileNodes = rootNode.childNodes;
     if (currentDirPath) {
         const currentFileNodesPath = getFileNodePath(rootNode, currentDirPath);

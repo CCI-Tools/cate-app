@@ -30,7 +30,20 @@ export const INITIAL_CONTROL_STATE: ControlState = {
     selectedWorkflowStepId: null,
     selectedWorkspaceResourceName: null,
     selectedVariableName: null,
+
     dialogs: {},
+    directorySelectDialog: {
+        onClose: () => {
+        }
+    },
+    fileOpenDialog: {
+        onClose: () => {
+        }
+    },
+    fileSaveDialog: {
+        onClose: () => {
+        }
+    },
     messageBox: {},
 
     selectedCtxOperationName: null,

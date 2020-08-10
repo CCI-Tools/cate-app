@@ -681,10 +681,12 @@ export interface ControlState {
     // A map that stores the last state of any dialog given a dialogId
     dialogs: { [dialogId: string]: DialogState };
 
-    // Open dialog
-    openDialog: OpenDialogState;
-    // Save dialog
-    saveDialog: SaveDialogState;
+    // Select directory dialog
+    directorySelectDialog: OpenDialogState;
+    // Open file dialog
+    fileOpenDialog: OpenDialogState;
+    // Save file dialog
+    fileSaveDialog: SaveDialogState;
     // Message box
     messageBox: MessageBoxState;
 
@@ -704,13 +706,13 @@ export interface DialogState {
 }
 
 export interface OpenDialogState extends DialogState {
-    onClose?: (result: OpenDialogResult) => any;
+    onClose: (result: OpenDialogResult) => any;
     options?: OpenDialogOptions;
     result?: OpenDialogResult;
 }
 
 export interface SaveDialogState extends DialogState {
-    onClose?: (result: SaveDialogResult) => any;
+    onClose: (result: SaveDialogResult) => any;
     options?: SaveDialogOptions;
     result?: SaveDialogResult;
 }

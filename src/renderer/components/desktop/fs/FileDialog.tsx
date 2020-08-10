@@ -17,8 +17,7 @@ import {
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
 import {
-    addExpandedDirPath,
-    ALL_FILES_FILTER,
+    addExpandedDirPath, ALL_FILES_FILTER,
     FileNode,
     getParentDir,
     sanitizePath,
@@ -73,10 +72,6 @@ const FileDialog: React.FC<IFileDialogProps> = (
     if ((saveFile && openFile) || (saveFile && openDirectory) || (saveFile && multiSelections)) {
         throw new Error('saveFile flag cannot be used with openFile, openDirectory, multiSelections flags');
     }
-    if (openDirectory) {
-        // TODO (forman): recognize openDirectory
-        console.warn('openDirectory flag ignored (not implemented yet))');
-    }
     if (createDirectory) {
         // TODO (forman): recognize createDirectory
         console.warn('createDirectory flag ignored (not implemented yet))');
@@ -89,8 +84,6 @@ const FileDialog: React.FC<IFileDialogProps> = (
     // const [parentDirPath, defaultSelectedPath] = splitDefaultPathIntoSelectedParentDirAndPath(rootNode, defaultPath);
     const defaultDirPath = (defaultPath && getParentDir(defaultPath)) || null;
 
-    filters = filters || [ALL_FILES_FILTER];
-
     const initialPathState: PathState = {
         selectedPaths: (defaultPath && [defaultPath]) || [],
         expandedPaths: (defaultDirPath && [defaultDirPath]) || [],
@@ -101,7 +94,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         return {...state, ...stateUpdate}
     }, initialPathState);
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
-    const [selectedFileFilter, setSelectedFileFilter] = React.useState(filters[0]);
+    const [selectedFileFilter, setSelectedFileFilter] = React.useState(filters && filters.length ? filters[0] : null);
 
     const updateCallback = React.useMemo(() => {
         return (path: string) => {
@@ -111,18 +104,15 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     React.useEffect(() => {
         if (defaultPath) {
-            console.log("updateCallback, because of ", defaultPath);
             updateCallback(defaultPath);
         }
     }, [defaultPath, updateCallback]);
 
     React.useEffect(() => {
-        console.log("updateCallback, because of change of ", pathState.expandedPaths);
         pathState.expandedPaths.forEach(p => updateCallback(p));
     }, [pathState.expandedPaths, updateCallback]);
 
     React.useEffect(() => {
-        console.log("updateCallback, because of change of ", pathState.currentDirPath);
         updateCallback(pathState.currentDirPath);
     }, [pathState.currentDirPath, updateCallback]);
 
@@ -130,7 +120,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         return null;
     }
 
-    console.log("FileDialog: pathState=", pathState);
+    // console.log("FileDialog: pathState=", pathState);
 
     const canConfirm = () => {
         return pathState.selectedPaths.length > 0;
@@ -176,6 +166,30 @@ const FileDialog: React.FC<IFileDialogProps> = (
         updateFileNode(pathState.currentDirPath, true);
     };
 
+    const handleSelectedDirChangeInBreadcrumb = (path: string) => {
+        dispatchPathState({selectedDirPath: path, currentDirPath: path});
+    };
+
+    const handleSelectedDirChangeInTree = (path: string | null) => {
+        if (openDirectory) {
+            if (path !== null) {
+                dispatchPathState({selectedPaths: [path], selectedDirPath: path, currentDirPath: path});
+            } else {
+                dispatchPathState({selectedPaths: [], selectedDirPath: null});
+            }
+        } else {
+            if (path !== null) {
+                dispatchPathState({selectedDirPath: path, currentDirPath: path});
+            } else {
+                dispatchPathState({selectedDirPath: null});
+            }
+        }
+    };
+
+    const handleExpandedPathsChangeInTree = (paths: string[]) => {
+        dispatchPathState({expandedPaths: paths});
+    };
+
     const handleSelectedPathsChangeInList = (paths: string[]) => {
         dispatchPathState({selectedPaths: paths});
     };
@@ -186,22 +200,6 @@ const FileDialog: React.FC<IFileDialogProps> = (
                               selectedDirPath: path,
                               currentDirPath: path,
                           });
-    };
-
-    const handleSelectedDirChangeInTree = (path: string | null) => {
-        if (path !== null) {
-            dispatchPathState({selectedDirPath: path, currentDirPath: path});
-        } else {
-            dispatchPathState({selectedDirPath: null});
-        }
-    };
-
-    const handleSelectedDirChangeInBreadcrumb = (path: string) => {
-        dispatchPathState({selectedDirPath: path, currentDirPath: path});
-    };
-
-    const handleExpandedPathsChangeInTree = (paths: string[]) => {
-        dispatchPathState({expandedPaths: paths});
     };
 
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -287,18 +285,20 @@ const FileDialog: React.FC<IFileDialogProps> = (
                             minimal={true}
                             disabled={true}
                         />
-                        <FileFilterSelect
-                            popoverProps={{minimal: true}}
-                            items={filters}
-                            filterable={false}
-                            itemRenderer={fileFilterItemRenderer}
-                            onItemSelect={filter => setSelectedFileFilter(filter)}
-                        >
-                            <Button
-                                rightIcon="caret-down"
-                                text={getFileFilterText(selectedFileFilter)}
-                            />
-                        </FileFilterSelect>
+                        {filters &&
+                         <FileFilterSelect
+                             popoverProps={{minimal: true}}
+                             items={filters}
+                             filterable={false}
+                             itemRenderer={fileFilterItemRenderer}
+                             onItemSelect={filter => setSelectedFileFilter(filter)}
+                         >
+                             <Button
+                                 rightIcon="caret-down"
+                                 text={getFileFilterText(selectedFileFilter)}
+                             />
+                         </FileFilterSelect>
+                        }
                     </ButtonGroup>
                 </div>
             </div>
@@ -347,7 +347,8 @@ function fromFileInputText(currentDirPath: string, path: string): string[] {
 }
 
 
-function getFileFilterText(fileFilter: FileFilter): string {
+function getFileFilterText(fileFilter: FileFilter | null): string {
+    fileFilter = fileFilter || ALL_FILES_FILTER;
     return `${fileFilter.name} (${fileFilter.extensions.map(e => "*." + e).join(", ")})`;
 }
 

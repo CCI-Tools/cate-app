@@ -8,10 +8,10 @@ import * as actions from "../actions";
 
 function mapStateToProps(state: State) {
     return {
-        isOpen: state.control.saveDialog.isOpen,
-        onClose: state.control.saveDialog.onClose,
+        isOpen: state.control.fileSaveDialog.isOpen,
+        onClose: state.control.fileSaveDialog.onClose,
         rootNode: state.data.fsRootNode,
-        ...state.control.saveDialog.options,
+        ...state.control.fileSaveDialog.options,
     };
 }
 
@@ -19,8 +19,8 @@ const mapDispatchToProps = {
     updateFileNode: actions.updateFileNode,
 };
 
-const _SaveDialog: React.FC<ISaveDialogProps> = (props) => {
+const FileSaveDialog: React.FC<ISaveDialogProps> = (props) => {
     return (<SaveDialog {...props}/>);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(_SaveDialog);
+export default connect(mapStateToProps, mapDispatchToProps)(FileSaveDialog);

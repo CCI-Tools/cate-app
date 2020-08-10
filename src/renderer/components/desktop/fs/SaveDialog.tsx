@@ -13,13 +13,7 @@ export interface ISaveDialogProps extends SaveDialogOptions {
 }
 
 const SaveDialog: React.FC<ISaveDialogProps> = ({onClose, ...props}) => {
-    let createDirectory = false;
-    let showHiddenFiles = false;
-    const properties = props.properties;
-    if (properties) {
-        createDirectory = 'createDirectory' in properties;
-        showHiddenFiles = 'showHiddenFiles' in properties;
-    }
+    const properties = new Set(props.properties);
     const handleClose = (result: FileDialogResult) => {
         onClose({
                     canceled: result.canceled,
@@ -34,8 +28,8 @@ const SaveDialog: React.FC<ISaveDialogProps> = ({onClose, ...props}) => {
             openFile={false}
             openDirectory={false}
             multiSelections={false}
-            createDirectory={createDirectory}
-            showHiddenFiles={showHiddenFiles}
+            createDirectory={properties.has("createDirectory")}
+            showHiddenFiles={properties.has("showHiddenFiles")}
         />
     );
 };

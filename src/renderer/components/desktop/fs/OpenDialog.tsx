@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { FileNode } from './FileNode';
+import { OpenDialogOptions, OpenDialogResult } from '../types';
 
 import FileDialog from './FileDialog';
-import { OpenDialogOptions, OpenDialogResult } from '../types';
+import { FileNode } from './FileNode';
 
 
 export interface IOpenDialogProps extends OpenDialogOptions {
@@ -13,28 +13,16 @@ export interface IOpenDialogProps extends OpenDialogOptions {
 }
 
 const OpenDialog: React.FC<IOpenDialogProps> = (props) => {
-    let openFile = true;
-    let openDirectory = false;
-    let multiSelections = false;
-    let createDirectory = false;
-    let showHiddenFiles = false;
-    const properties = props.properties;
-    if (properties) {
-        openFile = 'openFile' in properties;
-        openDirectory = 'openDirectory' in properties;
-        multiSelections = 'multiSelections' in properties;
-        createDirectory = 'createDirectory' in properties;
-        showHiddenFiles = 'showHiddenFiles' in properties;
-    }
+    const properties = new Set(props.properties);
     return (
         <FileDialog
             {...props}
             saveFile={false}
-            openFile={openFile || !openDirectory}
-            openDirectory={openDirectory}
-            multiSelections={multiSelections}
-            createDirectory={createDirectory}
-            showHiddenFiles={showHiddenFiles}
+            openFile={properties.has('openFile') || !properties.has('openDirectory')}
+            openDirectory={properties.has('openDirectory')}
+            multiSelections={properties.has('multiSelections')}
+            createDirectory={properties.has('createDirectory')}
+            showHiddenFiles={properties.has('showHiddenFiles')}
         />
     );
 };

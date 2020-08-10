@@ -8,10 +8,10 @@ import * as actions from "../actions";
 
 function mapStateToProps(state: State) {
     return {
-        isOpen: state.control.openDialog.isOpen,
-        onClose: state.control.openDialog.onClose,
+        isOpen: state.control.directorySelectDialog.isOpen,
+        onClose: state.control.directorySelectDialog.onClose,
         rootNode: state.data.fsRootNode,
-        ...state.control.openDialog.options,
+        ...state.control.directorySelectDialog.options,
     };
 }
 
@@ -19,8 +19,8 @@ const mapDispatchToProps = {
     updateFileNode: actions.updateFileNode,
 };
 
-const _OpenDialog: React.FC<IOpenDialogProps> = (props) => {
+const DirectorySelectDialog: React.FC<IOpenDialogProps> = (props) => {
     return (<OpenDialog {...props}/>);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(_OpenDialog);
+export default connect(mapStateToProps, mapDispatchToProps)(DirectorySelectDialog);

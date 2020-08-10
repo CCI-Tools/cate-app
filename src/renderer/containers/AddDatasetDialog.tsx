@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { AnchorButton, ControlGroup, InputGroup, Intent } from '@blueprintjs/core';
+import { getParentDir } from '../components/desktop/fs/FileNode';
 import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { OpenDialogProperty } from "../components/desktop/types";
+import { OpenDialogOptions } from "../components/desktop/types";
 
 interface IAddDatasetDialogProps {
     isOpen: boolean;
@@ -64,16 +65,12 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
     }
 
     private showSelectDirectoryDialog() {
-        const openDialogOptions = {
+        const openDialogOptions: OpenDialogOptions = {
             title: 'Select Directory',
-            defaultPath: this.state.filePathPattern,
             buttonLabel: 'Select',
-            properties: [
-                'openDirectory' as OpenDialogProperty,
-            ],
-            filter: [],
+            defaultPath: this.state.filePathPattern !== '' ? getParentDir(this.state.filePathPattern) : undefined,
         };
-        this.props.dispatch(actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string | null) => {
+        this.props.dispatch(actions.showDirectorySelectDialog(openDialogOptions, (dirPath: string | null) => {
             if (dirPath) {
                 this.setState({filePathPattern: dirPath + '/*.nc'} as IAddDatasetDialogState);
             }
@@ -106,7 +103,7 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
             return null;
         }
         return (
-            <ControlGroup>
+            <div>
                 <p>Define a new file data source using a file path pattern.</p>
 
                 <p style={{marginTop: '1em'}}>Name:</p>
@@ -128,7 +125,7 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
                     <AnchorButton intent={Intent.PRIMARY} style={{flex: 'none'}}
                                   onClick={this.showSelectDirectoryDialog}>...</AnchorButton>
                 </ControlGroup>
-            </ControlGroup>
+            </div>
         );
     }
 }

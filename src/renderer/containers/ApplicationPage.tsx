@@ -26,8 +26,9 @@ import StylesPanel from './StylesPanel';
 import NewWorkspaceDialog from './NewWorkspaceDialog';
 import SaveWorkspaceAsDialog from './SaveWorkspaceAsDialog';
 import PreferencesDialog from './PreferencesDialog';
-import OpenDialog from './OpenDialog';
-import SaveDialog from "./SaveDialog";
+import DirectorySelectDialog from './DirectorySelectDialog';
+import FileOpenDialog from './FileOpenDialog';
+import FileSaveDialog from "./FileSaveDialog";
 import MessageBox from './MessageBox';
 import { PanelContainer, PanelContainerLayout } from '../components/PanelContainer';
 import { Panel } from '../components/Panel';
@@ -84,12 +85,10 @@ interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
     isSignedIn: boolean | null;
     forceAppBar?: boolean;
-    fsRootNode: FileNode;
     fileSystemAPI: FileSystemAPI | null,
 }
 
 interface IApplicationPageDispatch {
-    updateFileNode: (path: string) => any;
 }
 
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
@@ -97,13 +96,11 @@ function mapStateToPropsApplication(state: State): IApplicationPageProps {
         webAPIProvision: state.communication.webAPIProvision,
         isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
-        fsRootNode: state.data.fsRootNode,
         fileSystemAPI: selectors.fileSystemAPISelector(state),
     };
 }
 
 const mapDispatchToPropsApplication = {
-    updateFileNode: actions.updateFileNode,
 };
 
 
@@ -128,8 +125,6 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
         webAPIProvision,
         isSignedIn,
         forceAppBar,
-        fsRootNode,
-        updateFileNode,
         fileSystemAPI,
     }) => {
     const [openDialogOpen, setOpenDialogOpen] = useState(true);
@@ -164,8 +159,9 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
             <JobFailureDialog/>
             <WebAPIStatusBox/>
-            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<OpenDialog/>)}
-            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<SaveDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<DirectorySelectDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileOpenDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileSaveDialog/>)}
             {!desktopActions.isNativeUI && <MessageBox/>}
         </div>
     );

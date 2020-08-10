@@ -308,17 +308,29 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
         case actions.CLOSE_MESSAGE_BOX: {
             return {...state, messageBox: {...state.messageBox, ...action.payload, isOpen: false}};
         }
-        case actions.OPEN_OPEN_DIALOG: {
-            return {...state, openDialog: {...state.openDialog, ...action.payload, isOpen: true}};
+        case actions.OPEN_DIRECTORY_SELECT_DIALOG: {
+            // TODO (forman): file choosers: set defaultPath if not set,
+            //      so users don't have to navigate from root
+            return {...state, directorySelectDialog: {...state.directorySelectDialog, ...action.payload, isOpen: true}};
         }
-        case actions.CLOSE_OPEN_DIALOG: {
-            return {...state, openDialog: {...state.openDialog, ...action.payload, isOpen: false}};
+        case actions.CLOSE_DIRECTORY_SELECT_DIALOG: {
+            return {...state, directorySelectDialog: {...state.directorySelectDialog, ...action.payload, isOpen: false}};
         }
-        case actions.OPEN_SAVE_DIALOG: {
-            return {...state, saveDialog: {...state.saveDialog, ...action.payload, isOpen: true}};
+        case actions.OPEN_FILE_OPEN_DIALOG: {
+            // TODO (forman): file choosers: set defaultPath if not set,
+            //      so users don't have to navigate from root
+            return {...state, fileOpenDialog: {...state.fileOpenDialog, ...action.payload, isOpen: true}};
         }
-        case actions.CLOSE_SAVE_DIALOG: {
-            return {...state, saveDialog: {...state.saveDialog, ...action.payload, isOpen: false}};
+        case actions.CLOSE_FILE_OPEN_DIALOG: {
+            return {...state, fileOpenDialog: {...state.fileOpenDialog, ...action.payload, isOpen: false}};
+        }
+        case actions.OPEN_FILE_SAVE_DIALOG: {
+            // TODO (forman): file choosers: set defaultPath if not set,
+            //      so users don't have to navigate from root
+            return {...state, fileSaveDialog: {...state.fileSaveDialog, ...action.payload, isOpen: true}};
+        }
+        case actions.CLOSE_FILE_SAVE_DIALOG: {
+            return {...state, fileSaveDialog: {...state.fileSaveDialog, ...action.payload, isOpen: false}};
         }
         default: {
             const newViews = viewsReducer(state.views, action, state.activeViewId);

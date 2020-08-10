@@ -1580,7 +1580,7 @@ export function deleteResourceInteractive(resName: string): ThunkAction {
                                     title: 'Remove Resource and Workflow Step',
                                     message: `Do you really want to delete resource and step "${resName}"?`,
                                     detail: 'This will also delete the workflow step that created it.\n' +
-                                        'You will not be able to undo this operation.',
+                                            'You will not be able to undo this operation.',
                                     buttons: ['Yes', 'No'],
                                     defaultId: 1,
                                     cancelId: 1,
@@ -2059,12 +2059,12 @@ export function loadTableViewData(viewId: string, resName: string, varName: stri
             const csvUrl = getCsvUrl(restUrl, baseDir, {resId: resource.id}, varName);
             dispatch(updateTableViewData(viewId, resName, varName, null, null, true));
             d3.csv(csvUrl)
-                .then((dataRows: any[]) => {
-                    dispatch(updateTableViewData(viewId, resName, varName, dataRows, null, false));
-                })
-                .catch((error: any) => {
-                    dispatch(updateTableViewData(viewId, resName, varName, null, error, false));
-                });
+              .then((dataRows: any[]) => {
+                  dispatch(updateTableViewData(viewId, resName, varName, dataRows, null, false));
+              })
+              .catch((error: any) => {
+                  dispatch(updateTableViewData(viewId, resName, varName, null, error, false));
+              });
         }
     }
 }
@@ -2209,18 +2209,55 @@ export function hidePreferencesDialog() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // File choosers and message boxes
 
+export const OPEN_DIRECTORY_SELECT_DIALOG = 'OPEN_DIRECTORY_SELECT_DIALOG';
+export const CLOSE_DIRECTORY_SELECT_DIALOG = 'CLOSE_DIRECTORY_SELECT_DIALOG';
 
-export const OPEN_OPEN_DIALOG = 'OPEN_OPEN_DIALOG';
-export const CLOSE_OPEN_DIALOG = 'CLOSE_OPEN_DIALOG';
-
-function openOpenDialog(options: OpenDialogOptions,
-                        onClose: (result: OpenDialogResult) => any): Action {
-    return {type: OPEN_OPEN_DIALOG, payload: {options, onClose}};
+function openDirectorySelectDialog(options: OpenDialogOptions,
+                                   onClose: (result: OpenDialogResult) => any): Action {
+    return {type: OPEN_DIRECTORY_SELECT_DIALOG, payload: {options, onClose}};
 }
 
-function closeOpenDialog(result: OpenDialogResult): Action {
-    return {type: CLOSE_OPEN_DIALOG, payload: {result}};
+function closeDirectorySelectDialog(result: OpenDialogResult): Action {
+    return {type: CLOSE_DIRECTORY_SELECT_DIALOG, payload: {result}};
 }
+
+/**
+ * Shows a single-directory select dialog.
+ * Similar to "showFileOpenDialog" but will always return a single directory path or null.
+ *
+ * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the selected directory path or null if the dialog was canceled
+ * @returns a thunk action
+ */
+export function showDirectorySelectDialog(openDialogOptions: OpenDialogOptions,
+                                          onClose: (dirPath: string | null) => void): ThunkAction {
+    const propsSet = new Set(openDialogOptions.properties);
+    propsSet.delete('openFile');
+    propsSet.delete('multiSelections');
+    propsSet.add('openDirectory');
+    openDialogOptions = {...openDialogOptions, properties: Array.from(propsSet)};
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: OpenDialogResult) => {
+            dispatch(closeDirectorySelectDialog(result));
+            onClose(!result.canceled && result.filePaths && result.filePaths.length > 0 ? result.filePaths[0] : null);
+        };
+        dispatch(openDirectorySelectDialog(openDialogOptions, handleClose));
+        desktopActions.showFileOpenDialog(openDialogOptions, handleClose);
+    };
+}
+
+export const OPEN_FILE_OPEN_DIALOG = 'OPEN_FILE_OPEN_DIALOG';
+export const CLOSE_FILE_OPEN_DIALOG = 'CLOSE_FILE_OPEN_DIALOG';
+
+function openFileOpenDialog(options: OpenDialogOptions,
+                            onClose: (result: OpenDialogResult) => any): Action {
+    return {type: OPEN_FILE_OPEN_DIALOG, payload: {options, onClose}};
+}
+
+function closeFileOpenDialog(result: OpenDialogResult): Action {
+    return {type: CLOSE_FILE_OPEN_DIALOG, payload: {result}};
+}
+
 
 /**
  * Shows a file open dialog.
@@ -2233,10 +2270,10 @@ export function showFileOpenDialog(openDialogOptions: OpenDialogOptions,
                                    onClose: (result: OpenDialogResult) => void): ThunkAction {
     return (dispatch: Dispatch) => {
         const handleClose = (result: OpenDialogResult) => {
-            dispatch(closeOpenDialog(result));
+            dispatch(closeFileOpenDialog(result));
             onClose(result);
         };
-        dispatch(openOpenDialog(openDialogOptions, handleClose));
+        dispatch(openFileOpenDialog(openDialogOptions, handleClose));
         desktopActions.showFileOpenDialog(openDialogOptions, handleClose);
     };
 }
@@ -2251,9 +2288,10 @@ export function showFileOpenDialog(openDialogOptions: OpenDialogOptions,
  */
 export function showSingleFileOpenDialog(openDialogOptions: OpenDialogOptions,
                                          onClose: (filePath: string | null) => void): ThunkAction {
-    const props = new Set(openDialogOptions.properties);
-    props.delete('multiSelections')
-    return showFileOpenDialog({...openDialogOptions, properties: Array.from(props)},
+    const propsSet = new Set(openDialogOptions.properties);
+    propsSet.delete('multiSelections')
+    openDialogOptions = {...openDialogOptions, properties: Array.from(propsSet)};
+    return showFileOpenDialog(openDialogOptions,
                               (result => {
                                   onClose(!result.canceled && result.filePaths.length > 0 ? result.filePaths[0] : null);
                               }));
@@ -2269,24 +2307,25 @@ export function showSingleFileOpenDialog(openDialogOptions: OpenDialogOptions,
  */
 export function showMultiFileOpenDialog(openDialogOptions: OpenDialogOptions,
                                         onClose: (filePaths: string[]) => any): ThunkAction {
-    const props = new Set(openDialogOptions.properties);
-    props.add('multiSelections')
-    return showFileOpenDialog({...openDialogOptions, properties: Array.from(props)},
+    const propsSet = new Set(openDialogOptions.properties);
+    propsSet.add('multiSelections')
+    openDialogOptions = {...openDialogOptions, properties: Array.from(propsSet)};
+    return showFileOpenDialog(openDialogOptions,
                               (result => {
                                   onClose(!result.canceled ? result.filePaths : []);
                               }));
 }
 
-export const OPEN_SAVE_DIALOG = 'OPEN_SAVE_DIALOG';
-export const CLOSE_SAVE_DIALOG = 'CLOSE_SAVE_DIALOG';
+export const OPEN_FILE_SAVE_DIALOG = 'OPEN_FILE_SAVE_DIALOG';
+export const CLOSE_FILE_SAVE_DIALOG = 'CLOSE_FILE_SAVE_DIALOG';
 
-function openSaveDialog(options: SaveDialogOptions,
-                        onClose: (result: SaveDialogResult) => any): Action {
-    return {type: OPEN_SAVE_DIALOG, payload: {options, onClose}};
+function openFileSaveDialog(options: SaveDialogOptions,
+                            onClose: (result: SaveDialogResult) => any): Action {
+    return {type: OPEN_FILE_SAVE_DIALOG, payload: {options, onClose}};
 }
 
-function closeSaveDialog(result: SaveDialogResult): Action {
-    return {type: CLOSE_SAVE_DIALOG, payload: {result}};
+function closeFileSaveDialog(result: SaveDialogResult): Action {
+    return {type: CLOSE_FILE_SAVE_DIALOG, payload: {result}};
 }
 
 /**
@@ -2300,10 +2339,10 @@ export function showFileSaveDialog(saveDialogOptions: SaveDialogOptions,
                                    onClose: (result: SaveDialogResult) => any): ThunkAction {
     return (dispatch: Dispatch) => {
         const handleClose = (result: SaveDialogResult) => {
-            dispatch(closeSaveDialog(result));
+            dispatch(closeFileSaveDialog(result));
             onClose(result);
         };
-        dispatch(openSaveDialog(saveDialogOptions, handleClose));
+        dispatch(openFileSaveDialog(saveDialogOptions, handleClose));
         desktopActions.showFileSaveDialog(saveDialogOptions, handleClose);
     };
 }
