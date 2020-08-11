@@ -11,8 +11,7 @@ import { showPwaInstallPromotion } from './actions';
 import { stateReducer } from './reducers';
 import { State } from './state';
 
-import { stateReducer } from './reducers';
-import { updatePreferences } from "./actions";
+
 const electron = requireElectron();
 
 export function main() {
@@ -136,7 +135,7 @@ export function main() {
         event.preventDefault();
         const state = store.getState();
         if (state.communication.webAPIClient) {
-            store.dispatch(updatePreferences(state.session) as any);
+            store.dispatch(actions.updatePreferences(state.session) as any);
         }
     });
 }
