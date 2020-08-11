@@ -1,7 +1,7 @@
 {
   "name": "Cate App",
   "short_name": "Cate App",
-  "description": "Cate is the ESA CCI Toolbox",
+  "description": "Graphical user interface of Cate, the ESA CCI Toolbox",
   "lang": "en-GB",
   "start_url": ".",
   "display": "standalone",

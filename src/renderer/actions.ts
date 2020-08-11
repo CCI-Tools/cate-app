@@ -1,4 +1,9 @@
-import { requireElectron } from './electron';
+import * as redux from 'redux';
+import * as d3 from 'd3-fetch';
+import * as Cesium from 'cesium';
+import { DirectGeometryObject } from 'geojson';
+import copyToClipboard from 'copy-to-clipboard';
+
 import {
     BackendConfigState,
     ColorMapCategoryState, ControlState,
@@ -60,12 +65,8 @@ import {
 import { SplitDir } from './components/Splitter';
 import { updateObject } from '../common/objutil';
 import { showToast } from './toast';
-import * as redux from 'redux';
-import * as d3 from 'd3-fetch';
-import * as Cesium from 'cesium';
 import { isDefined, isNumber } from '../common/types';
 import { reloadEntityWithOriginalGeometry } from './containers/globe-view-layers';
-import { DirectGeometryObject } from 'geojson';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { getEntityByEntityId } from './components/cesium/cesium-util';
@@ -80,7 +81,10 @@ import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containe
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
-import copyToClipboard from 'copy-to-clipboard';
+import { requireElectron } from './electron';
+import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
+
+import desktopActions from './components/desktop/actions';
 
 const electron = requireElectron();
 
@@ -214,10 +218,11 @@ export function logout(): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
         const username = getState().communication.username;
         const token = getState().communication.token;
+
         if (username === null || token === null) {
             return;
         }
-        // dispatch(storePreferences());
+
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
         const authAPI = new AuthAPI();
@@ -308,7 +313,6 @@ export function connectWebAPIClient(): ThunkAction {
             dispatch(loadColorMaps());
             dispatch(loadDataStores());
             dispatch(loadOperations());
-            dispatch(loadInitialWorkspace());
             dispatch(loadPreferences());
         };
 
@@ -346,6 +350,8 @@ export function connectWebAPIClient(): ThunkAction {
 function disconnectWebAPIClient(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const webAPIClient = getState().communication.webAPIClient;
+        const session = getState().session;
+        updatePreferences(session);
         if (webAPIClient !== null) {
             webAPIClient.close();
         }
@@ -431,16 +437,16 @@ export function loadPreferences(): ThunkAction {
 
         function action(session: SessionState) {
             dispatch(updateSessionState(session));
-            dispatch(sendPreferencesToMain());
+            dispatch(loadInitialWorkspace(session.reopenLastWorkspace, session.lastWorkspacePath));
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                               type: 'error',
-                               title: 'Loading Preferences',
-                               message: 'Failed to load preferences.',
-                               detail: jobFailure.message
-                           });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Loading Preferences',
+                                        message: 'Failed to load preferences.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
@@ -465,12 +471,12 @@ export function updatePreferences(session: Partial<SessionState>, sendToMain: bo
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                               type: 'error',
-                               title: 'Save Preferences',
-                               message: 'Failed to save workspace.',
-                               detail: jobFailure.message
-                           });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Save Preferences',
+                                        message: 'Failed to save workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
@@ -1072,10 +1078,8 @@ export function updateWorkspaceNames(workspaceNames: string[]): Action {
  *
  * @returns a Redux thunk action
  */
-export function loadInitialWorkspace(): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const reopenLastWorkspace = getState().session.reopenLastWorkspace;
-        const lastWorkspacePath = getState().session.lastWorkspacePath;
+export function loadInitialWorkspace(reopenLastWorkspace: boolean, lastWorkspacePath: string): ThunkAction {
+    return (dispatch: Dispatch) => {
         if (reopenLastWorkspace && lastWorkspacePath) {
             dispatch(openWorkspace(lastWorkspacePath));
         } else {
@@ -1107,12 +1111,12 @@ export function newWorkspace(workspacePath: string | null): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                               type: 'error',
-                               title: 'New Workspace',
-                               message: 'Failed to create new workspace.',
-                               detail: jobFailure.message
-                           });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'New Workspace',
+                                        message: 'Failed to create new workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
@@ -1207,12 +1211,12 @@ export function saveWorkspace(): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                               type: 'error',
-                               title: 'Save Workspace',
-                               message: 'Failed to save workspace.',
-                               detail: jobFailure.message
-                           });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Save Workspace',
+                                        message: 'Failed to save workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
@@ -1241,12 +1245,12 @@ export function saveWorkspaceAs(workspacePath: string): ThunkAction {
         }
 
         function planB(jobFailure: JobFailure) {
-            showMessageBox({
-                               type: 'error',
-                               title: 'Save Workspace As',
-                               message: 'Failed to save workspace.',
-                               detail: jobFailure.message
-                           });
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'Save Workspace As',
+                                        message: 'Failed to save workspace.',
+                                        detail: jobFailure.message
+                                    }));
         }
 
         callAPI({
@@ -1445,18 +1449,19 @@ export function closeWorkspaceInteractive(): ThunkAction {
  */
 export function cleanWorkspaceInteractive(): ThunkAction {
     return (dispatch: Dispatch) => {
-        const answer = showMessageBox({
-                                          type: 'question',
-                                          title: 'Clean Workspace',
-                                          message: 'Do you really want to clean this workspace?',
-                                          detail: 'This will delete all resources and workflow steps.\nYou will not be able to undo this operation.',
-                                          buttons: ['Yes', 'No'],
-                                          defaultId: 1,
-                                          cancelId: 1,
-                                      });
-        if (answer && answer.buttonIndex === 0) {
-            dispatch(cleanWorkspace());
-        }
+        dispatch(showMessageBox({
+                                    type: 'question',
+                                    title: 'Clean Workspace',
+                                    message: 'Do you really want to clean this workspace?',
+                                    detail: 'This will delete all resources and workflow steps.\nYou will not be able to undo this operation.',
+                                    buttons: ['Yes', 'No'],
+                                    defaultId: 1,
+                                    cancelId: 1,
+                                }, (answer) => {
+            if (answer && answer.buttonIndex === 0) {
+                dispatch(cleanWorkspace());
+            }
+        }));
     };
 }
 
@@ -1467,19 +1472,20 @@ export function cleanWorkspaceInteractive(): ThunkAction {
  */
 export function deleteResourceInteractive(resName: string): ThunkAction {
     return (dispatch: Dispatch) => {
-        const answer = showMessageBox({
-                                          type: 'question',
-                                          title: 'Remove Resource and Workflow Step',
-                                          message: `Do you really want to delete resource and step "${resName}"?`,
-                                          detail: 'This will also delete the workflow step that created it.\n' +
-                                                  'You will not be able to undo this operation.',
-                                          buttons: ['Yes', 'No'],
-                                          defaultId: 1,
-                                          cancelId: 1,
-                                      });
-        if (answer && answer.buttonIndex === 0) {
-            dispatch(deleteResource(resName));
-        }
+        dispatch(showMessageBox({
+                                    type: 'question',
+                                    title: 'Remove Resource and Workflow Step',
+                                    message: `Do you really want to delete resource and step "${resName}"?`,
+                                    detail: 'This will also delete the workflow step that created it.\n' +
+                                            'You will not be able to undo this operation.',
+                                    buttons: ['Yes', 'No'],
+                                    defaultId: 1,
+                                    cancelId: 1,
+                                }, answer => {
+            if (answer && answer.buttonIndex === 0) {
+                dispatch(deleteResource(resName));
+            }
+        }));
     };
 }
 
@@ -1518,28 +1524,30 @@ function maybeSaveCurrentWorkspace(dispatch, getState: GetState, title: string, 
     if (workspace) {
         const maySave = workspace.workflow.steps.length && (workspace.isModified || !workspace.isSaved);
         if (maySave) {
-            const answer = showMessageBox({
-                                              type: 'question',
-                                              title,
-                                              message,
-                                              detail,
-                                              buttons: ['Yes', 'No', 'Cancel'],
-                                              defaultId: 0,
-                                              cancelId: 2,
-                                          });
-            if (answer) {
-                if (answer.buttonIndex === 0) {
-                    if (workspace.isScratch) {
-                        dispatch(saveWorkspaceAsInteractive());
-                    } else {
-                        dispatch(saveWorkspace());
+            dispatch(showMessageBox({
+                                        type: 'question',
+                                        title,
+                                        message,
+                                        detail,
+                                        buttons: ['Yes', 'No', 'Cancel'],
+                                        defaultId: 0,
+                                        cancelId: 2,
+                                    }, answer => {
+
+                if (answer) {
+                    if (answer.buttonIndex === 0) {
+                        if (workspace.isScratch) {
+                            dispatch(saveWorkspaceAsInteractive());
+                        } else {
+                            dispatch(saveWorkspace());
+                        }
+                    } else if (answer.buttonIndex === 2) {
+                        return false;
                     }
-                } else if (answer.buttonIndex === 2) {
+                } else {
                     return false;
                 }
-            } else {
-                return false;
-            }
+            }));
         }
     }
     return true;
@@ -2191,72 +2199,6 @@ export interface OpenDialogOptions extends FileDialogOptions {
     normalizeAccessKeys?: boolean;
 }
 
-// TODO (forman): Replace by electron.MessageBoxOptions
-
-/**
- * See dialog.showMessageBox() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface MessageBoxOptions {
-    /**
-     * Can be "none", "info", "error", "question" or "warning". On Windows, "question" displays the same icon as "info", unless you set an icon using the "icon" option.
-     */
-    type?: string;
-
-    /**
-     * Array of texts for buttons. On Windows, an empty array will result in one button labeled "OK".
-     */
-    buttons?: string[];
-
-    /**
-     * Title of the message box, some platforms will not show it.
-     */
-    title?: string;
-
-    /**
-     * Content of the message box.
-     */
-    message: string;
-
-    /**
-     * Extra information of the message.
-     */
-    detail?: string;
-
-    /**
-     *  NativeImage: https://github.com/electron/electron/blob/master/docs/api/native-image.md
-     */
-    icon?: any;
-
-    /**
-     * Index of the button in the buttons array which will be selected by default when the message box opens.
-     */
-    defaultId?: number;
-
-    /**
-     * The value will be returned when user cancels the dialog instead of clicking the buttons of the dialog.
-     * By default it is the index of the buttons that have "cancel" or "no" as label, or 0 if there is no such buttons.
-     * On macOS and Windows the index of the "Cancel" button will always be used as cancelId even if it is specified.
-     */
-    cancelId?: number;
-
-    /**
-     * On Windows Electron will try to figure out which one of the buttons are common buttons (like "Cancel" or "Yes"),
-     * and show the others as command links in the dialog. This can make the dialog appear in the style of modern
-     * Windows apps. If you don't like this behavior, you can set noLink to true.
-     */
-    noLink?: boolean;
-
-    /**
-     * If provided, the message box will include a checkbox with the given label.
-     * The checkbox state can be inspected only when using callback.
-     */
-    checkboxLabel?: string;
-
-    /**
-     * Initial checked state of the checkbox. false by default.
-     */
-    checkboxChecked?: boolean;
-}
 
 /**
  * Shows a native file-open dialog.
@@ -2345,34 +2287,33 @@ export function showFileSaveDialog(saveDialogOptions: SaveDialogOptions,
     return null;
 }
 
-/**
- * Shows a native message box.
- * Note, this is not an action.
- *
- * @param messageBoxOptions the message dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with (buttonIndex, checkboxChecked)
- * @returns null, if no button was selected or the callback function is defined. Otherwise an object {buttonIndex, checkboxChecked}.
- */
-export function showMessageBox(messageBoxOptions: MessageBoxOptions,
-                               callback?: (buttonIndex: number,
-                                           checkboxChecked: boolean) => void): { buttonIndex: number, checkboxChecked: boolean } | null {
-    if (hasElectron('showMessageBox')) {
-        const actionName = 'show-message-box';
-        if (!messageBoxOptions.buttons) {
-            messageBoxOptions = {...messageBoxOptions, buttons: ['OK']};
-        }
-        if (callback) {
-            electron.ipcRenderer.send(actionName, messageBoxOptions, false);
-            electron.ipcRenderer.once(actionName + '-reply', (event, buttonIndex: number, checkboxChecked: boolean) => {
-                callback(buttonIndex, checkboxChecked);
-            });
-            return null;
-        } else {
-            return electron.ipcRenderer.sendSync(actionName, messageBoxOptions, true) as any;
-        }
-    }
-    return null;
+export const OPEN_MESSAGE_BOX = 'OPEN_MESSAGE_BOX';
+export const CLOSE_MESSAGE_BOX = 'CLOSE_MESSAGE_BOX';
+
+
+function openMessageBox(options: MessageBoxOptions,
+                        onClose: (result: MessageBoxResult | null) => void): Action {
+    return {type: OPEN_MESSAGE_BOX, payload: {options, onClose}};
 }
+
+function closeMessageBox(result: MessageBoxResult | null) {
+    return {type: CLOSE_MESSAGE_BOX, payload: {result}};
+}
+
+export function showMessageBox(messageBoxOptions: MessageBoxOptions,
+                               onClose?: (result: MessageBoxResult | null) => void): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: MessageBoxResult | null) => {
+            dispatch(closeMessageBox(result));
+            if (onClose) {
+                onClose(result);
+            }
+        };
+        dispatch(openMessageBox(messageBoxOptions, handleClose));
+        desktopActions.showMessageBox(messageBoxOptions, handleClose);
+    };
+}
+
 
 //noinspection JSUnusedGlobalSymbols
 /**

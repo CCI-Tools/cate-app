@@ -305,6 +305,12 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
         case actions.UPDATE_PWA_DISPLAY_MODE: {
             return {...state, pwaDisplayMode: action.payload};
         }
+        case actions.OPEN_MESSAGE_BOX: {
+            return {...state, messageBox: {...state.messageBox, ...action.payload, isOpen: true}};
+        }
+        case actions.CLOSE_MESSAGE_BOX: {
+            return {...state, messageBox: {...state.messageBox, ...action.payload, isOpen: false}};
+        }
         default: {
             const newViews = viewsReducer(state.views, action, state.activeViewId);
             if (newViews !== state.views) {
