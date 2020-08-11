@@ -20,7 +20,7 @@ import FileTree from './FileTree';
 
 
 const FILE_DIALOG_STYLE: React.CSSProperties = {
-    width: 800
+    width: '52vw'
 };
 const FILE_CONTAINER_STYLE: React.CSSProperties = {
     width: '100%', display: 'flex', flexFlow: 'column nowrap'
@@ -29,7 +29,7 @@ const FILE_MGT_ROW_STYLE: React.CSSProperties = {
     flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 6
 };
 const FILE_LIST_ROW_STYLE: React.CSSProperties = {
-    height: 320, flexGrow: 0
+    height: '40vh', flexGrow: 0
 };
 const FILE_INPUT_ROW_STYLE: React.CSSProperties = {
     flexGrow: 0,
