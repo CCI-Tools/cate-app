@@ -15,7 +15,7 @@ import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
 import { FileDialogOptions, FileDialogResult, FileFilter } from '../types';
 import FileList from './FileList';
-import { addExpandedDirPath, ALL_FILES_FILTER, FileNode, getParentDir, sanitizePath, } from './FileNode';
+import { addExpandedDirPath, ALL_FILES_FILTER, FileNode, getBasename, getParentDir, sanitizePath, } from './FileNode';
 import FileTree from './FileTree';
 
 
@@ -56,6 +56,7 @@ interface PathState {
     expandedPaths: string[];
     selectedDirPath: string | null;
     currentDirPath: string;
+    inputValue: string;
 }
 
 const FileFilterSelect = Select.ofType<FileFilter>();
@@ -111,6 +112,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         expandedPaths: (defaultDirPath && [defaultDirPath]) || [],
         selectedDirPath: defaultDirPath,
         currentDirPath: defaultDirPath || '',
+        inputValue: '',
     };
     const [pathState, dispatchPathState] = React.useReducer(
         (state: PathState, stateUpdate: Partial<PathState>) => {
@@ -263,19 +265,35 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleSelectedDirChangeInBreadcrumb = (path: string) => {
-        dispatchPathState({selectedDirPath: path, currentDirPath: path});
+        handleSelectedDirChangeInTree(path);
     };
 
     const handleSelectedDirChangeInTree = (path: string | null) => {
         if (openDirectory) {
+            // change selectedPaths/inputValue too
             if (path !== null) {
-                dispatchPathState({selectedPaths: [path], selectedDirPath: path, currentDirPath: path});
+                const selectedPaths = [path];
+                const inputValue = toPathInputValue([getBasename(path)], multiSelections);
+                dispatchPathState({
+                                      selectedDirPath: path,
+                                      currentDirPath: path,
+                                      selectedPaths,
+                                      inputValue
+                                  });
             } else {
-                dispatchPathState({selectedPaths: [], selectedDirPath: null});
+                dispatchPathState({
+                                      selectedDirPath: null,
+                                      selectedPaths: [],
+                                      inputValue: ''
+                                  });
             }
         } else {
+            // do not change selectedPaths/inputValue
             if (path !== null) {
-                dispatchPathState({selectedDirPath: path, currentDirPath: path});
+                dispatchPathState({
+                                      selectedDirPath: path,
+                                      currentDirPath: path
+                                  });
             } else {
                 dispatchPathState({selectedDirPath: null});
             }
@@ -287,16 +305,21 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleSelectedPathsChangeInList = (paths: string[]) => {
-        dispatchPathState({selectedPaths: paths});
+        dispatchPathState({
+                              selectedPaths: paths,
+                              inputValue: toPathInputValue(paths.map(p => getBasename(p)), multiSelections)
+                          });
     };
 
     const handleCurrentDirPathChangeInList = (path: string) => {
         if (openDirectory && !openFile && !multiSelections) {
+            // change selectedPaths/inputValue too
             dispatchPathState({
                                   expandedPaths: addExpandedDirPath(pathState.expandedPaths, path),
                                   selectedDirPath: path,
                                   currentDirPath: path,
                                   selectedPaths: [path],
+                                  inputValue: toPathInputValue([getBasename(path)], multiSelections),
                               });
         } else {
             dispatchPathState({
@@ -308,7 +331,11 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
-        dispatchPathState({selectedPaths: fromFileInputText(pathState.currentDirPath, event.target.value)})
+        const inputValue = event.target.value || '';
+        dispatchPathState({
+                              selectedPaths: fromPathInputValue(inputValue, multiSelections).map(v => pathState.currentDirPath !== '' ? pathState.currentDirPath + '/' + v : v),
+                              inputValue: event.target.value
+                          });
     }
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {
@@ -329,8 +356,8 @@ const FileDialog: React.FC<IFileDialogProps> = (
     return (
         <ModalDialog
             isOpen={isOpen}
-            title={title || getDefaultFileActionText(saveFile, openDirectory)}
-            confirmTitle={buttonLabel || getDefaultFileActionText(saveFile, openDirectory)}
+            title={title || getDefaultFileActionText(saveFile, openDirectory, openFile)}
+            confirmTitle={buttonLabel || getDefaultFileActionText(saveFile, openDirectory, openFile)}
             onConfirm={handleConfirm}
             onCancel={handleCancel}
             canConfirm={canConfirm}
@@ -436,7 +463,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
                         className={Classes.INPUT}
                         style={FILE_INPUT_STYLE}
                         type="text"
-                        value={toFileInputText(pathState.currentDirPath, pathState.selectedPaths)}
+                        value={pathState.inputValue}
                         onChange={handleSelectedPathsChangeInTextField}
                     />
                     <ButtonGroup>
@@ -483,43 +510,77 @@ const fileFilterItemRenderer: ItemRenderer<FileFilter> = (fileFilter: FileFilter
     );
 };
 
-
-function toFileInputText(currentDirPath: string | null, selectedPaths: string[]): string {
-    if (selectedPaths.length === 0) {
-        return '';
-    }
-    let relPaths = selectedPaths;
-    if (currentDirPath) {
-        const selectedDirPath2 = currentDirPath + '/';
-        relPaths = selectedPaths.map(p => p.startsWith(currentDirPath + '/') ? p.substr(selectedDirPath2.length) : p);
-    }
-    if (selectedPaths.length === 1) {
-        return relPaths[0]
-    }
-    return relPaths.map(p => `"${p}"`).join(' ');
-}
-
-function fromFileInputText(currentDirPath: string, path: string): string[] {
-    path = sanitizePath(path);
-    if (path === '') {
-        return [];
-    }
-    return [currentDirPath ? currentDirPath + '/' + path : path];
-}
-
-
 function getFileFilterText(fileFilter: FileFilter | null): string {
     fileFilter = fileFilter || ALL_FILES_FILTER;
     return `${fileFilter.name} (${fileFilter.extensions.map(e => "*." + e).join(", ")})`;
 }
 
-function getDefaultFileActionText(saveFile?: boolean, openDirectory?: boolean): string {
+function getDefaultFileActionText(saveFile?: boolean, openDirectory?: boolean, openFile?: boolean): string {
     if (saveFile) {
         return 'Save File';
     }
-    if (openDirectory) {
-        return 'Open Directory';
+    if (openDirectory && !openFile) {
+        return 'Select Directory';
     }
     return 'Open File';
 }
 
+function fromPathInputValue(inputValue: string, multiSelection: boolean): string[] {
+    inputValue = inputValue.trim()
+    if (!multiSelection) {
+        if (inputValue === '') {
+            return [];
+        }
+        return [inputValue];
+    }
+    const paths = [];
+    let escC = null;
+    let p = '';
+    for (let i = 0; i < inputValue.length; i++) {
+        const c = inputValue[i];
+        if (c === '"' || c === "'") {
+            if (escC === null) {
+                escC = c;
+                p = '';
+            } else if (escC === c) {
+                escC = null;
+            }
+        } else if (c === ' ') {
+            if (escC === null) {
+                if (p !== '') {
+                    paths.push(p);
+                    p = '';
+                }
+            } else {
+                p += c;
+            }
+        } else {
+            p += c;
+        }
+    }
+    if (p !== '') {
+        paths.push(p);
+    }
+    return paths;
+}
+
+function toPathInputValue(paths: string[], multiSelection: boolean): string {
+    if (!multiSelection) {
+        if (paths.length === 0) {
+            return '';
+        }
+        return paths[0].trim();
+    }
+    return paths.map(p => escapePath(p.trim())).join(' ');
+}
+
+function escapePath(path: string): string {
+    if (path.indexOf(' ') >= 0) {
+        if (path.indexOf('"') >= 0) {
+            return `'${path}'`;
+        } else {
+            return `"${path}"`;
+        }
+    }
+    return path;
+}
