@@ -7,9 +7,10 @@ import thunkMiddleware from 'redux-thunk';
 import * as actions from './actions'
 import ApplicationPage from './containers/ApplicationPage'
 import { requireElectron } from './electron';
+import { showPwaInstallPromotion } from './actions';
 import { stateReducer } from './reducers';
 import { State } from './state';
-// import {loadPreferences, updatePreferences} from "./actions";
+
 
 const electron = requireElectron();
 
@@ -87,6 +88,34 @@ export function main() {
         ipcRenderer.on('logout', () => {
             store.dispatch(actions.logout() as any);
         });
+    } else {
+        // Dektop-PWA app install, see https://web.dev/customize-install/
+
+        window.addEventListener('beforeinstallprompt', (event: Event) => {
+            // Update UI notify the user they can install the PWA
+            store.dispatch(showPwaInstallPromotion(event));
+            console.log('BEFORE INSTALL PROMPT:', event);
+        });
+
+        window.addEventListener('appinstalled', (event: Event) => {
+            // Log install to analytics
+            console.log('INSTALL: Success');
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            store.dispatch(actions.updatePwaDisplayMode(
+                ((navigator as any).standalone ||
+                 window.matchMedia('(display-mode: standalone)').matches) ? 'standalone' : 'browser'
+            ));
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt: MediaQueryListEvent) => {
+                store.dispatch(actions.updatePwaDisplayMode(
+                    evt.matches ? 'standalone' : 'browser'
+                ));
+            });
+        });
     }
 
     document.addEventListener('drop', function (event: any) {
@@ -100,6 +129,14 @@ export function main() {
     document.addEventListener('dragover', function (event: any) {
         event.preventDefault();
         event.stopPropagation();
+    });
+
+    window.addEventListener('beforeunload', (event: any) => {
+        event.preventDefault();
+        const state = store.getState();
+        if (state.communication.webAPIClient) {
+            store.dispatch(actions.updatePreferences(state.session) as any);
+        }
     });
 }
 
@@ -130,4 +167,3 @@ function readDroppedFile(file: File, dispatch: Dispatch<State>) {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
 }
-

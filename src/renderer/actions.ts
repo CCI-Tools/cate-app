@@ -225,10 +225,11 @@ export function logout(): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
         const username = getState().communication.username;
         const token = getState().communication.token;
+
         if (username === null || token === null) {
             return;
         }
-        // dispatch(storePreferences());
+
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
         const authAPI = new AuthAPI();
@@ -319,7 +320,6 @@ export function connectWebAPIClient(): ThunkAction {
             dispatch(loadColorMaps());
             dispatch(loadDataStores());
             dispatch(loadOperations());
-            dispatch(loadInitialWorkspace());
             dispatch(loadPreferences());
         };
 
@@ -357,6 +357,8 @@ export function connectWebAPIClient(): ThunkAction {
 function disconnectWebAPIClient(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const webAPIClient = getState().communication.webAPIClient;
+        const session = getState().session;
+        updatePreferences(session);
         if (webAPIClient !== null) {
             webAPIClient.close();
         }
@@ -441,7 +443,7 @@ export function loadPreferences(): ThunkAction {
 
         function action(session: SessionState) {
             dispatch(updateSessionState(session));
-            dispatch(sendPreferencesToMain());
+            dispatch(loadInitialWorkspace(session.reopenLastWorkspace, session.lastWorkspacePath));
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1177,10 +1179,8 @@ export function updateWorkspaceNames(workspaceNames: string[]): Action {
  *
  * @returns a Redux thunk action
  */
-export function loadInitialWorkspace(): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const reopenLastWorkspace = getState().session.reopenLastWorkspace;
-        const lastWorkspacePath = getState().session.lastWorkspacePath;
+export function loadInitialWorkspace(reopenLastWorkspace: boolean, lastWorkspacePath: string): ThunkAction {
+    return (dispatch: Dispatch) => {
         if (reopenLastWorkspace && lastWorkspacePath) {
             dispatch(openWorkspace(lastWorkspacePath));
         } else {
@@ -2204,6 +2204,45 @@ export function showPreferencesDialog() {
 
 export function hidePreferencesDialog() {
     return hideDialog('preferencesDialog');
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Desktop-PWA installation support actions
+
+export const SHOW_PWA_INSTALL_PROMOTION = 'SHOW_PWA_INSTALL_PROMOTION';
+export const HIDE_PWA_INSTALL_PROMOTION = 'HIDE_PWA_INSTALL_PROMOTION';
+export const UPDATE_PWA_DISPLAY_MODE = 'UPDATE_PWA_DISPLAY_MODE';
+
+let _deferredPwaInstallPrompt: any = null;
+
+export function showPwaInstallPromotion(deferredPrompt: any): Action {
+    // Prevent the mini-infobar from appearing on mobile
+    _deferredPwaInstallPrompt = deferredPrompt;
+    _deferredPwaInstallPrompt.preventDefault();
+    return {type: SHOW_PWA_INSTALL_PROMOTION};
+}
+
+function hidePwaInstallPromotion(): Action {
+    return {type: HIDE_PWA_INSTALL_PROMOTION};
+}
+
+export const showPwaInstallPrompt = (): ThunkAction => (dispatch, getState) => {
+    // Hide the app provided install promotion
+    dispatch(hidePwaInstallPromotion());
+    // Show the install prompt
+    _deferredPwaInstallPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    _deferredPwaInstallPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        } else {
+            console.log('User dismissed the install prompt');
+        }
+    });
+}
+
+export function updatePwaDisplayMode(pwaDisplayMode: string): Action {
+    return {type: UPDATE_PWA_DISPLAY_MODE, payload: pwaDisplayMode};
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
