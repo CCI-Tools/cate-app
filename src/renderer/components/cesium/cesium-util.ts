@@ -1,4 +1,4 @@
-import { isDefined, isNumber, isString } from '../../../common/types';
+import { isBoolean, isDefined, isNumber, isString } from '../../../common/types';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle } from '../../../common/geojson-simple-style';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject, Feature } from 'geojson';
@@ -113,52 +113,52 @@ export function applyStyleToEntity(style: CesiumSimpleStyle, entity: Cesium.Enti
     if (entity.point) {
         const point = entity.point;
         if (isDefined(style.markerColor)) {
-            point.color = style.markerColor;
+            point.color = new Cesium.ConstantProperty(style.markerColor);
         }
         if (isNumber(style.markerSize)) {
-            point.pixelSize = 16 * (style.markerSize / MARKER_SIZE_SMALL);
+            point.pixelSize = new Cesium.ConstantProperty(16 * (style.markerSize / MARKER_SIZE_SMALL));
         }
     } else if (entity.billboard) {
         const billboard = entity.billboard;
         if (isDefined(style.markerCanvas)) {
-            billboard.image = style.markerCanvas;
+            billboard.image = new Cesium.ConstantProperty(style.markerCanvas);
         } else {
             if (isDefined(style.markerColor)) {
-                billboard.color = style.markerColor;
+                billboard.color = new Cesium.ConstantProperty(style.markerColor);
             }
             if (isNumber(style.markerSize)) {
-                billboard.scale = style.markerSize / MARKER_SIZE_MEDIUM;
+                billboard.scale = new Cesium.ConstantProperty(style.markerSize / MARKER_SIZE_MEDIUM);
             }
         }
     } else if (entity.label) {
         const label = entity.label;
         if (isDefined(style.title)) {
-            label.text = style.title;
+            label.text = new Cesium.ConstantProperty(style.title);
         }
         if (isDefined(style.markerColor)) {
-            label.color = style.markerColor;
+            label.fillColor = new Cesium.ConstantProperty(style.markerColor);
         }
         if (isNumber(style.markerSize)) {
-            label.scale = style.markerSize / MARKER_SIZE_MEDIUM;
+            label.scale = new Cesium.ConstantProperty(style.markerSize / MARKER_SIZE_MEDIUM);
         }
     } else if (entity.polyline) {
         const polyline = entity.polyline;
         if (isDefined(style.stroke)) {
-            polyline.material = style.stroke;
+            polyline.material = new Cesium.ColorMaterialProperty(style.stroke);
         }
         if (isNumber(style.strokeWidth)) {
-            polyline.width = style.strokeWidth;
+            polyline.width = new Cesium.ConstantProperty(style.strokeWidth);
         }
     } else if (entity.polygon) {
         const polygon = entity.polygon;
         if (isDefined(style.fill)) {
-            polygon.material = style.fill;
+            polygon.material = new Cesium.ColorMaterialProperty(style.fill);
         }
         if (isDefined(style.stroke)) {
-            polygon.outlineColor = style.stroke;
+            polygon.outlineColor = new Cesium.ConstantProperty(style.stroke);
         }
         if (isNumber(style.strokeWidth)) {
-            polygon.outlineWidth = style.strokeWidth;
+            polygon.outlineWidth = new Cesium.ConstantProperty(style.strokeWidth);
         }
     }
 }
@@ -189,7 +189,7 @@ function rgbToCssColor(r: number, g: number, b: number): string {
     return '#' + rs + gs + bs;
 }
 
-function pointGraphicsToSimpleStyle(point: Cesium.PointGraphics) {
+function pointGraphicsToSimpleStyle(point: Cesium.PointGraphics): SimpleStyle {
     const now = Cesium.JulianDate.now();
     const outlineColor = point.outlineColor;
     const outlineWidth = point.outlineWidth;
@@ -230,7 +230,7 @@ function pointGraphicsToSimpleStyle(point: Cesium.PointGraphics) {
     };
 }
 
-function billboardGraphicsToSimpleStyle(point: Cesium.BillboardGraphics) {
+function billboardGraphicsToSimpleStyle(point: Cesium.BillboardGraphics): SimpleStyle {
     const now = Cesium.JulianDate.now();
     const image = point.image;
     const scale = point.scale;
@@ -265,10 +265,11 @@ function billboardGraphicsToSimpleStyle(point: Cesium.BillboardGraphics) {
     };
 }
 
-function labelGraphicsToSimpleStyle(point: Cesium.LabelGraphics) {
-    const text = point.text;
-    const scale = point.scale;
-    const fillColor = point.fillColor;
+function labelGraphicsToSimpleStyle(point: Cesium.LabelGraphics): SimpleStyle {
+    const now = Cesium.JulianDate.now();
+    const text = point.text && point.text.getValue(now);
+    const scale = point.scale && point.scale.getValue(now);
+    const fillColor = point.fillColor && point.fillColor.getValue(now);
     let title: string;
     let markerSize: 'small' | 'medium' | 'large';
     let markerColor: string;
@@ -284,7 +285,7 @@ function labelGraphicsToSimpleStyle(point: Cesium.LabelGraphics) {
             markerSize = 'large';
         }
     }
-    if (fillColor) {
+    if (isDefined(fillColor)) {
         markerColor = rgbToCssColor(fillColor.red, fillColor.green, fillColor.blue);
     }
     return {
@@ -294,10 +295,11 @@ function labelGraphicsToSimpleStyle(point: Cesium.LabelGraphics) {
     };
 }
 
-function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics) {
+function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics): SimpleStyle {
     const now = Cesium.JulianDate.now();
-    const width = polyline.width;
-    const material = polyline.material;
+    const width = polyline.width && polyline.width.getValue(now);
+    const material = polyline.material && polyline.material.getValue(now);
+    const color = material && material.color && material.color.getValue(now);
     let stroke: string;
     let strokeOpacity: number;
     let strokeWidth: number;
@@ -305,8 +307,7 @@ function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics) {
     if (isDefined(width)) {
         strokeWidth = width.getValue(now);
     }
-    if (isDefined(material) && isDefined(material.color)) {
-        const color = material.color.getValue(now);
+    if (isDefined(color)) {
         stroke = rgbToCssColor(color.red, color.green, color.blue);
         strokeOpacity = color.alpha;
     }
@@ -317,41 +318,40 @@ function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics) {
     };
 }
 
-function polygonGraphicsToSimpleStyle(polygon: Cesium.PolygonGraphics) {
+function polygonGraphicsToSimpleStyle(polygon: Cesium.PolygonGraphics): SimpleStyle {
     const now = Cesium.JulianDate.now();
-    const isFilled = polygon.fill;
+    const isFilled = polygon.fill && polygon.fill.getValue(now);
     const material = polygon.material;
-    const isOutlined = polygon.outline;
-    const outlineColor = polygon.outlineColor;
-    const outlineWidth = polygon.outlineWidth;
+    const color = material && (material as any).color && (material as Cesium.ColorMaterialProperty).color.getValue(now);
+    const isOutlined = polygon.outline && polygon.outline.getValue(now);
+    const outlineColor = polygon.outlineColor && polygon.outlineColor.getValue(now);
+    const outlineWidth = polygon.outlineWidth && polygon.outlineWidth.getValue(now);
     let stroke: string;
     let strokeOpacity: number;
     let strokeWidth: number;
     let fill: string;
     let fillOpacity: number;
 
-    if (isDefined(material) && isDefined(material.color)) {
-        const color = material.color.getValue(now);
+    if (isDefined(color)) {
         fill = rgbToCssColor(color.red, color.green, color.blue);
         fillOpacity = color.alpha;
     } else {
         fill = SIMPLE_STYLE_DEFAULTS.fill;
         fillOpacity = SIMPLE_STYLE_DEFAULTS.fillOpacity;
     }
-    if (isDefined(isFilled) && !isFilled.getValue(now)) {
+    if (isBoolean(isFilled) && !Boolean(isFilled)) {
         fillOpacity = 0;
     }
 
     if (isDefined(outlineColor)) {
-        const colorValue = outlineColor.getValue(now);
-        stroke = rgbToCssColor(colorValue.red, colorValue.green, colorValue.blue);
-        strokeOpacity = colorValue.alpha;
+        stroke = rgbToCssColor(outlineColor.red, outlineColor.green, outlineColor.blue);
+        strokeOpacity = outlineColor.alpha;
     }
-    if (isDefined(isOutlined) && !outlineColor.getValue(now)) {
+    if (isDefined(isOutlined) && !outlineColor) {
         strokeOpacity = 0;
     }
     if (isDefined(outlineWidth)) {
-        strokeWidth = outlineWidth.getValue(now);
+        strokeWidth = outlineWidth;
     }
 
     return {
@@ -515,7 +515,7 @@ export function pickEntity(viewer: Cesium.Viewer,
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
 
-export function getEntityByEntityId(viewer: Cesium.Viewer, entityId: string | number): Cesium.Entity | null {
+export function getEntityByEntityId(viewer: Cesium.Viewer, entityId: string): Cesium.Entity | null {
     for (let i = 0; i < viewer.dataSources.length; i++) {
         const dataSource = viewer.dataSources.get(i);
         const entity = dataSource.entities.getById(entityId);

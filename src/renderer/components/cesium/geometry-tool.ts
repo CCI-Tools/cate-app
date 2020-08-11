@@ -1,4 +1,5 @@
 import * as Cesium from 'cesium'
+import { isDefined } from '../../../common/types';
 
 
 export const pointHeight = 10;
@@ -12,26 +13,38 @@ export const polygonColor = new Cesium.ColorMaterialProperty(Cesium.Color.AQUA.w
 
 export type GeometryToolType = 'PointTool' | 'PolylineTool' | 'PolygonTool' | 'BoxTool' | 'NoTool';
 
-export interface ToolContext {
-    newEntity(entityTemplate): void;
-
-    addToolEntity(entityTemplate): Cesium.Entity;
-
-    removeAllToolEntities(): void;
-
-    pickEllipsoid(position);
-
-    cartesianWithHeightDelta(cartesian, height: number);
-
-    cartesianToCartographic(cartesian);
-
-    cartographicToCartesian(cartographic);
+class Click {
+    position: Cesium.Cartesian2;
 }
 
-export abstract class ToolContextBase implements ToolContext {
+class Movement {
+    // noinspection JSUnusedGlobalSymbols
+    startPosition?: Cesium.Cartesian2;
+    endPosition: Cesium.Cartesian2;
+}
+
+export abstract class ToolContext {
+
+    abstract newEntity(entity: Cesium.Entity): void;
+
+    abstract addToolEntity(entityT: Cesium.Entity): void;
+
+    abstract removeAllToolEntities(): void;
+
+    abstract pickEllipsoid(position: Cesium.Cartesian2): Cesium.Cartesian3 | undefined;
+
+    abstract cartesianWithHeightDelta(cartesian: Cesium.Cartesian3, height: number): Cesium.Cartesian3;
+
+    abstract cartesianToCartographic(cartesian: Cesium.Cartesian3): Cesium.Cartographic;
+
+    abstract cartographicToCartesian(cartographic: Cesium.Cartographic): Cesium.Cartesian3;
+}
+
+export abstract class ToolContextBase extends ToolContext {
     private _tool: Tool;
 
-    constructor() {
+    protected constructor() {
+        super();
         this._tool = NO_TOOL;
     }
 
@@ -49,31 +62,17 @@ export abstract class ToolContextBase implements ToolContext {
         return this._tool;
     }
 
-    onLeftClick(leftClick) {
+    onLeftClick(leftClick: Click): void {
         this._tool.handleLeftClick(leftClick);
     }
 
-    onLeftDoubleClick(leftClick) {
+    onLeftDoubleClick(leftClick: Click): void {
         this._tool.handleLeftDoubleClick(leftClick);
     }
 
-    onMouseMove(movement) {
+    onMouseMove(movement: Movement): void {
         this._tool.handleMouseMove(movement);
     }
-
-    abstract newEntity(entity): void;
-
-    abstract addToolEntity(entity): void;
-
-    abstract removeAllToolEntities(): void;
-
-    abstract pickEllipsoid(position): void;
-
-    abstract cartesianWithHeightDelta(cartesian, delta: number): void;
-
-    abstract cartesianToCartographic(cartesian): void;
-
-    abstract cartographicToCartesian(cartographic): void;
 }
 
 
@@ -81,7 +80,7 @@ export class CesiumToolContext extends ToolContextBase {
     private _viewer: Cesium.Viewer;
     private _ellipsoid: Cesium.Ellipsoid;
     private _toolDataSource: Cesium.CustomDataSource;
-    private _handler;
+    private _handler: Cesium.ScreenSpaceEventHandler;
     private _onNewEntity?: (entity: Cesium.Entity) => void;
 
     constructor(viewer: Cesium.Viewer, onNewEntity?: (entity: Cesium.Entity) => void) {
@@ -113,42 +112,43 @@ export class CesiumToolContext extends ToolContextBase {
         this._onNewEntity = onNewEntity;
     }
 
-    newEntity(entityTemplate): void {
+    newEntity(entity: Cesium.Entity): void {
         if (this._onNewEntity) {
-            this._onNewEntity(new Cesium.Entity(entityTemplate));
+            this._onNewEntity(new Cesium.Entity(entity));
         } else {
-            this._viewer.entities.add(entityTemplate);
+            this._viewer.entities.add(entity);
         }
     }
 
-    addToolEntity(entityTemplate): Cesium.Entity {
-        return this._toolDataSource.entities.add(entityTemplate);
+    addToolEntity(entity: Cesium.Entity): void {
+        this._toolDataSource.entities.add(entity);
+        console.log("addToolEntity: _toolDataSource =", this._toolDataSource);
     }
 
     removeAllToolEntities(): void {
         this._toolDataSource.entities.removeAll();
     }
 
-    pickEllipsoid(position) {
+    pickEllipsoid(position: Cesium.Cartesian2): Cesium.Cartesian3 {
         return this._viewer.camera.pickEllipsoid(position, this._ellipsoid);
     }
 
-    cartesianWithHeightDelta(cartesian, delta: number) {
+    cartesianWithHeightDelta(cartesian: Cesium.Cartesian3, height: number): Cesium.Cartesian3 {
         const cartographic = this._ellipsoid.cartesianToCartographic(cartesian);
-        cartographic.height += delta;
+        cartographic.height += height;
         return this._ellipsoid.cartographicToCartesian(cartographic);
     }
 
-    cartesianToCartographic(cartesian) {
+    cartesianToCartographic(cartesian: Cesium.Cartesian3): Cesium.Cartographic {
         return this._ellipsoid.cartesianToCartographic(cartesian);
     }
 
-    cartographicToCartesian(cartographic) {
+    cartographicToCartesian(cartographic: Cesium.Cartographic): Cesium.Cartesian3 {
         return this._ellipsoid.cartographicToCartesian(cartographic);
     }
 
     destroy() {
-        this._handler = this._handler && this._handler.destroy();
+        this._handler.destroy();
     }
 }
 
@@ -159,25 +159,24 @@ export interface Tool {
 
     isActive(): boolean;
 
-    activate();
+    activate(): void;
 
-    deactivate();
+    deactivate(): void;
 
-    handleLeftClick(leftClick);
+    handleLeftClick(leftClick: Click): void;
 
-    handleLeftDoubleClick(leftClick);
+    handleLeftDoubleClick(leftClick: Click): void;
 
-    handleMouseMove(movement);
+    handleMouseMove(movement: Movement): void;
 }
 
 
 abstract class ToolBase implements Tool {
     readonly type: string;
-    private _context: ToolContext | null;
+    private _context: ToolContext | null = null;
 
     constructor(type: string) {
         this.type = type;
-        this._context = null;
     }
 
     set context(context: ToolContext | null) {
@@ -198,13 +197,13 @@ abstract class ToolBase implements Tool {
     deactivate() {
     }
 
-    handleLeftClick(leftClick) {
+    handleLeftClick(leftClick: Click) {
     }
 
-    handleLeftDoubleClick(leftClick) {
+    handleLeftDoubleClick(leftClick: Click) {
     }
 
-    handleMouseMove(movement) {
+    handleMouseMove(movement: Movement) {
     }
 }
 
@@ -223,17 +222,17 @@ export class PointTool extends ToolBase {
     }
 
     handleLeftClick(leftClick) {
-        const cartesian = this.context.pickEllipsoid(leftClick.position);
-        if (cartesian) {
-            this.context.newEntity({
-                                       position: cartesian,
-                                       point: {
-                                           pixelSize: 6,
-                                           //color: Cesium.Color.RED,
-                                           //outlineColor: Cesium.Color.WHITE,
-                                           outlineWidth: 1
-                                       },
-                                   });
+        const position = this.context.pickEllipsoid(leftClick.position);
+        if (isDefined(position)) {
+            this.context.newEntity(new Cesium.Entity({
+                                                         position,
+                                                         point: {
+                                                             pixelSize: 6,
+                                                             //color: Cesium.Color.RED,
+                                                             //outlineColor: Cesium.Color.WHITE,
+                                                             outlineWidth: 1
+                                                         },
+                                                     }));
         }
     }
 }
@@ -243,13 +242,13 @@ class PolyTool extends ToolBase {
     private readonly genPolygon: boolean;
 
     // Note polylinePositions and polygonPositions differ in height
-    private polylinePositions;
-    private polygonPositions;
+    private polylinePositions: Cesium.Cartesian3[] | null = null;
+    private polygonPositions: Cesium.Cartesian3[] | null = null;
 
-    private polylineEntity;
-    private polygonEntity;
+    private polylineEntity: Cesium.Entity | null = null;
+    private polygonEntity: Cesium.Entity | null = null;
 
-    private hasRubberband;
+    private hasRubberband: boolean = false;
 
     constructor(type: string, genPolygon: boolean) {
         super(type);
@@ -260,78 +259,78 @@ class PolyTool extends ToolBase {
         this.reset();
     }
 
-    handleLeftClick(leftClick) {
+    handleLeftClick(leftClick: Click) {
         this.addPoint(leftClick.position);
     }
 
-    handleMouseMove(movement) {
+    handleMouseMove(movement: Movement) {
         this.moveLastPoint(movement.endPosition);
     }
 
-    handleLeftDoubleClick(leftClick) {
+    handleLeftDoubleClick(leftClick: Click) {
         this.endInteraction();
     }
 
-    private addPoint(position) {
-        const cartesian = this.context.pickEllipsoid(position);
-        if (cartesian) {
-            const position = this.context.cartesianWithHeightDelta(cartesian, pointHeight);
+    private addPoint(screenPosition: Cesium.Cartesian2) {
+        let position = this.context.pickEllipsoid(screenPosition);
+        if (isDefined(position)) {
+            position = this.context.cartesianWithHeightDelta(position, pointHeight);
             // Add point graphics
-            if (this.updatePositions(cartesian)) {
-                this.context.addToolEntity({
-                                               position: position,
-                                               allowPicking: false,
-                                               point: {
-                                                   show: true,
-                                                   outlineColor: Cesium.Color.BLACK,
-                                                   outlineWidth: 1,
-                                                   color: pointColor,
-                                                   pixelSize: 10,
-                                               }
-                                           });
+            if (this.updatePositions(position)) {
+                this.context.addToolEntity(new Cesium.Entity({
+                                                                 position,
+                                                                 //allowPicking: false,
+                                                                 point: {
+                                                                     show: true,
+                                                                     outlineColor: Cesium.Color.BLACK,
+                                                                     outlineWidth: 1,
+                                                                     color: pointColor,
+                                                                     pixelSize: 10,
+                                                                 }
+                                                             }));
             }
             this.hasRubberband = false;
         }
     }
 
     private endInteraction() {
-        if (this.polygonEntity) {
-            this.context.newEntity({
-                                       polygon: {
-                                           // check: why doesn't this work?
-                                           // hierarchy: this.polygonEntity.hierarchy,
-                                           hierarchy: this.polygonPositions,
-                                           material: polygonColor,
-                                       }
-                                   });
-        } else if (this.polylineEntity) {
-            this.context.newEntity({
-                                       polyline: {
-                                           // check: why doesn't this work?
-                                           // positions: this.polylinePositions.positions,
-                                           positions: this.polylinePositions,
-                                           material: polylineColor,
-                                       }
-                                   });
+        if (this.polygonEntity !== null) {
+            this.context.newEntity(new Cesium.Entity({
+                                                         polygon: {
+                                                             // check: why doesn't this work?
+                                                             // hierarchy: this.polygonEntity.hierarchy,
+                                                             hierarchy: new Cesium.PolygonHierarchy(this.polygonPositions),
+                                                             material: polygonColor,
+                                                         }
+                                                     }));
+        } else if (this.polylineEntity !== null) {
+            this.context.newEntity(new Cesium.Entity({
+                                                         polyline: {
+                                                             // check: why doesn't this work?
+                                                             // positions: this.polylinePositions.positions,
+                                                             positions: this.polylinePositions,
+                                                             material: polylineColor,
+                                                         }
+                                                     }));
         }
         this.reset();
     }
 
-    private moveLastPoint(position) {
+    private moveLastPoint(screenPosition: Cesium.Cartesian2) {
         if (!this.polylinePositions) {
             return;
         }
-        const cartesian = this.context.pickEllipsoid(position);
-        if (cartesian) {
-            this.updatePositions(cartesian);
+        const position = this.context.pickEllipsoid(screenPosition);
+        if (isDefined(position)) {
+            this.updatePositions(position);
             this.hasRubberband = true;
         }
     }
 
-    private updatePositions(cartesian): boolean {
-        const polylinePoint = this.context.cartesianWithHeightDelta(cartesian, polylineHeight);
+    private updatePositions(position: Cesium.Cartesian3): boolean {
+        const polylinePoint = this.context.cartesianWithHeightDelta(position, polylineHeight);
         let newPointAdded = true;
-        if (!this.polylinePositions) {
+        if (this.polylinePositions === null) {
             this.polylinePositions = [polylinePoint];
         } else {
             const numPoints = this.polylinePositions.length;
@@ -348,23 +347,23 @@ class PolyTool extends ToolBase {
         if (this.polylinePositions.length > 1) {
             let positions = this.polylinePositions.slice();
             if (!this.polylineEntity) {
-                this.polylineEntity = this.context.addToolEntity({
-                                                                     allowPicking: false,
-                                                                     polyline: {
-                                                                         positions: positions,
-                                                                         width: polylineWidth,
-                                                                         followSurface: true,
-                                                                         material: polylineColor,
-                                                                     }
-                                                                 });
+                this.polylineEntity = new Cesium.Entity({
+                                                            //allowPicking: false,
+                                                            polyline: {
+                                                                positions: positions,
+                                                                width: polylineWidth,
+                                                                //followSurface: true,
+                                                                material: polylineColor,
+                                                            }
+                                                        })
+                this.context.addToolEntity(this.polylineEntity);
             } else if (newPointAdded) {
-                this.polylineEntity.polyline.positions = positions;
+                this.polylineEntity.polyline.positions = new Cesium.ConstantProperty(positions);
             }
         }
 
-
         if (newPointAdded && this.genPolygon) {
-            const polygonPoint = this.context.cartesianWithHeightDelta(cartesian, polygonHeight);
+            const polygonPoint = this.context.cartesianWithHeightDelta(position, polygonHeight);
             if (!this.polygonPositions) {
                 this.polygonPositions = [polygonPoint];
             } else {
@@ -375,18 +374,19 @@ class PolyTool extends ToolBase {
                     this.polygonPositions.push(polygonPoint);
                 }
             }
-            if (this.polygonPositions && this.polygonPositions.length > 2) {
+            if (this.polygonPositions.length > 2) {
                 let positions = this.polygonPositions.slice();
                 if (!this.polygonEntity) {
-                    this.polygonEntity = this.context.addToolEntity({
-                                                                        allowPicking: false,
-                                                                        polygon: {
-                                                                            hierarchy: positions,
-                                                                            material: polygonColor,
-                                                                        }
-                                                                    });
+                    this.polygonEntity = new Cesium.Entity({
+                                                               //allowPicking: false,
+                                                               polygon: {
+                                                                   hierarchy: new Cesium.PolygonHierarchy(positions),
+                                                                   material: polygonColor,
+                                                               }
+                                                           });
+                    this.context.addToolEntity(this.polygonEntity);
                 } else {
-                    this.polygonEntity.polygon.hierarchy = positions;
+                    this.polygonEntity.polygon.hierarchy = new Cesium.ConstantProperty(new Cesium.PolygonHierarchy(positions));
                 }
             }
         }
@@ -423,9 +423,9 @@ export class PolygonTool extends PolyTool {
 
 export class BoxTool extends ToolBase {
 
-    private position1;
-    private position2;
-    private polygonEntity;
+    private position1: Cesium.Cartesian3 | null = null;
+    private position2: Cesium.Cartesian3 | null = null;
+    private polygonEntity: Cesium.Entity | null = null;
 
     constructor() {
         super('BoxTool');
@@ -435,54 +435,55 @@ export class BoxTool extends ToolBase {
         this.reset();
     }
 
-    handleLeftClick(leftClick) {
+    handleLeftClick(leftClick: Click) {
         this.setPosition(leftClick.position, true);
     }
 
-    handleLeftDoubleClick(leftClick) {
+    handleLeftDoubleClick(leftClick: Click) {
         this.setPosition(leftClick.position, true);
     }
 
-    handleMouseMove(movement) {
+    handleMouseMove(movement: Movement) {
         if (this.position1) {
             this.setPosition(movement.endPosition, false);
         }
     }
 
-    private setPosition(position: any, doAdd: boolean) {
-        const cartesian = this.context.pickEllipsoid(position);
-        if (cartesian) {
-            if (!this.position1) {
-                this.position1 = cartesian;
+    private setPosition(screenPosition: Cesium.Cartesian2, doAdd: boolean) {
+        const position = this.context.pickEllipsoid(screenPosition);
+        if (isDefined(position)) {
+            if (this.position1 === null) {
+                this.position1 = position;
             } else {
-                this.position2 = cartesian;
+                this.position2 = position;
                 const positions = this.getPositions();
                 if (doAdd) {
-                    this.context.newEntity({
-                                               polygon: {
-                                                   hierarchy: positions,
-                                                   material: polygonColor,
-                                               }
-                                           });
+                    this.context.newEntity(new Cesium.Entity({
+                                                                 polygon: {
+                                                                     hierarchy: new Cesium.PolygonHierarchy(positions),
+                                                                     material: polygonColor,
+                                                                 }
+                                                             }));
                     this.reset();
                     return;
                 }
-                if (!this.polygonEntity) {
-                    this.polygonEntity = this.context.addToolEntity({
-                                                                        allowPicking: false,
-                                                                        polygon: {
-                                                                            hierarchy: positions,
-                                                                            material: polygonColor,
-                                                                        }
-                                                                    });
+                if (this.polygonEntity === null) {
+                    this.polygonEntity = new Cesium.Entity({
+                                                               // allowPicking: false,
+                                                               polygon: {
+                                                                   hierarchy: new Cesium.PolygonHierarchy(positions),
+                                                                   material: polygonColor,
+                                                               }
+                                                           });
+                    this.context.addToolEntity(this.polygonEntity);
                 } else {
-                    this.polygonEntity.polygon.hierarchy = positions;
+                    this.polygonEntity.polygon.hierarchy = new Cesium.ConstantProperty(new Cesium.PolygonHierarchy(positions));
                 }
             }
         }
     }
 
-    private getPositions() {
+    private getPositions(): Cesium.Cartesian3[] {
         const carto1 = this.context.cartesianToCartographic(this.position1);
         const carto2 = this.context.cartesianToCartographic(this.position2);
         const lon1 = carto1.longitude;
@@ -491,15 +492,16 @@ export class BoxTool extends ToolBase {
         const lat2 = carto2.latitude;
         const height = 0.5 * (carto1.height + carto2.height);
         return [
-            this.context.cartographicToCartesian({longitude: lon1, latitude: lat1, height}),
-            this.context.cartographicToCartesian({longitude: lon2, latitude: lat1, height}),
-            this.context.cartographicToCartesian({longitude: lon2, latitude: lat2, height}),
-            this.context.cartographicToCartesian({longitude: lon1, latitude: lat2, height}),
+            this.context.cartographicToCartesian(new Cesium.Cartographic(lon1, lat1, height)),
+            this.context.cartographicToCartesian(new Cesium.Cartographic(lon2, lat1, height)),
+            this.context.cartographicToCartesian(new Cesium.Cartographic(lon2, lat2, height)),
+            this.context.cartographicToCartesian(new Cesium.Cartographic(lon1, lat2, height)),
         ];
     }
 
     reset() {
-        this.position1 = this.position2 = null;
+        this.position1 = null;
+        this.position2 = null;
         this.polygonEntity = null;
         if (this.context !== null) {
             this.context.removeAllToolEntities();

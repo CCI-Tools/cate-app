@@ -11,6 +11,8 @@ import { showPwaInstallPromotion } from './actions';
 import { stateReducer } from './reducers';
 import { State } from './state';
 
+import { stateReducer } from './reducers';
+import { updatePreferences } from "./actions";
 const electron = requireElectron();
 
 export function main() {
@@ -129,6 +131,14 @@ export function main() {
         event.preventDefault();
         event.stopPropagation();
     });
+
+    window.addEventListener('beforeunload', (event: any) => {
+        event.preventDefault();
+        const state = store.getState();
+        if (state.communication.webAPIClient) {
+            store.dispatch(updatePreferences(state.session) as any);
+        }
+    });
 }
 
 function readDroppedFile(file: File, dispatch: Dispatch<State>) {
@@ -158,4 +168,3 @@ function readDroppedFile(file: File, dispatch: Dispatch<State>) {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
 }
-
