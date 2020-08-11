@@ -262,3 +262,80 @@ export function compareFileSize(a: FileNode, b: FileNode) {
     return a.name.localeCompare(b.name);
 }
 
+/**
+ * Parse a text value entered by the user into an array of selected paths.
+ * @param inputValue text value entered by the user
+ * @param currentDirPath the current directory
+ * @param multiSelection if multiple selections are allowed
+ * @returns an array of selected paths
+ */
+export function fromPathInputValue(inputValue: string, currentDirPath: string, multiSelection: boolean): string[] {
+    inputValue = inputValue.trim()
+    if (inputValue === '') {
+        return [];
+    }
+    let paths;
+    if (!multiSelection) {
+        paths = [inputValue];
+    } else {
+        paths = [];
+        let escChar = null;
+        let token = '';
+        for (let i = 0; i < inputValue.length; i++) {
+            const char = inputValue[i];
+            if (char === '"' || char === "'") {
+                if (escChar === null) {
+                    escChar = char;
+                    token = '';
+                } else if (escChar === char) {
+                    escChar = null;
+                } else {
+                    token += char;
+                }
+            } else if (char === ' ') {
+                if (escChar === null) {
+                    if (token !== '') {
+                        paths.push(token);
+                        token = '';
+                    }
+                } else {
+                    token += char;
+                }
+            } else {
+                token += char;
+            }
+        }
+        if (token !== '') {
+            paths.push(token);
+        }
+    }
+    // TODO (forman): recognize absolute paths
+    return paths.map(p => currentDirPath !== '' ? currentDirPath + '/' + p : p);
+}
+
+/**
+ * Format an array of selected paths into a text value that the user can edit.
+ * @param selectedPaths array of selected paths
+ * @param multiSelection if multiple selections are allowed
+ * @returns a text value that the user can edit
+ */
+export function toPathInputValue(selectedPaths: string[], multiSelection: boolean): string {
+    if (selectedPaths.length === 0) {
+        return '';
+    }
+    if (!multiSelection) {
+        return getBasename(selectedPaths[0]);
+    }
+    return selectedPaths.map(p => escapePath(getBasename((p)))).join(' ');
+}
+
+function escapePath(path: string): string {
+    if (path.indexOf(' ') >= 0) {
+        if (path.indexOf('"') >= 0) {
+            return `'${path}'`;
+        } else {
+            return `"${path}"`;
+        }
+    }
+    return path;
+}

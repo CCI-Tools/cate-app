@@ -15,7 +15,14 @@ import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
 import { FileDialogOptions, FileDialogResult, FileFilter } from '../types';
 import FileList from './FileList';
-import { addExpandedDirPath, ALL_FILES_FILTER, FileNode, getBasename, getParentDir, sanitizePath, } from './FileNode';
+import {
+    addExpandedDirPath,
+    ALL_FILES_FILTER,
+    FileNode, fromPathInputValue,
+    getBasename,
+    getParentDir,
+    toPathInputValue,
+} from './FileNode';
 import FileTree from './FileTree';
 
 
@@ -333,7 +340,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = event.target.value || '';
         dispatchPathState({
-                              selectedPaths: fromPathInputValue(inputValue, multiSelections).map(v => pathState.currentDirPath !== '' ? pathState.currentDirPath + '/' + v : v),
+                              selectedPaths: fromPathInputValue(inputValue, pathState.currentDirPath, multiSelections),
                               inputValue: event.target.value
                           });
     }
@@ -523,64 +530,4 @@ function getDefaultFileActionText(saveFile?: boolean, openDirectory?: boolean, o
         return 'Select Directory';
     }
     return 'Open File';
-}
-
-function fromPathInputValue(inputValue: string, multiSelection: boolean): string[] {
-    inputValue = inputValue.trim()
-    if (!multiSelection) {
-        if (inputValue === '') {
-            return [];
-        }
-        return [inputValue];
-    }
-    const paths = [];
-    let escC = null;
-    let p = '';
-    for (let i = 0; i < inputValue.length; i++) {
-        const c = inputValue[i];
-        if (c === '"' || c === "'") {
-            if (escC === null) {
-                escC = c;
-                p = '';
-            } else if (escC === c) {
-                escC = null;
-            }
-        } else if (c === ' ') {
-            if (escC === null) {
-                if (p !== '') {
-                    paths.push(p);
-                    p = '';
-                }
-            } else {
-                p += c;
-            }
-        } else {
-            p += c;
-        }
-    }
-    if (p !== '') {
-        paths.push(p);
-    }
-    return paths;
-}
-
-function toPathInputValue(paths: string[], multiSelection: boolean): string {
-    if (!multiSelection) {
-        if (paths.length === 0) {
-            return '';
-        }
-        return paths[0].trim();
-    }
-    return paths.map(p => escapePath(p.trim())).join(' ');
-}
-
-function escapePath(path: string): string {
-    if (path.indexOf(' ') >= 0) {
-        if (path.indexOf('"') >= 0) {
-            return `'${path}'`;
-        } else {
-            return `"${path}"`;
-        }
-    }
-    return path;
 }
