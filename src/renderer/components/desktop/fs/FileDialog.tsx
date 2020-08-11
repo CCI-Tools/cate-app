@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
     Breadcrumbs,
     Button,
@@ -6,26 +5,51 @@ import {
     Classes,
     Colors,
     IBreadcrumbProps,
-    MenuItem
+    MenuItem,
+    Tooltip
 } from '@blueprintjs/core';
-import {
-    ItemRenderer,
-    Select,
-    IItemRendererProps
-} from '@blueprintjs/select';
+import { IItemRendererProps, ItemRenderer, Select } from '@blueprintjs/select';
+import * as React from 'react';
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
-import {
-    addExpandedDirPath, ALL_FILES_FILTER,
-    FileNode,
-    getParentDir,
-    sanitizePath,
-} from './FileNode';
-import FileTree from './FileTree';
-import FileList from './FileList';
 import { FileDialogOptions, FileDialogResult, FileFilter } from '../types';
+import FileList from './FileList';
+import { addExpandedDirPath, ALL_FILES_FILTER, FileNode, getParentDir, sanitizePath, } from './FileNode';
+import FileTree from './FileTree';
 
+
+const FILE_DIALOG_STYLE: React.CSSProperties = {
+    width: 800
+};
+const FILE_CONTAINER_STYLE: React.CSSProperties = {
+    width: '100%', display: 'flex', flexFlow: 'column nowrap'
+};
+const FILE_MGT_ROW_STYLE: React.CSSProperties = {
+    flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 6
+};
+const FILE_LIST_ROW_STYLE: React.CSSProperties = {
+    height: 320, flexGrow: 0
+};
+const FILE_INPUT_ROW_STYLE: React.CSSProperties = {
+    flexGrow: 0,
+    display: 'flex',
+    flexFlow: 'row nowrap',
+    alignItems: 'center',
+    marginTop: 10
+};
+const FILE_INPUT_STYLE: React.CSSProperties = {
+    flexGrow: 1, marginLeft: 10, overflow: 'hidden'
+};
+const FILE_NAV_ROW_STYLE: React.CSSProperties = {
+    flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 6
+};
+const FILE_NAV_BC_STYLE: React.CSSProperties = {
+    flexGrow: 1,
+    backgroundColor: Colors.DARK_GRAY5,
+    paddingLeft: 10,
+    paddingRight: 10
+};
 
 interface PathState {
     selectedPaths: string[];
@@ -41,13 +65,15 @@ export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> 
     onClose?: (result: FileDialogResult) => any;
     rootNode: FileNode;
     updateFileNode: (path: string, force: boolean) => any;
+    createFileNode?: (path: string, name: string) => any;
+    renameFileNode?: (path: string, name: string) => any;
+    deleteFileNodes?: (paths: string[]) => any;
     // dialog type
     saveFile?: boolean;
     // from properties
     openFile?: boolean;
     openDirectory?: boolean;
     multiSelections?: boolean;
-    createDirectory?: boolean,
     showHiddenFiles?: boolean;
 }
 
@@ -57,6 +83,9 @@ const FileDialog: React.FC<IFileDialogProps> = (
         onClose,
         rootNode,
         updateFileNode,
+        createFileNode,
+        renameFileNode,
+        deleteFileNodes,
         title,
         defaultPath,
         buttonLabel,
@@ -65,36 +94,34 @@ const FileDialog: React.FC<IFileDialogProps> = (
         openFile,
         openDirectory,
         multiSelections,
-        createDirectory,
         showHiddenFiles,
     }) => {
 
     if ((saveFile && openFile) || (saveFile && openDirectory) || (saveFile && multiSelections)) {
         throw new Error('saveFile flag cannot be used with openFile, openDirectory, multiSelections flags');
     }
-    if (createDirectory) {
-        // TODO (forman): recognize createDirectory
-        console.warn('createDirectory flag ignored (not implemented yet))');
-    }
     if (showHiddenFiles) {
         // TODO (forman): recognize showHiddenFiles
         console.warn('showHiddenFiles flag ignored (not implemented yet))');
     }
 
-    // const [parentDirPath, defaultSelectedPath] = splitDefaultPathIntoSelectedParentDirAndPath(rootNode, defaultPath);
     const defaultDirPath = (defaultPath && getParentDir(defaultPath)) || null;
-
     const initialPathState: PathState = {
         selectedPaths: (defaultPath && [defaultPath]) || [],
         expandedPaths: (defaultDirPath && [defaultDirPath]) || [],
         selectedDirPath: defaultDirPath,
         currentDirPath: defaultDirPath || '',
     };
-    const [pathState, dispatchPathState] = React.useReducer((state: PathState, stateUpdate: Partial<PathState>) => {
-        return {...state, ...stateUpdate}
-    }, initialPathState);
+    const [pathState, dispatchPathState] = React.useReducer(
+        (state: PathState, stateUpdate: Partial<PathState>) => {
+            return {...state, ...stateUpdate}
+        },
+        initialPathState);
+
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
-    const [selectedFileFilter, setSelectedFileFilter] = React.useState(filters && filters.length ? filters[0] : null);
+    const [selectedFileFilter, setSelectedFileFilter] = React.useState(
+        filters && filters.length ? filters[0] : null
+    );
 
     const updateCallback = React.useMemo(() => {
         return (path: string) => {
@@ -142,24 +169,93 @@ const FileDialog: React.FC<IFileDialogProps> = (
         setFileTreeWidth(fileTreeWidth);
     };
 
-    const handleNavigateBack = () => {
+    const canNavigateBack = () => {
         // TODO (forman): implement me!
+        return false;
+    };
+
+    const handleNavigateBack = () => {
+        if (canNavigateBack()) {
+            // TODO (forman): implement me!
+        }
+    };
+
+    const canNavigateForward = () => {
+        return false;
     };
 
     const handleNavigateForward = () => {
-        // TODO (forman): implement me!
+        if (canNavigateForward()) {
+            // TODO (forman): implement me!
+        }
+    };
+
+    const canNavigateUp = () => {
+        return getParentDir(pathState.currentDirPath) !== '';
     };
 
     const handleNavigateUp = () => {
+        if (canNavigateUp()) {
+            const parentDir = getParentDir(pathState.currentDirPath);
+            dispatchPathState({
+                                  selectedDirPath: parentDir !== '' ? parentDir : null,
+                                  currentDirPath: parentDir,
+                              });
+        }
+    };
+
+    const canShowRecentDirs = () => {
         // TODO (forman): implement me!
+        return false;
     };
 
     const handleShowRecentDirs = () => {
+        if (canShowRecentDirs()) {
+            // TODO (forman): implement me!
+        }
+    };
+
+    const canShowRecentPaths = () => {
         // TODO (forman): implement me!
+        return false;
     };
 
     const handleShowRecentPaths = () => {
-        // TODO (forman): implement me!
+        if (canShowRecentPaths()) {
+            // TODO (forman): implement me!
+        }
+    };
+
+    const canCreateDirectory = () => {
+        return Boolean(createFileNode);
+    };
+
+    const handleCreateDirectoryClick = () => {
+        if (canCreateDirectory()) {
+            // TODO (forman): enter create mode
+            // createFileNode!(pathState.selectedDirPath!, name);
+        }
+    };
+
+    const canRename = () => {
+        return Boolean(renameFileNode) && pathState.selectedPaths.length === 1;
+    };
+
+    const handleRenameClick = () => {
+        if (canRename()) {
+            // TODO (forman): enter rename mode
+            // renameFileNode!(pathState.selectedPaths[0], name);
+        }
+    };
+
+    const canDelete = () => {
+        return Boolean(deleteFileNodes) && pathState.selectedPaths.length > 0;
+    };
+
+    const handleDeleteClick = () => {
+        if (canDelete()) {
+            deleteFileNodes!(pathState.selectedPaths);
+        }
     };
 
     const handleSyncCurrentDir = () => {
@@ -229,24 +325,82 @@ const FileDialog: React.FC<IFileDialogProps> = (
             onConfirm={handleConfirm}
             onCancel={handleCancel}
             canConfirm={canConfirm}
-            style={{width: 800}}
+            style={FILE_DIALOG_STYLE}
         >
-            <div style={{width: '100%', display: 'flex', flexFlow: 'column nowrap'}}>
-                <div style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 10}}>
+            <div style={FILE_CONTAINER_STYLE}>
+                <div style={FILE_NAV_ROW_STYLE}>
                     <ButtonGroup minimal={true}>
-                        <Button disabled={true} icon="arrow-left" onClick={handleNavigateBack}/>
-                        <Button disabled={true} icon="arrow-right" onClick={handleNavigateForward}/>
-                        <Button disabled={true} icon="arrow-up" onClick={handleNavigateUp}/>
+                        <Button
+                            disabled={!canNavigateBack()}
+                            onClick={handleNavigateBack}
+                            icon="arrow-left"
+                        />
+                        <Button
+                            disabled={!canNavigateForward()}
+                            onClick={handleNavigateForward}
+                            icon="arrow-right"
+                        />
+                        <Button
+                            disabled={!canNavigateUp()}
+                            onClick={handleNavigateUp}
+                            icon="arrow-up"
+                        />
                     </ButtonGroup>
-                    <div style={{flexGrow: 1, backgroundColor: Colors.DARK_GRAY5, paddingLeft: 10, paddingRight: 10}}>
+                    <div style={FILE_NAV_BC_STYLE}>
                         <Breadcrumbs className="bp3-small" items={getBreadcrumbs()}/>
                     </div>
                     <ButtonGroup minimal={true}>
-                        <Button disabled={true} icon="caret-down" onClick={handleShowRecentDirs}/>
-                        <Button icon="refresh" onClick={handleSyncCurrentDir}/>
+                        <Button
+                            disabled={!canShowRecentDirs()}
+                            onClick={handleShowRecentDirs}
+                            icon="caret-down"
+                        />
+                        <Button
+                            onClick={handleSyncCurrentDir}
+                            icon="refresh"
+                        />
                     </ButtonGroup>
                 </div>
-                <div style={{height: 320, flexGrow: 0}}>
+                {(Boolean(createFileNode) || Boolean(renameFileNode) || Boolean(deleteFileNodes)) && (
+                    <div style={FILE_MGT_ROW_STYLE}>
+                        <ButtonGroup minimal={true}>
+                            {Boolean(createFileNode) && (
+                                <Tooltip
+                                    content={canCreateDirectory()
+                                             ? `Create new directory in ${pathState.currentDirPath}` : null}>
+                                    <Button
+                                        disabled={!canCreateDirectory()}
+                                        onClick={handleCreateDirectoryClick}
+                                        icon="folder-new"
+                                        text="Create Directory"
+                                    />
+                                </Tooltip>
+                            )}
+                            {Boolean(renameFileNode) && (
+                                <Tooltip content={canRename() ? `Rename ${pathState.selectedPaths[0]}` : null}>
+                                    <Button
+                                        disabled={!canRename()}
+                                        onClick={handleRenameClick}
+                                        icon="edit"
+                                        text="Rename"
+                                    />
+                                </Tooltip>
+                            )}
+                            {Boolean(deleteFileNodes) && (
+                                <Tooltip content={canDelete()
+                                                  ? `Delete ${pathState.selectedPaths[0]}`
+                                                    + (pathState.selectedPaths.length > 0 ? ', ...' : '') : null}>
+                                    <Button
+                                        disabled={!canDelete()}
+                                        onClick={handleDeleteClick}
+                                        icon="trash"
+                                        text="Delete Directory"
+                                    />
+                                </Tooltip>
+                            )}
+                        </ButtonGroup>
+                    </div>)}
+                <div style={FILE_LIST_ROW_STYLE}>
                     <SplitPane dir="hor" initialSize={fileTreeWidth} onChange={handleFileTreeWidthChange}>
                         <FileTree
                             rootNode={rootNode}
@@ -267,23 +421,21 @@ const FileDialog: React.FC<IFileDialogProps> = (
                         />
                     </SplitPane>
                 </div>
-                <div
-                    style={{flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', marginTop: 10}}
-                >
+                <div style={FILE_INPUT_ROW_STYLE}>
                     <span>{openDirectory && !openFile ? 'Directory:' : 'Filename:'}</span>
                     <input
                         className={Classes.INPUT}
-                        style={{flexGrow: 1, marginLeft: 10, overflow: 'hidden'}}
+                        style={FILE_INPUT_STYLE}
                         type="text"
                         value={toFileInputText(pathState.currentDirPath, pathState.selectedPaths)}
                         onChange={handleSelectedPathsChangeInTextField}
                     />
                     <ButtonGroup>
                         <Button
-                            icon="caret-down"
+                            disabled={!canShowRecentPaths()}
                             onClick={handleShowRecentPaths}
+                            icon="caret-down"
                             minimal={true}
-                            disabled={true}
                         />
                         {filters &&
                          <FileFilterSelect
@@ -294,8 +446,8 @@ const FileDialog: React.FC<IFileDialogProps> = (
                              onItemSelect={filter => setSelectedFileFilter(filter)}
                          >
                              <Button
-                                 rightIcon="caret-down"
                                  text={getFileFilterText(selectedFileFilter)}
+                                 rightIcon="caret-down"
                              />
                          </FileFilterSelect>
                         }
