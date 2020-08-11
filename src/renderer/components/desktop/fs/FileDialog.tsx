@@ -191,7 +191,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const canNavigateUp = () => {
-        return getParentDir(pathState.currentDirPath) !== '';
+        return pathState.currentDirPath !== '';
     };
 
     const handleNavigateUp = () => {
