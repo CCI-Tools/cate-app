@@ -14,10 +14,10 @@ export class FilesAPI {
         this.webAPIClient = webAPIClient;
     }
 
-    uploadFiles(file: File, serviceUrl: string) {
+    uploadFiles(dir: string, file: File, serviceUrl: string) {
         let formData = new FormData();
 
-        // formData.append('targetdir', 'helge');
+        formData.append('dir', dir);
         formData.append('files', file, file.name);
 
         return callJsonApi<ResponseStatus>(serviceUrl + '/files/upload',
@@ -29,13 +29,13 @@ export class FilesAPI {
             });
     }
 
-    downloadFiles(files: File[], serviceUrl: string) {
-        const file_names = {'filenames': ['helge/java_error_in_IDEA_19501.log', 'helge/ESACCI-OC-L3S-CHLOR_A-MERGED-8D_DAILY_4km_SIN_PML_OCx-19971227-fv3.1.nc']}
+    downloadFiles(filePaths: string[], serviceUrl: string) {
+        const file_names = {'filenames': filePaths}
 
         return callBlobApi(serviceUrl + '/files/download',
             undefined,
             {
-                mode: 'cors',
+                mode: 'no-cors',
                 method: 'POST',
                 body: JSON.stringify(file_names)
             });

@@ -49,6 +49,7 @@ import AnimationView from './AnimationView';
 import JobFailureDialog from './JobFailureDialog';
 import desktopActions from '../components/desktop/actions';
 import FileUploadDialog from "./FileUploadDialog";
+import FileDownloadDialog from "./FileDownloadDialog";
 
 
 function renderWorldView(view: ViewState<WorldViewDataState>) {
@@ -152,6 +153,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             <PreferencesDialog/>
             <NewWorkspaceDialog/>
             <FileUploadDialog/>
+            <FileDownloadDialog/>
             <SaveWorkspaceAsDialog/>
             <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
             <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>

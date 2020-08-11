@@ -6,8 +6,9 @@ import * as actions from '../actions';
 import * as selectors from '../selectors';
 import Dropzone from 'react-dropzone';
 import { CSSProperties } from "react";
-import { Button } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 import { showDirectorySelectDialog } from "../actions";
+import { ToolButton } from "../components/ToolButton";
 
 
 const baseStyle: CSSProperties = {
@@ -34,6 +35,7 @@ interface IFileUploadDialogProps {
 
 interface IFileUploadDialogState extends DialogState {
     files: File[];
+    dir: string;
 }
 
 function mapStateToProps(state: State): IFileUploadDialogProps {
@@ -49,7 +51,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
 
     constructor(props: IFileUploadDialogProps & DispatchProp<State>) {
         super(props);
-        this.state = {files: []};
+        this.state = {files: [], dir: './'};
         this.onCancel = this.onCancel.bind(this);
         this.onConfirm = this.onConfirm.bind(this);
         this.canConfirm = this.canConfirm.bind(this);
@@ -57,7 +59,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
     }
 
     componentWillReceiveProps(nextProps: IFileUploadDialogProps) {
-        this.setState({files: []});
+        this.setState({files: [], dir: './'});
     }
 
     private onCancel() {
@@ -71,7 +73,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
     private onConfirm() {
         this.props.dispatch(actions.hideDialog(FileUploadDialog.DIALOG_ID, this.state));
         for (let file of this.state.files) {
-            this.props.dispatch(actions.uploadFiles(file) as any);
+            this.props.dispatch(actions.uploadFiles(this.state.dir, file) as any);
         }
     }
 
@@ -101,6 +103,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
     };
 
     handleOpenDirectoryOnClose = (dir: string) => {
+        this.setState({...this.state, dir: dir});
         console.log(dir);
     };
 
@@ -121,7 +124,14 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         }
         return (
             <div>
-                <Button onClick={this.handleOpenDirectoryOpen}>Text</Button>
+                <ToolButton tooltipContent="Select directory to upload to."
+                            intent={Intent.PRIMARY}
+                            onClick={this.handleOpenDirectoryOpen}
+                            text="Select Directory..."
+                            icon="play"/>
+
+                {this.state.dir ? (<ul><li>Dir: {this.state.dir}</li></ul>) : ''}
+
                 <Dropzone onDrop={this.handleOnDrop}>
                     {({getRootProps, getInputProps}) => (
                         <section className="container">

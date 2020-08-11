@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
 import { State } from '../state';
-import { downloadFiles, fileUploadInteractive } from "../actions";
+import { fileDownloadInteractive, fileUploadInteractive, showMultiFileOpenDialog } from "../actions";
 
 
 interface IDispatch {
@@ -23,7 +23,11 @@ const _FilesMenu: React.FC<IFilesMenuProps & IDispatch> = (props) => {
     };
 
     const handleDownloadFiles = () => {
-        props.dispatch(downloadFiles([]) as any);
+        props.dispatch(fileDownloadInteractive());
+    };
+
+    const handleBrowseFiles = () => {
+        props.dispatch(showMultiFileOpenDialog({title: 'Browse'},  () => {}) as any);
     };
 
     return (
@@ -39,6 +43,12 @@ const _FilesMenu: React.FC<IFilesMenuProps & IDispatch> = (props) => {
                     text="Download Files"
                     icon="download"
                     onClick={handleDownloadFiles}
+                />
+                <MenuDivider/>
+                <MenuItem
+                    text="Browse Files"
+                    icon="folder-close"
+                    onClick={handleBrowseFiles}
                 />
             </Menu>
         </div>

@@ -2346,17 +2346,23 @@ export function fileUploadInteractive() {
 }
 
 
+export function fileDownloadInteractive() {
+    return showDialog('fileDownloadDialog');
+}
+
+
 /**
  *
- * @param file file to upload
+ * @param dir Directory to be used
+ * @param file File to upload
  */
 
-export function uploadFiles(file: File): ThunkAction {
+export function uploadFiles(dir: string, file: File): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
 
-        selectors.fileAPISelector(state).uploadFiles(file, webAPIServiceURL)
+        selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
             .then((res) => {
                 showToast({type: res.status, text: 'Upload finished: ' + res.message});
             })
@@ -2369,14 +2375,15 @@ export function uploadFiles(file: File): ThunkAction {
 
 /**
  *
- * @param files File that will be downloaded
+ * @param filePaths File paths that will be downloaded
  */
-export function downloadFiles(files: File[]): ThunkAction {
+
+export function downloadFiles(filePaths: string[]): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
 
-        selectors.fileAPISelector(state).downloadFiles(files, webAPIServiceURL)
+        selectors.fileAPISelector(state).downloadFiles(filePaths, webAPIServiceURL)
             .then(() => {
                 showToast({type: 'info', text: 'Download finished.'});
             })
