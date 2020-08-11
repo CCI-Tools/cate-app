@@ -1,4 +1,6 @@
 import { IconName } from '@blueprintjs/core';
+
+import { isNumber, isString } from '../../../../common/types';
 import { FileFilter } from '../types';
 
 
@@ -6,11 +8,18 @@ export type FileNodeStatus = 'updating' | 'ready' | 'error';
 
 export interface FileNode {
     name: string;
-    lastModified: string;
-    size: number;
-    status?: FileNodeStatus;
-    isDirectory: boolean;
+    lastModified?: string;
+    size?: number;
+    isDir: boolean;
     childNodes?: FileNode[];
+    /**
+     * If status === undefined means, we have not updated this node yet (i.e. children not fetched)
+     */
+    status?: FileNodeStatus;
+    /**
+     * Detail message if status === "error"
+     */
+    message?: string;
 }
 
 export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};
@@ -139,7 +148,7 @@ export function removeExpandedDirPath(expandedPaths: string[], path: string): st
 }
 
 export function getFileNodeIcon(node: FileNode): IconName {
-    return node.isDirectory ? "folder-close" : "document";
+    return node.isDir ? "folder-close" : "document";
 }
 
 export function getParentDir(path: string): string {
@@ -176,7 +185,7 @@ export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter): File
         return nodes;
     }
     return nodes.filter(node => {
-        if (node.isDirectory) {
+        if (node.isDir) {
             return true;
         }
         const ext = getBasenameExtension(node.name);
@@ -201,41 +210,55 @@ export function sanitizePath(path: string): string {
 }
 
 export function compareFileNames(a: FileNode, b: FileNode) {
-    if (a.isDirectory) {
-        if (!b.isDirectory) {
+    if (a.isDir) {
+        if (!b.isDir) {
             return -1;
         }
-    } else if (b.isDirectory) {
+    } else if (b.isDir) {
         return 1;
     }
     return a.name.localeCompare(b.name);
 }
 
 export function compareFileLastModified(a: FileNode, b: FileNode) {
-    if (a.isDirectory) {
-        if (!b.isDirectory) {
+    if (a.isDir) {
+        if (!b.isDir) {
             return -1;
         }
-    } else if (b.isDirectory) {
+    } else if (b.isDir) {
         return 1;
     }
-    if (a.lastModified === b.lastModified) {
-        return a.name.localeCompare(b.name);
+    if (isString(a.lastModified)) {
+        if (isString(b.lastModified)) {
+            const compValue = a.lastModified.localeCompare(b.lastModified);
+            if (compValue !== 0) {
+                return compValue;
+            }
+        }
+    } else if (isString(b.lastModified)) {
+        return -1;
     }
-    return a.lastModified.localeCompare(b.lastModified);
+    return a.name.localeCompare(b.name);
 }
 
 export function compareFileSize(a: FileNode, b: FileNode) {
-    if (a.isDirectory) {
-        if (!b.isDirectory) {
+    if (a.isDir) {
+        if (!b.isDir) {
             return -1;
         }
-    } else if (b.isDirectory) {
+    } else if (b.isDir) {
         return 1;
     }
-    if (a.size === b.size) {
-        return a.name.localeCompare(b.name);
+    if (isNumber(a.size)) {
+        if (isNumber(b.size)) {
+            const compValue = a.size - b.size;
+            if (compValue !== 0) {
+                return compValue;
+            }
+        }
+    } else if (isNumber(b.size)) {
+        return -1;
     }
-    return a.size - b.size;
+    return a.name.localeCompare(b.name);
 }
 

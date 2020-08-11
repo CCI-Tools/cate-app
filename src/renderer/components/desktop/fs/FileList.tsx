@@ -100,7 +100,7 @@ const FileList: React.FC<IFileListProps> = (
     const handleRowClick = (fileNode: FileNode, rowIndex: number, event: React.MouseEvent<HTMLTableRowElement>) => {
         // Disallow directory selection
         const node = getRowFileNode(rowIndex);
-        if ((!openDirectory && node.isDirectory) || (openDirectory && !node.isDirectory)) {
+        if ((!openDirectory && node.isDir) || (openDirectory && !node.isDir)) {
             return;
         }
         const path = getRowPath(rowIndex);
@@ -123,7 +123,7 @@ const FileList: React.FC<IFileListProps> = (
     const handleRowDoubleClick = (fileNode: FileNode, rowIndex: number) => {
         if (onCurrentDirPathChange) {
             const node = getRowFileNode(rowIndex);
-            if (node.isDirectory) {
+            if (node.isDir) {
                 onCurrentDirPathChange(getRowPath(rowIndex));
             }
         }

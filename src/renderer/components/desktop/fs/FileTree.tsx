@@ -54,7 +54,7 @@ const FileTree: React.FC<IFileTreeProps> = (
 
     const handleNodeClick = (treeNode: IFileTreeNode, nodePath: number[]) => {
         if (onSelectedPathChange) {
-            if (treeNode.nodeData!.isDirectory) {
+            if (treeNode.nodeData!.isDir) {
                 const path = getFileNodePath(treeNodes, nodePath);
                 onSelectedPathChange(path !== selectedPath ? path : null);
             }
@@ -63,7 +63,7 @@ const FileTree: React.FC<IFileTreeProps> = (
 
     const handleNodeExpand = (treeNode: IFileTreeNode, nodePath: number[]) => {
         if (onExpandedPathsChange) {
-            if (treeNode.nodeData!.isDirectory) {
+            if (treeNode.nodeData!.isDir) {
                 const path = getFileNodePath(treeNodes, nodePath);
                 onExpandedPathsChange(addExpandedDirPath(expandedPaths || [], path));
             }
@@ -72,7 +72,7 @@ const FileTree: React.FC<IFileTreeProps> = (
 
     const handleNodeCollapse = (treeNode: IFileTreeNode, nodePath: number[]) => {
         if (onExpandedPathsChange) {
-            if (treeNode.nodeData!.isDirectory) {
+            if (treeNode.nodeData!.isDir) {
                 const path = getFileNodePath(treeNodes, nodePath);
                 onExpandedPathsChange(removeExpandedDirPath(expandedPaths || [], path));
             }
@@ -117,7 +117,7 @@ function _getTreeNodes(fileNodes: FileNode[],
                        depth: number,
                        idGen: [number]): IFileTreeNode[] {
     if (!includeFiles) {
-        fileNodes = fileNodes.filter(node => node.isDirectory);
+        fileNodes = fileNodes.filter(node => node.isDir);
     }
     return fileNodes.map(node => {
 
@@ -141,20 +141,22 @@ function _getTreeNodes(fileNodes: FileNode[],
 
         const id = idGen[0];
         idGen[0] = id + 1;
-        let childNodes;
+        let childTreeNodes;
         if (node.childNodes) {
-            childNodes = _getTreeNodes(node.childNodes,
-                                       _selectedPath,
-                                       _expandedPaths,
-                                       includeFiles,
-                                       depth + 1,
-                                       idGen);
+            childTreeNodes = _getTreeNodes(node.childNodes,
+                                           _selectedPath,
+                                           _expandedPaths,
+                                           includeFiles,
+                                           depth + 1,
+                                           idGen);
         }
         let hasCaret: boolean;
         if (includeFiles) {
-            hasCaret = node.isDirectory && (!childNodes || Boolean(childNodes.find(n => n.nodeData!.isDirectory)));
+            hasCaret = node.isDir
+                       && (!childTreeNodes || Boolean(childTreeNodes.find(treeNode => treeNode.nodeData!.isDir)));
         } else {
-            hasCaret = node.isDirectory && (!childNodes || childNodes.length > 0);
+            hasCaret = node.isDir
+                       && (!childTreeNodes || childTreeNodes.length > 0);
         }
         let secondaryLabel;
         if (node.status === 'updating') {
@@ -170,7 +172,7 @@ function _getTreeNodes(fileNodes: FileNode[],
             hasCaret,
             isSelected,
             isExpanded,
-            childNodes,
+            childNodes: childTreeNodes,
             nodeData: node,
         };
     });
