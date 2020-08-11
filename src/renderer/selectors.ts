@@ -29,7 +29,7 @@ import {
 } from './state';
 import { createSelector, Selector } from 'reselect';
 import { JobStatusEnum, WebAPIClient } from './webapi';
-import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI } from './webapi/apis';
+import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi/apis';
 import { PanelContainerLayout } from './components/PanelContainer';
 import {
     EXTERNAL_OBJECT_STORE,
@@ -67,7 +67,7 @@ export const offlineModeSelector = (state: State): boolean => state.session.offl
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Remote API selectors
 
-export const webAPIClientSelector = (state: State): WebAPIClient => state.communication.webAPIClient;
+export const webAPIClientSelector = (state: State): WebAPIClient | null => state.communication.webAPIClient;
 export const webAPIServiceURLSelector = (state: State): string => state.communication.webAPIServiceURL;
 
 export const isLocalFSAccessAllowedSelector = (state: State): boolean => {
@@ -175,6 +175,13 @@ export const colorMapsAPISelector = createSelector(
     webAPIClientSelector,
     (webAPIClient) => {
         return new ColorMapsAPI(webAPIClient);
+    }
+);
+
+export const fileSystemAPISelector = createSelector(
+    webAPIClientSelector,
+    (webAPIClient) => {
+        return webAPIClient !== null ? new FileSystemAPI(webAPIClient) : null;
     }
 );
 

@@ -19,6 +19,7 @@ export const INITIAL_DATA_STATE: DataState = {
     operations: null,
     workspace: null,
     colorMaps: null,
+    fsRootNode: {name: '', isDir: true, lastModified: '', size: 0},
     workspaceNames: null,
     hasWebGL: hasWebGL(),
 };
@@ -29,7 +30,20 @@ export const INITIAL_CONTROL_STATE: ControlState = {
     selectedWorkflowStepId: null,
     selectedWorkspaceResourceName: null,
     selectedVariableName: null,
+
     dialogs: {},
+    directorySelectDialog: {
+        onClose: () => {
+        }
+    },
+    fileOpenDialog: {
+        onClose: () => {
+        }
+    },
+    fileSaveDialog: {
+        onClose: () => {
+        }
+    },
     messageBox: {},
 
     selectedCtxOperationName: null,

@@ -2,7 +2,8 @@
 
 * Turned Cate Web UI into a Desktop Progressive Web Application (PWA) "Cate App".
   Users can now install Cate from browsers (tested on Windows 10 with 
-  latest Edge and Chrome) to their desktops. 
+  latest Edge and Chrome) to their desktops.
+* The UI uses now web versions of native (electron) file and directory choosers. (#64)   
 * The UI uses now web versions of native (electron) message boxes. (#47)
 * Fixed storing of preferences
 

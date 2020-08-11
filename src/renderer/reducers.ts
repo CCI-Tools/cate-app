@@ -1,4 +1,5 @@
 import { combineReducers, Reducer } from 'redux';
+import { updateFileNode } from './components/desktop/fs/FileNode';
 import {
     CommunicationState,
     ControlState,
@@ -11,7 +12,7 @@ import {
     VectorLayerBase
 } from './state';
 import * as actions from './actions';
-import { Action } from './actions';
+import { Action, UPDATE_FS_ROOT_NODE } from './actions';
 import * as assert from '../common/assert';
 import { updateObject, updatePropertyObject } from '../common/objutil';
 import {
@@ -87,6 +88,11 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
         case actions.SET_CURRENT_WORKSPACE: {
             const workspace = action.payload.workspace;
             return {...state, workspace};
+        }
+        case UPDATE_FS_ROOT_NODE: {
+            const {path, updatedFileNode} = action.payload;
+            const fsRootNode = updateFileNode(state.fsRootNode, path, updatedFileNode);
+            return {...state, fsRootNode};
         }
         case actions.UPDATE_COLOR_MAPS: {
             const colorMaps = action.payload.colorMaps;
@@ -306,10 +312,45 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
             return {...state, pwaDisplayMode: action.payload};
         }
         case actions.OPEN_MESSAGE_BOX: {
-            return {...state, messageBox: {...state.messageBox, ...action.payload, isOpen: true}};
+            return {
+                ...state, messageBox: {...state.messageBox, ...action.payload, isOpen: true}
+            };
         }
         case actions.CLOSE_MESSAGE_BOX: {
-            return {...state, messageBox: {...state.messageBox, ...action.payload, isOpen: false}};
+            return {
+                ...state, messageBox: {...state.messageBox, ...action.payload, isOpen: false}
+            };
+        }
+        case actions.OPEN_DIRECTORY_SELECT_DIALOG: {
+            return {
+                ...state, directorySelectDialog: {...state.directorySelectDialog, ...action.payload, isOpen: true}
+            };
+        }
+        case actions.CLOSE_DIRECTORY_SELECT_DIALOG: {
+            return {
+                ...state,
+                directorySelectDialog: {...state.directorySelectDialog, ...action.payload, isOpen: false}
+            };
+        }
+        case actions.OPEN_FILE_OPEN_DIALOG: {
+            return {
+                ...state, fileOpenDialog: {...state.fileOpenDialog, ...action.payload, isOpen: true}
+            };
+        }
+        case actions.CLOSE_FILE_OPEN_DIALOG: {
+            return {
+                ...state, fileOpenDialog: {...state.fileOpenDialog, ...action.payload, isOpen: false}
+            };
+        }
+        case actions.OPEN_FILE_SAVE_DIALOG: {
+            return {
+                ...state, fileSaveDialog: {...state.fileSaveDialog, ...action.payload, isOpen: true}
+            };
+        }
+        case actions.CLOSE_FILE_SAVE_DIALOG: {
+            return {
+                ...state, fileSaveDialog: {...state.fileSaveDialog, ...action.payload, isOpen: false}
+            };
         }
         default: {
             const newViews = viewsReducer(state.views, action, state.activeViewId);

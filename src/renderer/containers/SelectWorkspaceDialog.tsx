@@ -4,8 +4,8 @@ import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
-import { OpenDialogProperty } from '../actions';
 import * as selectors from '../selectors';
+
 
 interface ISelectWorkspaceDialogState extends DialogState {
     workspaceDir: string | null;
@@ -66,7 +66,7 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
         this.renderBody = this.renderBody.bind(this);
         this.onWorkspaceNameChange = this.onWorkspaceNameChange.bind(this);
         this.onWorkspaceDirChange = this.onWorkspaceDirChange.bind(this);
-        this.showSelectDirectoryDialog = this.showSelectDirectoryDialog.bind(this);
+        this.showDirectorySelectDialog = this.showDirectorySelectDialog.bind(this);
         this.localWebAPI = props.isLocalFSAllowed;
     }
 
@@ -112,21 +112,14 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
         this.setState({workspaceName: ev.target.value} as ISelectWorkspaceDialogState);
     }
 
-    private showSelectDirectoryDialog() {
-        const openDialogOptions = {
-            title: 'Select Directory',
-            defaultPath: this.state.workspaceDir,
-            buttonLabel: 'Select',
-            properties: [
-                'openDirectory' as OpenDialogProperty,
-            ],
-            filter: [],
-        };
-        actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string) => {
+    private showDirectorySelectDialog() {
+        let handleClose = (dirPath: string | null) => {
             if (dirPath) {
                 this.setState({workspaceDir: dirPath} as ISelectWorkspaceDialogState);
             }
-        });
+        };
+        this.props.dispatch(actions.showDirectorySelectDialog({defaultPath: this.state.workspaceDir},
+                                                              handleClose) as any);
     }
 
     render() {
@@ -165,7 +158,7 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
                             onChange={this.onWorkspaceDirChange}
                         />
                         <AnchorButton intent={Intent.PRIMARY} style={{flex: 'none'}}
-                                      onClick={this.showSelectDirectoryDialog}>...</AnchorButton>
+                                      onClick={this.showDirectorySelectDialog}>...</AnchorButton>
                     </ControlGroup>
                 </React.Fragment>
             );

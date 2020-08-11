@@ -2,7 +2,15 @@ import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
-import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
+import { FileNode } from './components/desktop/fs/FileNode';
+import {
+    FileFilter,
+    MessageBoxOptions,
+    MessageBoxResult, OpenDialogOptions, OpenDialogProperty,
+    OpenDialogResult,
+    SaveDialogOptions, SaveDialogProperty,
+    SaveDialogResult
+} from './components/desktop/types';
 import { PanelContainerLayout } from './components/PanelContainer';
 import { ViewLayoutState, ViewState } from './components/ViewState';
 import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
@@ -35,6 +43,7 @@ export interface DataState {
     dataStores: DataStoreState[] | null;
     operations: OperationState[] | null;
     workspace: WorkspaceState | null;
+    fsRootNode: FileNode;
     colorMaps: ColorMapCategoryState[] | null;
     workspaceNames: string[] | null;
     hasWebGL: boolean;
@@ -84,13 +93,6 @@ export interface OperationState {
     outputs: OperationOutputState[];
 }
 
-// see https://github.com/electron/electron/blob/master/docs/api/dialog.md
-// see https://github.com/electron/electron/blob/master/docs/api/structures/file-filter.md
-export interface FileFilterState {
-    name: string;
-    extensions: string[];
-}
-
 export interface OperationIOBaseState {
     name: string;
     dataType: string;
@@ -107,8 +109,8 @@ export interface OperationInputState extends OperationIOBaseState {
     valueRange?: [number, number] | [string, string];
     scriptLang?: string;
     fileOpenMode?: 'w' | 'r' | 'rw';
-    fileFilters?: FileFilterState[];
-    fileProps?: string;
+    fileFilters?: FileFilter[];
+    fileProps?: OpenDialogProperty[] | SaveDialogProperty[];
     noUI?: boolean;
 }
 
@@ -670,11 +672,15 @@ export interface ControlState {
 
     selectedCtxOperationName: string | null;
 
-    // LayersPanel
-
     // A map that stores the last state of any dialog given a dialogId
     dialogs: { [dialogId: string]: DialogState };
 
+    // Select directory dialog
+    directorySelectDialog: OpenDialogState;
+    // Open file dialog
+    fileOpenDialog: OpenDialogState;
+    // Save file dialog
+    fileSaveDialog: SaveDialogState;
     // Message box
     messageBox: MessageBoxState;
 
@@ -694,6 +700,18 @@ export interface ControlState {
 
 export interface DialogState {
     isOpen?: boolean;
+}
+
+export interface OpenDialogState extends DialogState {
+    onClose: (result: OpenDialogResult) => any;
+    options?: OpenDialogOptions;
+    result?: OpenDialogResult;
+}
+
+export interface SaveDialogState extends DialogState {
+    onClose: (result: SaveDialogResult) => any;
+    options?: SaveDialogOptions;
+    result?: SaveDialogResult;
 }
 
 export interface MessageBoxState extends DialogState {

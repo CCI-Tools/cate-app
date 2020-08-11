@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
+
 import { isElectron } from '../electron';
+import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
 import AppLoginPage from './AppLoginPage';
 import AppModePage from './AppModePage';
@@ -23,6 +25,9 @@ import StylesPanel from './StylesPanel';
 import NewWorkspaceDialog from './NewWorkspaceDialog';
 import SaveWorkspaceAsDialog from './SaveWorkspaceAsDialog';
 import PreferencesDialog from './PreferencesDialog';
+import DirectorySelectDialog from './DirectorySelectDialog';
+import FileOpenDialog from './FileOpenDialog';
+import FileSaveDialog from "./FileSaveDialog";
 import MessageBox from './MessageBox';
 import { PanelContainer, PanelContainerLayout } from '../components/PanelContainer';
 import { Panel } from '../components/Panel';
@@ -79,6 +84,10 @@ interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
     isSignedIn: boolean | null;
     forceAppBar?: boolean;
+    fileSystemAPI: FileSystemAPI | null,
+}
+
+interface IApplicationPageDispatch {
 }
 
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
@@ -86,64 +95,76 @@ function mapStateToPropsApplication(state: State): IApplicationPageProps {
         webAPIProvision: state.communication.webAPIProvision,
         isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
+        fileSystemAPI: selectors.fileSystemAPISelector(state),
     };
 }
 
-//noinspection JSUnusedLocalSymbols
-class _ApplicationPage extends React.PureComponent<IApplicationPageProps & IDispatch, null> {
-    static readonly ROOT_DIV_STYLE: CSSProperties = {
-        display: 'flex',
-        flexFlow: 'column nowrap',
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden'
-    };
-    static readonly MAIN_DIV_STYLE: CSSProperties = {
-        display: 'flex',
-        flexFlow: 'row nowrap',
-        flex: 'auto',
-        height: '100%',
-        overflow: 'hidden'
-    };
+const mapDispatchToPropsApplication = {};
 
-    render() {
-        if (this.props.webAPIProvision === null) {
-            return (<AppModePage/>);
-        }
 
-        if (this.props.webAPIProvision === 'CateHub' && !this.props.isSignedIn) {
-            return (<AppLoginPage/>);
-        }
+const ROOT_DIV_STYLE: CSSProperties = {
+    display: 'flex',
+    flexFlow: 'column nowrap',
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden'
+};
 
-        let appBar;
-        if (!isElectron() || !!this.props.forceAppBar) {
-            appBar = <AppBar/>;
-        }
+const MAIN_DIV_STYLE: CSSProperties = {
+    display: 'flex',
+    flexFlow: 'row nowrap',
+    flex: 'auto',
+    height: '100%',
+    overflow: 'hidden'
+};
 
-        return (
-            <div className={'bp3-dark'} style={_ApplicationPage.ROOT_DIV_STYLE}>
-                {appBar}
-                <div style={_ApplicationPage.MAIN_DIV_STYLE}>
-                    <LeftPanel/>
-                    <CenterPanel/>
-                    <RightPanel/>
-                </div>
-                <StatusBar/>
-                <PreferencesDialog/>
-                <NewWorkspaceDialog/>
-                <SaveWorkspaceAsDialog/>
-                <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
-                <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
-                <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
-                <JobFailureDialog/>
-                <WebAPIStatusBox/>
-                {!desktopActions.isNativeUI && <MessageBox/>}
-            </div>
-        );
+const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatch> = (
+    {
+        webAPIProvision,
+        isSignedIn,
+        forceAppBar,
+        fileSystemAPI,
+    }) => {
+
+    if (webAPIProvision === null) {
+        return (<AppModePage/>);
     }
+
+    if (webAPIProvision === 'CateHub' && !isSignedIn) {
+        return (<AppLoginPage/>);
+    }
+
+    let appBar;
+    if (!isElectron() || !!forceAppBar) {
+        appBar = <AppBar/>;
+    }
+
+    return (
+        <div className={'bp3-dark'} style={ROOT_DIV_STYLE}>
+            {appBar}
+            <div style={MAIN_DIV_STYLE}>
+                <LeftPanel/>
+                <CenterPanel/>
+                <RightPanel/>
+            </div>
+            <StatusBar/>
+            <PreferencesDialog/>
+            <NewWorkspaceDialog/>
+            <SaveWorkspaceAsDialog/>
+            <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
+            <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
+            <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
+            <JobFailureDialog/>
+            <WebAPIStatusBox/>
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<DirectorySelectDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileOpenDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileSaveDialog/>)}
+            {!desktopActions.isNativeUI && <MessageBox/>}
+        </div>
+    );
 }
 
-const ApplicationPage = connect(mapStateToPropsApplication)(_ApplicationPage);
+const ApplicationPage = connect(mapStateToPropsApplication, mapDispatchToPropsApplication)(_ApplicationPage);
 export default ApplicationPage;
 
 interface ILeftPanelProps {

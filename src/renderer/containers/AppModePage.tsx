@@ -5,9 +5,13 @@ import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
 import * as actions from '../actions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
+import OpenDialog from '../components/desktop/fs/OpenDialog';
+import SaveDialog from '../components/desktop/fs/SaveDialog';
+import { testData } from '../components/desktop/fs/testData';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
+const testFileChoosers = false;
 
 const CENTER_DIV_STYLE: CSSProperties = {
     display: 'flex',
@@ -41,6 +45,8 @@ function mapStateToProps(state: State): IAppModePageProps {
 const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
 
     const [webAPIServiceURL, setWebAPIServiceURL] = useState(props.webAPIServiceURL);
+    const [openDialogOpen, setOpenDialogOpen] = useState(true);
+    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
     useEffect(() => {
         setWebAPIServiceURL(props.webAPIServiceURL);
@@ -101,6 +107,39 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                     />
                 </div>
             </div>
+            {testFileChoosers && <OpenDialog
+                isOpen={openDialogOpen}
+                onClose={() => {
+                    setOpenDialogOpen(false);
+                    setSaveDialogOpen(true);
+                }}
+                rootNode={testData}
+                updateFileNode={() => {
+                }}
+                filters={[
+                    {name: 'All files', extensions: ['*']},
+                    {name: 'Images', extensions: ['jpg', 'png', 'gif']},
+                    {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
+                    {name: 'Vector data', extensions: ['geojson', 'shp']}
+                ]}
+                defaultPath={'Dir-2/Dir-21/File-212.nc'}
+            />
+            }
+            {testFileChoosers && <SaveDialog
+                isOpen={saveDialogOpen}
+                onClose={() => setSaveDialogOpen(false)}
+                rootNode={testData}
+                updateFileNode={() => {
+                }}
+                filters={[
+                    {name: 'All files', extensions: ['*']},
+                    {name: 'Images', extensions: ['jpg', 'png', 'gif']},
+                    {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
+                    {name: 'Vector data', extensions: ['geojson', 'shp']}
+                ]}
+                defaultPath={'Dir-2/Dir-21/File-212.nc'}
+            />
+            }
         </div>
     );
 };

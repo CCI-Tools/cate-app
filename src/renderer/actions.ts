@@ -3,6 +3,7 @@ import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
+import { FileNode, getFileNode, sanitizePath } from './components/desktop/fs/FileNode';
 
 import {
     BackendConfigState,
@@ -82,7 +83,13 @@ import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { requireElectron } from './electron';
-import { MessageBoxOptions, MessageBoxResult } from './components/desktop/types';
+import {
+    MessageBoxOptions,
+    MessageBoxResult,
+    OpenDialogOptions, OpenDialogResult,
+    SaveDialogOptions,
+    SaveDialogResult
+} from './components/desktop/types';
 
 import desktopActions from './components/desktop/actions';
 
@@ -277,7 +284,7 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
 function updateWebAPIInfoInMain(webAPIProvision: WebAPIProvision, webAPIServiceURL: string, user: User | null) {
     if (hasElectron('updateWebAPIInfoInMain')) {
         const webAPIInfo = {webAPIProvision, webAPIServiceURL, user};
-        console.log('webAPIInfo:', webAPIInfo);
+        console.info('webAPIInfo:', webAPIInfo);
         electron.ipcRenderer.send('update-webapi-info', webAPIInfo);
     }
 }
@@ -427,7 +434,6 @@ export function invokeCtxOperationImpl(selectedCtxOperationName: string, inputAs
 export function updateControlState(controlState: Partial<ControlState>): Action {
     return {type: UPDATE_CONTROL_STATE, payload: controlState};
 }
-
 
 export function loadPreferences(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
@@ -735,6 +741,101 @@ export function setGlobeViewPosition(position: GeographicPosition): ThunkAction 
         } else {
             dispatch(setGlobeViewPositionImpl(null, null));
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// File-system actions
+
+export const UPDATE_FS_ROOT_NODE = 'UPDATE_FS_ROOT_NODE';
+
+function updateFsRootNode(path: string, updatedFileNode: FileNode): Action {
+    return {type: UPDATE_FS_ROOT_NODE, payload: {path, updatedFileNode}};
+}
+
+export function updateFileNode(path: string, force: boolean): ThunkAction {
+    path = sanitizePath(path);
+    const pathComponents = path.split('/');
+
+    return (dispatch: Dispatch, getState: GetState) => {
+        const api = selectors.fileSystemAPISelector(getState());
+        if (api === null) {
+            console.error('fileSystemAPI not ready');
+            return;
+        }
+        // Get all the subPaths of path that must be updated:
+        const subPathsToBeUpdated: string[] = [];
+        pathComponents.forEach((name, depth) => {
+            const subPath = pathComponents.slice(0, depth + 1).join('/');
+            if (subPathsToBeUpdated.length === 0) {
+                const subNode = getFileNode(getState().data.fsRootNode, subPath);
+                if (!subNode) {
+                    subPathsToBeUpdated.push('');
+                    subPathsToBeUpdated.push(subPath);
+                } else if (!subNode.status || force) {
+                    subPathsToBeUpdated.push(subPath);
+                }
+            } else {
+                // Also add all sub-paths
+                subPathsToBeUpdated.push(subPath);
+            }
+        });
+        dispatch(updateSubPathFileNode(subPathsToBeUpdated, force));
+    }
+}
+
+function updateSubPathFileNode(subPaths: string[], force: boolean): ThunkAction {
+
+    return (dispatch: Dispatch, getState: GetState) => {
+        if (subPaths.length === 0) {
+            return;
+        }
+
+        const api = selectors.fileSystemAPISelector(getState());
+        if (api === null) {
+            console.error('fileSystemAPI not ready');
+            return;
+        }
+
+        const subPath = subPaths[0];
+        const subNode = getFileNode(getState().data.fsRootNode, subPath);
+        if (!subNode) {
+            console.error(`sub-path not found in file system root node: "${subPath}"`);
+            return;
+        }
+
+        if (subNode.status && !force) {
+            return;
+        }
+
+        console.log(`will update:`, subPaths)
+
+        dispatch(updateFsRootNode(subPath, {...subNode, status: 'updating'}));
+
+        const call = () => {
+            return api.updateFileNode(subPath);
+        };
+
+        const action = (updatedFileNode: FileNode) => {
+            dispatch(updateFsRootNode(subPath, updatedFileNode));
+            if (subPaths.length > 1) {
+                dispatch(updateSubPathFileNode(subPaths.slice(1), force));
+            }
+        };
+
+        const planB = (jobFailure: JobFailure) => {
+            dispatch(showMessageBox({
+                                        type: 'error',
+                                        title: 'File System Update',
+                                        message: 'Failed updating file in file system.',
+                                        detail: jobFailure.message
+                                    }));
+        };
+
+        callAPI({
+                    title: `Updating Files`,
+                    dispatch, call, action, planB, requireDoneNotification: false
+                });
     }
 }
 
@@ -1362,36 +1463,38 @@ function deleteRemoteWorkspace(dispatch: (action: (Action | ThunkAction)) => voi
 
 function openLocalWorkspace(dispatch: (action: (Action | ThunkAction)) => void,
                             getState: () => State) {
-    const workspacePath = showSingleFileOpenDialog({
-                                                       title: 'Open Workspace - Select Directory',
-                                                       buttonLabel: 'Open',
-                                                       properties: ['openDirectory'],
-                                                   });
-    if (workspacePath) {
-        const workspace = getState().data.workspace;
-        let ok = true;
-        if (workspace) {
-            if (workspace.baseDir === workspacePath) {
-                // showMessageBox({
-                //     title: 'Open Workspace',
-                //     message: 'Workspace is already open.'
-                // }, MESSAGE_BOX_NO_REPLY);
-                showToast({
-                              type: 'warning',
-                              text: 'Workspace is already open.',
-                          });
-                return;
+    const handleClose = (workspacePath: string | null) => {
+        if (workspacePath) {
+            const workspace = getState().data.workspace;
+            let ok = true;
+            if (workspace) {
+                if (workspace.baseDir === workspacePath) {
+                    // showMessageBox({
+                    //     title: 'Open Workspace',
+                    //     message: 'Workspace is already open.'
+                    // }, MESSAGE_BOX_NO_REPLY);
+                    showToast({
+                                  type: 'warning',
+                                  text: 'Workspace is already open.',
+                              });
+                    return;
+                }
+                ok = maybeSaveCurrentWorkspace(dispatch, getState,
+                                               'Open Workspace',
+                                               'Would you like to save the current workspace before opening the new one?',
+                                               'Press "Cancel" to cancel opening a new workspace.'
+                );
             }
-            ok = maybeSaveCurrentWorkspace(dispatch, getState,
-                                           'Open Workspace',
-                                           'Would you like to save the current workspace before opening the new one?',
-                                           'Press "Cancel" to cancel opening a new workspace.'
-            );
-        }
-        if (ok) {
-            dispatch(openWorkspace(workspacePath));
+            if (ok) {
+                dispatch(openWorkspace(workspacePath));
+            }
         }
     }
+    dispatch(showSingleFileOpenDialog({
+                                          title: 'Open Workspace - Select Directory',
+                                          buttonLabel: 'Open',
+                                          properties: ['openDirectory'],
+                                      }, handleClose) as any);
 }
 
 /**
@@ -1466,7 +1569,7 @@ export function cleanWorkspaceInteractive(): ThunkAction {
 }
 
 /**
- * Ask user whether to delete a resoure/step, then delete it.
+ * Ask user whether to delete a resource/step, then delete it.
  *
  * @returns a Redux thunk action
  */
@@ -2143,148 +2246,149 @@ export function updatePwaDisplayMode(pwaDisplayMode: string): Action {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Native, Electron-based dialogs, file choosers and message boxes
+// File choosers and message boxes
 
-export interface FileFilter {
-    name: string;
-    extensions: string[];
+export const OPEN_DIRECTORY_SELECT_DIALOG = 'OPEN_DIRECTORY_SELECT_DIALOG';
+export const CLOSE_DIRECTORY_SELECT_DIALOG = 'CLOSE_DIRECTORY_SELECT_DIALOG';
+
+function openDirectorySelectDialog(options: OpenDialogOptions,
+                                   onClose: (result: OpenDialogResult) => any): Action {
+    return {type: OPEN_DIRECTORY_SELECT_DIALOG, payload: {options, onClose}};
 }
 
-export type OpenDialogProperty =
-    'openFile'
-    | 'openDirectory'
-    | 'multiSelections'
-    | 'createDirectory'
-    | 'showHiddenFiles';
-
-/**
- * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface FileDialogOptions {
-    title?: string;
-    defaultPath?: string;
-    /**
-     * Custom label for the confirmation button, when left empty the default label will be used.
-     */
-    buttonLabel?: string;
-    filters?: FileFilter[];
+function closeDirectorySelectDialog(result: OpenDialogResult): Action {
+    return {type: CLOSE_DIRECTORY_SELECT_DIALOG, payload: {result}};
 }
 
-// TODO (forman): Replace by electron.SaveDialogOptions
-
 /**
- * See dialog.showSaveDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface SaveDialogOptions extends FileDialogOptions {
-}
-
-// TODO (forman): Replace by electron.OpenDialogOptions
-
-/**
- * See dialog.showOpenDialog() in https://github.com/electron/electron/blob/master/docs/api/dialog.md
- */
-export interface OpenDialogOptions extends FileDialogOptions {
-    /**
-     * Contains which features the open dialog should use.
-     */
-    properties?: OpenDialogProperty[];
-    /**
-     * Normalize the keyboard access keys across platforms.
-     * Default is false. Enabling this assumes & is used in the button labels for the placement of the
-     * keyboard shortcut access key and labels will be converted so they work correctly on each platform,
-     * & characters are removed on macOS, converted to _ on Linux, and left untouched on Windows.
-     * For example, a button label of Vie&w will be converted to Vie_w on Linux and View on macOS and can
-     * be selected via Alt-W on Windows and Linux.
-     */
-    normalizeAccessKeys?: boolean;
-}
-
-
-/**
- * Shows a native file-open dialog.
- * Similar to "showFileOpenDialog" but will always return a single path or null.
+ * Shows a single-directory select dialog.
+ * Similar to "showFileOpenDialog" but will always return a single directory path or null.
  *
  * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with the selected file path
- * @returns the selected file path or null, if no file path was selected or the callback function is defined
+ * @param onClose a function which is called with the selected directory path or null if the dialog was canceled
+ * @returns a thunk action
  */
-export function showSingleFileOpenDialog(openDialogOptions: OpenDialogOptions,
-                                         callback?: (filePath: string) => void): string | null {
-    const getFirstFile = (filePaths: string[]) => (filePaths && filePaths.length) ? filePaths[0] : null;
-    let callbackThunk;
-    if (callback) {
-        callbackThunk = (filePaths: string[]) => {
-            return callback(getFirstFile(filePaths));
+export function showDirectorySelectDialog(openDialogOptions: OpenDialogOptions,
+                                          onClose: (dirPath: string | null) => void): ThunkAction {
+    const propsSet = new Set(openDialogOptions.properties);
+    propsSet.delete('openFile');
+    propsSet.delete('multiSelections');
+    propsSet.add('openDirectory');
+    openDialogOptions = {
+        ...openDialogOptions,
+        title: openDialogOptions.title || 'Select Directory',
+        buttonLabel: openDialogOptions.buttonLabel || 'Select',
+        properties: Array.from(propsSet)
+    };
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: OpenDialogResult) => {
+            dispatch(closeDirectorySelectDialog(result));
+            onClose(!result.canceled && result.filePaths && result.filePaths.length > 0 ? result.filePaths[0] : null);
         };
-    }
-    return getFirstFile(showFileOpenDialog(openDialogOptions, callbackThunk));
+        dispatch(openDirectorySelectDialog(openDialogOptions, handleClose));
+        desktopActions.showFileOpenDialog(openDialogOptions, handleClose);
+    };
 }
 
-//noinspection JSUnusedGlobalSymbols
-/**
- * Shows a native file-open dialog.
- * Similar to "showFileOpenDialog" but will always return a single path or null.
- *
- * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with the selected file path
- * @returns the selected file path or null, if no file path was selected or the callback function is defined
- */
-export function showMultiFileOpenDialog(openDialogOptions: OpenDialogOptions,
-                                        callback?: (filePaths: string[]) => void): string[] | null {
-    if (openDialogOptions.properties && !openDialogOptions.properties.find((p) => p === 'multiSelections')) {
-        const properties = openDialogOptions.properties.slice();
-        properties.push('multiSelections');
-        openDialogOptions = Object.assign({}, openDialogOptions, {properties});
-    }
-    return showFileOpenDialog(openDialogOptions, callback);
+export const OPEN_FILE_OPEN_DIALOG = 'OPEN_FILE_OPEN_DIALOG';
+export const CLOSE_FILE_OPEN_DIALOG = 'CLOSE_FILE_OPEN_DIALOG';
+
+function openFileOpenDialog(options: OpenDialogOptions,
+                            onClose: (result: OpenDialogResult) => any): Action {
+    return {type: OPEN_FILE_OPEN_DIALOG, payload: {options, onClose}};
 }
 
+function closeFileOpenDialog(result: OpenDialogResult): Action {
+    return {type: CLOSE_FILE_OPEN_DIALOG, payload: {result}};
+}
+
+
 /**
- * Shows a native file-open dialog.
+ * Shows a file open dialog.
  *
- * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with an array of the selected file paths
- * @returns the array of selected file paths or null, if no file path was selected or the callback function is defined
+ * @param openDialogOptions the file-save dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the open dialog result
+ * @returns a thunk action
  */
 export function showFileOpenDialog(openDialogOptions: OpenDialogOptions,
-                                   callback?: (filePaths: string[]) => void): string[] | null {
-    if (hasElectron('showFileOpenDialog')) {
-        const actionName = 'show-open-dialog';
-        if (callback) {
-            electron.ipcRenderer.send(actionName, openDialogOptions, false);
-            electron.ipcRenderer.once(actionName + '-reply', (event, filePaths: string[]) => {
-                callback(filePaths);
-            });
-            return null;
-        } else {
-            return electron.ipcRenderer.sendSync(actionName, openDialogOptions, true) as any;
-        }
-    }
-    return null;
+                                   onClose: (result: OpenDialogResult) => void): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: OpenDialogResult) => {
+            dispatch(closeFileOpenDialog(result));
+            onClose(result);
+        };
+        dispatch(openFileOpenDialog(openDialogOptions, handleClose));
+        desktopActions.showFileOpenDialog(openDialogOptions, handleClose);
+    };
 }
 
 /**
- * Shows a native file-save dialog.
+ * Shows a single-file open dialog.
+ * Similar to "showFileOpenDialog" but will always return a single path or null.
+ *
+ * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the selected file path or null if the dialog was canceled
+ * @returns a thunk action
+ */
+export function showSingleFileOpenDialog(openDialogOptions: OpenDialogOptions,
+                                         onClose: (filePath: string | null) => void): ThunkAction {
+    const propsSet = new Set(openDialogOptions.properties);
+    propsSet.delete('multiSelections')
+    openDialogOptions = {...openDialogOptions, properties: Array.from(propsSet)};
+    return showFileOpenDialog(openDialogOptions,
+                              (result => {
+                                  onClose(!result.canceled && result.filePaths.length > 0 ? result.filePaths[0] : null);
+                              }));
+}
+
+/**
+ * Shows a multi-file open dialog.
+ * Similar to "showFileOpenDialog" but will always return a single path or null.
+ *
+ * @param openDialogOptions the file-open dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
+ * @param onClose a function which is called with the selected file paths
+ * @returns a thunk action
+ */
+export function showMultiFileOpenDialog(openDialogOptions: OpenDialogOptions,
+                                        onClose: (filePaths: string[]) => any): ThunkAction {
+    const propsSet = new Set(openDialogOptions.properties);
+    propsSet.add('multiSelections')
+    openDialogOptions = {...openDialogOptions, properties: Array.from(propsSet)};
+    return showFileOpenDialog(openDialogOptions,
+                              (result => {
+                                  onClose(!result.canceled ? result.filePaths : []);
+                              }));
+}
+
+export const OPEN_FILE_SAVE_DIALOG = 'OPEN_FILE_SAVE_DIALOG';
+export const CLOSE_FILE_SAVE_DIALOG = 'CLOSE_FILE_SAVE_DIALOG';
+
+function openFileSaveDialog(options: SaveDialogOptions,
+                            onClose: (result: SaveDialogResult) => any): Action {
+    return {type: OPEN_FILE_SAVE_DIALOG, payload: {options, onClose}};
+}
+
+function closeFileSaveDialog(result: SaveDialogResult): Action {
+    return {type: CLOSE_FILE_SAVE_DIALOG, payload: {result}};
+}
+
+/**
+ * Shows a file save dialog.
  *
  * @param saveDialogOptions the file-save dialog options, see https://github.com/electron/electron/blob/master/docs/api/dialog.md
- * @param callback an optional function which is called with the selected file path
- * @returns the selected filePath or null, if no file path was selected or the callback function is defined
+ * @param onClose a function which is called with the selected file path
+ * @returns a thunk action
  */
 export function showFileSaveDialog(saveDialogOptions: SaveDialogOptions,
-                                   callback?: (filePath: string) => void): string | null {
-    if (hasElectron('showFileSaveDialog')) {
-        const actionName = 'show-save-dialog';
-        if (callback) {
-            electron.ipcRenderer.send(actionName, saveDialogOptions, false);
-            electron.ipcRenderer.once(actionName + '-reply', (event, filePath: string) => {
-                callback(filePath);
-            });
-            return null;
-        } else {
-            return electron.ipcRenderer.sendSync(actionName, saveDialogOptions, true) as any;
-        }
-    }
-    return null;
+                                   onClose: (result: SaveDialogResult) => any): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = (result: SaveDialogResult) => {
+            dispatch(closeFileSaveDialog(result));
+            onClose(result);
+        };
+        dispatch(openFileSaveDialog(saveDialogOptions, handleClose));
+        desktopActions.showFileSaveDialog(saveDialogOptions, handleClose);
+    };
 }
 
 export const OPEN_MESSAGE_BOX = 'OPEN_MESSAGE_BOX';
@@ -2296,7 +2400,7 @@ function openMessageBox(options: MessageBoxOptions,
     return {type: OPEN_MESSAGE_BOX, payload: {options, onClose}};
 }
 
-function closeMessageBox(result: MessageBoxResult | null) {
+function closeMessageBox(result: MessageBoxResult | null): Action {
     return {type: CLOSE_MESSAGE_BOX, payload: {result}};
 }
 
@@ -2436,15 +2540,15 @@ function invokeUntil(callback: () => Promise<any>,
                      timeout: number) {
     let startTime = new Date().getTime();
     let func: () => void;
-    let attempt = 0;
+    // Uncomment for debugging
+    // let attempt = 0;
     let error: any = null;
-    // noinspection UnnecessaryLocalVariableJS
     const _func = async () => {
-        attempt++;
+        // attempt++;
         let result;
         try {
+            // console.log('attempt:', attempt);
             result = await callback();
-            console.log(attempt, 'result =', result);
         } catch (e) {
             error = e;
         }

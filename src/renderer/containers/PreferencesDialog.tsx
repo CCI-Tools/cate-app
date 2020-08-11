@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { AnchorButton, ControlGroup, Intent, Switch, Tab, Tabs } from '@blueprintjs/core';
-import { SessionState, State, WebAPIServiceInfo } from '../state';
 import { connect, DispatchProp } from 'react-redux';
+
+import { SessionState, State, WebAPIServiceInfo } from '../state';
 import * as actions from '../actions';
-import { OpenDialogProperty, showMessageBox } from '../actions';
+import { showMessageBox } from '../actions';
 import * as selectors from '../selectors';
 import { TextField } from '../components/field/TextField';
 import deepEqual from 'deep-equal';
@@ -270,7 +271,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                     />
                     <AnchorButton
                         intent={Intent.PRIMARY} style={{flex: 'none'}}
-                        onClick={() => PreferencesDialog.showOpenDirectoryDialog(initialValue, onChange)}>
+                        onClick={() => this.showOpenDirectoryDialog(initialValue, onChange)}>
                         ...
                     </AnchorButton>
                 </ControlGroup>
@@ -325,22 +326,13 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         this.setState({backendConfig} as SessionState);
     }
 
-    private static showOpenDirectoryDialog(defaultPath: string, onChange: (value) => void) {
-        const openDialogOptions = {
-            title: 'Select Directory',
-            defaultPath: defaultPath,
-            buttonLabel: 'Select',
-            properties: [
-                'openDirectory' as OpenDialogProperty,
-                'createDirectory' as OpenDialogProperty,
-            ],
-            filter: [],
-        };
-        actions.showSingleFileOpenDialog(openDialogOptions, (dirPath: string) => {
-            if (dirPath) {
-                onChange(dirPath);
-            }
-        });
+    private showOpenDirectoryDialog(defaultPath: string, onChange: (value) => void) {
+        this.props.dispatch(actions.showDirectorySelectDialog({defaultPath},
+                                                              (dirPath: string | null) => {
+                                                                  if (dirPath) {
+                                                                      onChange(dirPath);
+                                                                  }
+                                                              }) as any);
     }
 }
 
