@@ -43,6 +43,9 @@ export const INITIAL_CONTROL_STATE: ControlState = {
 
     newPlacemarkToolType: 'NoTool',
     entityUpdateCount: 0,
+
+    pwaInstallPromotionVisible: false,
+    pwaDisplayMode: 'browser',
 };
 
 

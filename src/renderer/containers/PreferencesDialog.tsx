@@ -11,8 +11,11 @@ import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
 
-
-const CATE_WEBUI_VERSION = "2.1.0-dev.4";
+// IMPORTANT:
+// 1. Synchronize any changes of CATE_WEBUI_VERSION with the version field in "./package.json".
+// 2. Increase PWA_VERSION in "./src/serviceWorker.ts"
+//
+const CATE_WEBUI_VERSION = "2.1.0-dev.5";
 
 
 interface IPreferencesDialogProps {

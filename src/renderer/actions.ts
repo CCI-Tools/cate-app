@@ -2104,6 +2104,45 @@ export function hidePreferencesDialog() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Desktop-PWA installation support actions
+
+export const SHOW_PWA_INSTALL_PROMOTION = 'SHOW_PWA_INSTALL_PROMOTION';
+export const HIDE_PWA_INSTALL_PROMOTION = 'HIDE_PWA_INSTALL_PROMOTION';
+export const UPDATE_PWA_DISPLAY_MODE = 'UPDATE_PWA_DISPLAY_MODE';
+
+let _deferredPwaInstallPrompt: any = null;
+
+export function showPwaInstallPromotion(deferredPrompt: any): Action {
+    // Prevent the mini-infobar from appearing on mobile
+    _deferredPwaInstallPrompt = deferredPrompt;
+    _deferredPwaInstallPrompt.preventDefault();
+    return {type: SHOW_PWA_INSTALL_PROMOTION};
+}
+
+function hidePwaInstallPromotion(): Action {
+    return {type: HIDE_PWA_INSTALL_PROMOTION};
+}
+
+export const showPwaInstallPrompt = (): ThunkAction => (dispatch, getState) => {
+    // Hide the app provided install promotion
+    dispatch(hidePwaInstallPromotion());
+    // Show the install prompt
+    _deferredPwaInstallPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    _deferredPwaInstallPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        } else {
+            console.log('User dismissed the install prompt');
+        }
+    });
+}
+
+export function updatePwaDisplayMode(pwaDisplayMode: string): Action {
+    return {type: UPDATE_PWA_DISPLAY_MODE, payload: pwaDisplayMode};
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Native, Electron-based dialogs, file choosers and message boxes
 
 export interface FileFilter {
