@@ -291,11 +291,20 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     const handleCurrentDirPathChangeInList = (path: string) => {
-        dispatchPathState({
-                              expandedPaths: addExpandedDirPath(pathState.expandedPaths, path),
-                              selectedDirPath: path,
-                              currentDirPath: path,
-                          });
+        if (openDirectory && !openFile && !multiSelections) {
+            dispatchPathState({
+                                  expandedPaths: addExpandedDirPath(pathState.expandedPaths, path),
+                                  selectedDirPath: path,
+                                  currentDirPath: path,
+                                  selectedPaths: [path],
+                              });
+        } else {
+            dispatchPathState({
+                                  expandedPaths: addExpandedDirPath(pathState.expandedPaths, path),
+                                  selectedDirPath: path,
+                                  currentDirPath: path,
+                              });
+        }
     };
 
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
