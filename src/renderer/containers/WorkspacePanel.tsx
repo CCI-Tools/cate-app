@@ -323,28 +323,34 @@ class WorkspacePanel extends React.PureComponent<IWorkspacePanelProps & Dispatch
                 <ToolButton tooltipContent="Show figure"
                             disabled={!canShowFigure}
                             icon="eye-open"
+                            tooltipPosition={'top'}
                             onClick={this.handleShowFigureButtonClicked}/>
                 <ToolButton tooltipContent="Show data in table"
                             disabled={!canShowTableView}
                             icon="th"
+                            tooltipPosition={'top'}
                             onClick={this.handleShowResourceTableView}
                 />
                 <ToolButton tooltipContent="Resource/step properties"
                             disabled={!resource}
                             icon="label"
+                            tooltipPosition={'top'}
                             onClick={this.handleWorkflowStepPropertiesButtonClicked}/>
                 <ToolButton tooltipContent="Edit workflow step"
                             intent={Intent.PRIMARY}
                             disabled={!workflowStep}
                             icon="edit"
+                            tooltipPosition={'top'}
                             onClick={this.handleEditOperationStepButtonClicked}/>
                 <ToolButton tooltipContent="Remove workflow step and its resource"
                             disabled={!workflowStep}
                             icon="remove"
+                            tooltipPosition={'top'}
                             onClick={this.handleRemoveOperationStepButtonClicked}/>
                 <ToolButton tooltipContent="Clean workspace, remove all steps and resources"
                             disabled={!hasSteps}
                             icon="delete"
+                            tooltipPosition={'top'}
                             onClick={this.handleCleanWorkflowButtonClicked}/>
                 {workflowStep ? <WorkflowStepPropertiesDialog selectedWorkflowStep={workflowStep}/> : null}
                 {isOperationStepSelected

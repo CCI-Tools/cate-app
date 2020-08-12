@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { connect, DispatchProp } from 'react-redux';
+import {connect, DispatchProp} from 'react-redux';
 import {
     ButtonGroup,
     Classes,
@@ -11,19 +11,19 @@ import {
     PopoverInteractionKind,
     Tag
 } from '@blueprintjs/core';
-import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
-import { LabelWithType } from '../components/LabelWithType';
-import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
-import { Card } from '../components/Card';
+import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
+import {LabelWithType} from '../components/LabelWithType';
+import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
+import {Card} from '../components/Card';
 import OperationStepDialog from './OperationStepDialog';
-import { OperationInputState, OperationOutputState, OperationState, State, WorkspaceState } from '../state';
+import {OperationInputState, OperationOutputState, OperationState, State, WorkspaceState} from '../state';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { ScrollablePanelContent } from '../components/ScrollableContent';
-import { NO_OPERATIONS_FOUND } from '../messages';
-import { ToolButton } from '../components/ToolButton';
-import { NEW_OPERATION_STEP_DIALOG_ID } from './operation-step-dialog-ids';
-import { TextWithLinks } from '../components/TextWithLinks';
+import {ScrollablePanelContent} from '../components/ScrollableContent';
+import {NO_OPERATIONS_FOUND} from '../messages';
+import {ToolButton} from '../components/ToolButton';
+import {NEW_OPERATION_STEP_DIALOG_ID} from './operation-step-dialog-ids';
+import {TextWithLinks} from '../components/TextWithLinks';
 
 
 interface IOperationsPanelProps {
@@ -147,12 +147,15 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
             const canAddStepOperation = this.props.selectedOperation && this.props.workspace;
             const actionComponent = (
                 <ButtonGroup>
-                    <ToolButton tooltipContent="Add a new operation step to the workspace's workflow"
-                                intent={Intent.PRIMARY}
-                                onClick={this.handleAddOperationStepButtonClicked}
-                                disabled={!canAddStepOperation}
-                                text="Add Step..."
-                                icon="play"/>
+                    <ToolButton
+                        tooltipContent="Add a new operation step to the workspace's workflow"
+                        intent={Intent.PRIMARY}
+                        onClick={this.handleAddOperationStepButtonClicked}
+                        disabled={!canAddStepOperation}
+                        text="Add Step..."
+                        icon="play"
+                        tooltipPosition={'top'}
+                    />
                     {canAddStepOperation ? <OperationStepDialog id={NEW_OPERATION_STEP_DIALOG_ID}/> : null}
                 </ButtonGroup>
             );

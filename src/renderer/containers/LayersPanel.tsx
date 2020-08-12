@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { connect, DispatchProp } from 'react-redux';
+import {connect, DispatchProp} from 'react-redux';
 import {
     ColorMapCategoryState,
     ImageLayerState,
@@ -11,18 +11,18 @@ import {
     VariableImageLayerState,
     VariableState
 } from '../state';
-import { ButtonGroup, Checkbox, Icon, Intent, Label, Radio, RadioGroup, Slider } from '@blueprintjs/core';
-import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
+import {ButtonGroup, Checkbox, Icon, Intent, Label, Radio, RadioGroup, Slider} from '@blueprintjs/core';
+import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
+import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
 import LayerSourcesDialog from './LayerSourcesDialog';
-import { AUTO_LAYER_ID, getLayerDisplayName, getLayerTypeIconName } from '../state-util';
-import { ScrollablePanelContent } from '../components/ScrollableContent';
-import { ViewState } from '../components/ViewState';
-import { NO_LAYER_SELECTED, NO_LAYERS_EMPTY_VIEW, NO_LAYERS_NO_VIEW } from '../messages';
-import { SubPanelHeader } from '../components/SubPanelHeader';
-import { ToolButton } from '../components/ToolButton';
+import {AUTO_LAYER_ID, getLayerDisplayName, getLayerTypeIconName} from '../state-util';
+import {ScrollablePanelContent} from '../components/ScrollableContent';
+import {ViewState} from '../components/ViewState';
+import {NO_LAYER_SELECTED, NO_LAYERS_EMPTY_VIEW, NO_LAYERS_NO_VIEW} from '../messages';
+import {SubPanelHeader} from '../components/SubPanelHeader';
+import {ToolButton} from '../components/ToolButton';
 
 interface ILayersPanelProps {
     selectedVariable: VariableState | null,
@@ -154,8 +154,8 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
 
     private handleChangedLayerSplitMode(event) {
         this.props.dispatch(actions.setLayerSplitMode(this.props.activeView.id,
-                                                      this.props.selectedLayerId,
-                                                      event.target.value));
+            this.props.selectedLayerId,
+            event.target.value));
     }
 
     private handleChangedLayerSelection(newSelection: string[]) {
@@ -187,22 +187,36 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
         const canMoveLayerDown = selectedLayerIndex >= 0 && selectedLayerIndex < layerCount - 1;
         return (
             <ButtonGroup>
-                <ToolButton tooltipContent="Add a new layer"
-                            intent={Intent.PRIMARY}
-                            onClick={this.handleAddLayerButtonClicked}
-                            icon="add"/>
-                <ToolButton tooltipContent="Remove selected layer"
-                            disabled={!canRemoveLayer}
-                            onClick={this.handleRemoveLayerButtonClicked}
-                            icon="remove"/>
-                <ToolButton tooltipContent="Move layer up"
-                            disabled={!canMoveLayerUp}
-                            onClick={this.handleMoveLayerUpButtonClicked}
-                            icon="arrow-up"/>
-                <ToolButton tooltipContent="Move layer down"
-                            disabled={!canMoveLayerDown}
-                            onClick={this.handleMoveLayerDownButtonClicked}
-                            icon="arrow-down"/>
+                <ToolButton
+                    tooltipContent="Add a new layer"
+                    intent={Intent.PRIMARY}
+                    onClick={this.handleAddLayerButtonClicked}
+                    icon="add"
+                    tooltipPosition={'top'}
+                />
+                <ToolButton
+                    tooltipContent="Remove selected layer"
+                    disabled={!canRemoveLayer}
+                    onClick={this.handleRemoveLayerButtonClicked}
+                    icon="remove"
+                    tooltipPosition={'top'}
+                />
+                <ToolButton
+                    tooltipContent="Move layer up"
+                    disabled={!canMoveLayerUp}
+                    onClick={this.handleMoveLayerUpButtonClicked}
+                    icon="arrow-up"
+                    tooltipPosition={'top'}
+
+                />
+                <ToolButton
+                    tooltipContent="Move layer down"
+                    disabled={!canMoveLayerDown}
+                    onClick={this.handleMoveLayerDownButtonClicked}
+                    icon="arrow-down"
+                    tooltipPosition={'top'}
+
+                />
                 <LayerSourcesDialog/>
             </ButtonGroup>
         );
