@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { AnchorButton, ButtonGroup, FormGroup, Icon, Tooltip } from '@blueprintjs/core';
+import { AnchorButton, ButtonGroup as div, FormGroup, Icon, Tooltip } from '@blueprintjs/core';
 import {
     DialogState,
     OperationInputState,
@@ -257,10 +257,10 @@ class OperationStepDialog extends React.Component<IOperationStepDialogProps & Di
         return (
             <FormGroup>
                 {bodyHeaderText}
-                <ButtonGroup>
+                <div>
                     {parameterPanel}
                     <div className="bp3-form-helper-text">{bodyFooterText}</div>
-                </ButtonGroup>
+                </div>
                 <ValidationDialog isOpen={this.state.isValidationDialogOpen}
                                   inputErrors={this.state.inputErrors}
                                   onConfirm={this.hideValidationDialog}
