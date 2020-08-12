@@ -8,10 +8,11 @@ import * as actions from "../actions";
 
 function mapStateToProps(state: State) {
     return {
+        ...state.control.directorySelectDialog.options,
         isOpen: state.control.directorySelectDialog.isOpen,
         onClose: state.control.directorySelectDialog.onClose,
         rootNode: state.data.fsRootNode,
-        ...state.control.directorySelectDialog.options,
+        hostOS: state.communication.webAPIServiceInfo.hostOS,
     };
 }
 

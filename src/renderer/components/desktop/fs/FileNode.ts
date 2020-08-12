@@ -4,8 +4,23 @@ import { isNumber, isString } from '../../../../common/types';
 import { FileFilter } from '../types';
 
 
+/**
+ * Used to parse users' text inputs into normalized paths and to format normalized paths into user text outputs.
+ * Values are according to output of Python's platform.system() call.
+ */
+export type HostOS = 'Windows' | 'Linux' | 'Java';
+
+/**
+ * Represents the current update status of a file node.
+ */
 export type FileNodeStatus = 'updating' | 'ready' | 'error';
 
+/**
+ * A file node represent a file or directory in a file system.
+ * When we create path strings from file node paths (hence FileNode[]),
+ * we concatenate always by forward slashes ("/"), even if the server file system
+ * is Windows OS. Therefore path strings ever start with a "/", even absolute paths.
+ */
 export interface FileNode {
     name: string;
     lastModified?: string;
@@ -269,7 +284,8 @@ export function compareFileSize(a: FileNode, b: FileNode) {
  * @param multiSelection if multiple selections are allowed
  * @returns an array of selected paths
  */
-export function fromPathInputValue(inputValue: string, currentDirPath: string, multiSelection: boolean): string[] {
+export function fromPathInputValue(inputValue: string, currentDirPath: string, multiSelection: boolean, hostOS?: string): string[] {
+    const isWindows = !hostOS || hostOS === 'Windows';
     inputValue = inputValue.trim()
     if (inputValue === '') {
         return [];
@@ -301,6 +317,8 @@ export function fromPathInputValue(inputValue: string, currentDirPath: string, m
                 } else {
                     token += char;
                 }
+            } else if (!isWindows && char === '\\') {
+                // escape char
             } else {
                 token += char;
             }
@@ -309,8 +327,73 @@ export function fromPathInputValue(inputValue: string, currentDirPath: string, m
             paths.push(token);
         }
     }
-    // TODO (forman): recognize absolute paths
-    return paths.map(p => currentDirPath !== '' ? currentDirPath + '/' + p : p);
+    return paths.map(p => toAbsolutePath(p, currentDirPath, isWindows));
+}
+
+/**
+ * Return an absolute path for given `path`. Note that the returned absolute path *never* start with
+ * a slash ('/').
+ * @param path an absolute or relative path
+ * @param currentDirPath current path
+ * @param isWindows windows host OS?
+ */
+export function toAbsolutePath(path: string, currentDirPath: string, isWindows?: boolean): string {
+
+    let abs = false;
+
+    if (isWindows) {
+        // Normalize back-slashes into forward slashes
+        while (path.indexOf('\\') >= 0) {
+            path.replace('\\', '/');
+        }
+        // On Windows, absolute path may start with a drive letter or double back-slashes.
+        if (path.length >= 2
+            && /^[a-z]+$/i.test(path[0])
+            && path[1] === ':'
+            && (path.length === 2 || path[2] === '/')) {
+            // Windows absolute path
+            abs = true;
+        }
+    } else {
+        // Remove back-slashes, because they escape special characters on non-Windows hosts
+        while (path.indexOf('\\') >= 0) {
+            path.replace('\\', '');
+        }
+    }
+
+    let prefix = '';
+    if (isWindows && path.startsWith('//')) {
+        // Note special case on Windows, where '//' are prefixes for network devices
+        prefix = '//';
+        path = path.substring(2);
+        abs = true;
+    } else if (!isWindows && path.startsWith('/')) {
+        // Absolute Unix path
+        abs = true;
+    }
+
+    // Normalize by trimming leading '/'
+    while (path.startsWith('/')) {
+        path = path.substring(1);
+    }
+    // Normalize by trimming trailing '/'
+    while (path.endsWith('/')) {
+        path = path.substring(0, path.length - 1);
+    }
+    // Normalize by trimming double slashes '//'
+    while (path.indexOf('//') > 0) {
+        path = path.replace('//', '/')
+    }
+
+    path = prefix + path;
+
+    if (abs) {
+        return path;
+    }
+    if (currentDirPath === '') {
+        return path;
+    }
+    return currentDirPath + '/' + path;
 }
 
 /**

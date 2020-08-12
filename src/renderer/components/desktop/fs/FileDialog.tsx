@@ -20,7 +20,7 @@ import {
     ALL_FILES_FILTER,
     FileNode, fromPathInputValue,
     getBasename,
-    getParentDir,
+    getParentDir, HostOS,
     toPathInputValue,
 } from './FileNode';
 import FileTree from './FileTree';
@@ -68,6 +68,7 @@ interface PathState {
 
 const FileFilterSelect = Select.ofType<FileFilter>();
 
+
 export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> {
     isOpen?: boolean;
     onClose?: (result: FileDialogResult) => any;
@@ -83,6 +84,7 @@ export interface IFileDialogProps extends Omit<FileDialogOptions, 'properties'> 
     openDirectory?: boolean;
     multiSelections?: boolean;
     showHiddenFiles?: boolean;
+    hostOS?: HostOS;
 }
 
 const FileDialog: React.FC<IFileDialogProps> = (
@@ -103,6 +105,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         openDirectory,
         multiSelections,
         showHiddenFiles,
+        hostOS,
     }) => {
 
     if ((saveFile && openFile) || (saveFile && openDirectory) || (saveFile && multiSelections)) {
@@ -113,7 +116,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         console.warn('showHiddenFiles flag ignored (not implemented yet))');
     }
 
-    const defaultDirPath = (defaultPath && getParentDir(defaultPath)) || null;
+    const defaultDirPath: string | null = (defaultPath && defaultPath !== '' && getParentDir(defaultPath)) || null;
     const initialPathState: PathState = {
         selectedPaths: (defaultPath && [defaultPath]) || [],
         expandedPaths: (defaultDirPath && [defaultDirPath]) || [],
@@ -339,10 +342,9 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = event.target.value || '';
-        dispatchPathState({
-                              selectedPaths: fromPathInputValue(inputValue, pathState.currentDirPath, multiSelections),
-                              inputValue: event.target.value
-                          });
+        const selectedPaths = fromPathInputValue(inputValue, pathState.currentDirPath, multiSelections, hostOS);
+        console.log(`Input [${inputValue}]:`, selectedPaths);
+        dispatchPathState({selectedPaths, inputValue});
     }
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {

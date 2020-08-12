@@ -57,6 +57,7 @@ export interface WebAPIServiceInfo {
     version: string;
     timestamp: string;
     userRootMode: boolean;
+    hostOS?: string;
 }
 
 export interface DataStoreNotice {
