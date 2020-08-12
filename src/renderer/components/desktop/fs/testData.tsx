@@ -10,7 +10,7 @@ const newFileNode = (name, childNodes?: FileNode[], isDir?: boolean, status?: Fi
         name,
         lastModified: `2020-${x2(12, 1)}-${x2(30, 1)} ${x2(24)}:${x2(60)}:${x2(24)}`,
         size: Math.round(100000 * Math.random()),
-        isDirectory: Boolean(isDir) || Boolean(childNodes),
+        isDir: Boolean(isDir) || Boolean(childNodes),
         status: status,
         childNodes,
     };

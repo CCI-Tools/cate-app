@@ -4,9 +4,21 @@ import { Colors, HTMLTable, Icon } from '@blueprintjs/core';
 import { FileFilter } from '../types';
 import { applyFileFilter, compareFileNames, FileNode, getFileNodeIcon, getFileNodePath } from './FileNode';
 
-
+const NAME_CELL_STYLE: React.CSSProperties = {
+    display: 'flex',
+    flexFlow: 'row nowrap',
+    alignItems: 'center',
+};
+const NAME_ICON_STYLE = {
+    marginRight: 5,
+};
+const SIZE_CELL_STYLE: React.CSSProperties = {
+    width: '100%', textAlign: 'right'
+};
 const ROW_DEFAULT_STYLE: React.CSSProperties = {};
-const ROW_SELECTED_STYLE: React.CSSProperties = {...ROW_DEFAULT_STYLE, backgroundColor: Colors.BLUE3};
+const ROW_SELECTED_STYLE: React.CSSProperties = {
+    ...ROW_DEFAULT_STYLE, backgroundColor: Colors.BLUE3
+};
 const TABLE_CONTAINER_STYLE: React.CSSProperties = {
     width: '100%',
     height: '100%',
@@ -72,23 +84,23 @@ const FileList: React.FC<IFileListProps> = (
 
     const renderFileNodeName = (rowIndex: number) => {
         const node = getRowFileNode(rowIndex);
-        return <span><Icon icon={getFileNodeIcon(node)}/>&nbsp;{node.name}</span>;
+        return <div style={NAME_CELL_STYLE}><Icon style={NAME_ICON_STYLE} icon={getFileNodeIcon(node)}/><span>{node.name}</span></div>;
     };
 
     const renderFileNodeLastModified = (rowIndex: number) => {
         const node = getRowFileNode(rowIndex);
-        return <span>{node.lastModified}</span>;
+        return node.lastModified;
     };
 
     const renderFileNodeSize = (rowIndex: number) => {
         const node = getRowFileNode(rowIndex);
-        return <span>{node.size}</span>;
+        return <div style={SIZE_CELL_STYLE}>{node.size}</div>;
     };
 
     const handleRowClick = (fileNode: FileNode, rowIndex: number, event: React.MouseEvent<HTMLTableRowElement>) => {
         // Disallow directory selection
         const node = getRowFileNode(rowIndex);
-        if ((!openDirectory && node.isDirectory) || (openDirectory && !node.isDirectory)) {
+        if ((!openDirectory && node.isDir) || (openDirectory && !node.isDir)) {
             return;
         }
         const path = getRowPath(rowIndex);
@@ -111,7 +123,7 @@ const FileList: React.FC<IFileListProps> = (
     const handleRowDoubleClick = (fileNode: FileNode, rowIndex: number) => {
         if (onCurrentDirPathChange) {
             const node = getRowFileNode(rowIndex);
-            if (node.isDirectory) {
+            if (node.isDir) {
                 onCurrentDirPathChange(getRowPath(rowIndex));
             }
         }

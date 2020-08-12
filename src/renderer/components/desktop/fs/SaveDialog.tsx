@@ -28,7 +28,6 @@ const SaveDialog: React.FC<ISaveDialogProps> = ({onClose, ...props}) => {
             openFile={false}
             openDirectory={false}
             multiSelections={false}
-            createDirectory={properties.has("createDirectory")}
             showHiddenFiles={properties.has("showHiddenFiles")}
         />
     );

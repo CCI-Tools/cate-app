@@ -21,7 +21,6 @@ const OpenDialog: React.FC<IOpenDialogProps> = (props) => {
             openFile={properties.has('openFile') || !properties.has('openDirectory')}
             openDirectory={properties.has('openDirectory')}
             multiSelections={properties.has('multiSelections')}
-            createDirectory={properties.has('createDirectory')}
             showHiddenFiles={properties.has('showHiddenFiles')}
         />
     );

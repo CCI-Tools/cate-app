@@ -19,7 +19,7 @@ export const INITIAL_DATA_STATE: DataState = {
     operations: null,
     workspace: null,
     colorMaps: null,
-    fsRootNode: {name: '', isDirectory: true, lastModified: '', size: 0},
+    fsRootNode: {name: '', isDir: true, lastModified: '', size: 0},
     workspaceNames: null,
     hasWebGL: hasWebGL(),
 };
@@ -57,6 +57,9 @@ export const INITIAL_CONTROL_STATE: ControlState = {
 
     newPlacemarkToolType: 'NoTool',
     entityUpdateCount: 0,
+
+    pwaInstallPromotionVisible: false,
+    pwaDisplayMode: 'browser',
 };
 
 

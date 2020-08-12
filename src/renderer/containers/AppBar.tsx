@@ -24,12 +24,14 @@ interface IDispatch {
 
 interface IAppBarProps {
     canLogout: boolean;
+    pwaInstallPromotionVisible: boolean;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppBarProps {
     return {
         canLogout: state.communication.user !== null && state.communication.token !== null,
+        pwaInstallPromotionVisible: state.control.pwaInstallPromotionVisible,
     };
 }
 
@@ -44,6 +46,10 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
         props.dispatch(actions.logout() as any);
     };
 
+    const handleShowPwaInstallPrompt = () => {
+        props.dispatch(actions.showPwaInstallPrompt() as any);
+    };
+
     return (
         <Navbar>
             <NavbarGroup>
@@ -51,6 +57,26 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
                 <h2 style={TITLE_STYLE}>Cate - ESA CCI Toolbox</h2>
             </NavbarGroup>
             <NavbarGroup align="right">
+                {props.pwaInstallPromotionVisible && (
+                    <React.Fragment>
+                        <Button
+                            className="bp3-minimal"
+                            icon="desktop"
+                            intent="success"
+                            onClick={handleShowPwaInstallPrompt}
+                        >
+                            Install App
+                        </Button>
+                        <NavbarDivider/>
+                    </React.Fragment>
+                )}
+                <Popover
+                    content={<WorkspacesMenu/>}
+                    position={PopoverPosition.BOTTOM}
+                >
+                    <Button className="bp3-minimal" rightIcon={'caret-down'}>
+                        Workspaces
+                    </Button>
                 <Popover content={<FilesMenu/>} position={PopoverPosition.BOTTOM}>
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Files</Button>
                 </Popover>
@@ -58,14 +84,20 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Workspaces</Button>
                 </Popover>
                 <NavbarDivider/>
-                <Button className="bp3-minimal"
-                        icon="log-out"
-                        onClick={handleLogoutClick}
-                        disabled={!props.canLogout}>Logout</Button>
+                <Button
+                    className="bp3-minimal"
+                    icon="log-out"
+                    onClick={handleLogoutClick}
+                    disabled={!props.canLogout}
+                >
+                    Logout
+                </Button>
                 <NavbarDivider/>
-                <Button className="bp3-minimal"
-                        icon='cog'
-                        onClick={handlePreferencesClick}/>
+                <Button
+                    className="bp3-minimal"
+                    icon='cog'
+                    onClick={handlePreferencesClick}
+                />
             </NavbarGroup>
         </Navbar>
     );

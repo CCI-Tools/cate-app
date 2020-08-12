@@ -1,20 +1,18 @@
-// https://github.com/electron/electron/issues/2288
-let _isElectron = typeof navigator === 'object'
-                  && typeof navigator.userAgent === 'string'
-                  && navigator.userAgent.toLowerCase().indexOf(' electron/') >= 0;
-
-export function isElectron() {
-    return _isElectron;
+declare global {
+    // noinspection JSUnusedGlobalSymbols
+    interface Window {
+        electron?: any;
+    }
 }
 
-console.log('isElectron? ', isElectron());
+export function isElectron() {
+    return Boolean(window.electron);
+}
 
 export function requireElectron(): any | null {
-    let electron;
-    try {
-        electron = require('electron');
-    } catch (error) {
-        electron = null;
-    }
-    return electron;
+    return window.electron || null;
+}
+
+if (isElectron()) {
+    console.debug('We are running on Electron :)');
 }
