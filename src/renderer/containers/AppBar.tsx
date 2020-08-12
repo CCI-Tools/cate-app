@@ -77,6 +77,7 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>
                         Workspaces
                     </Button>
+                </Popover>
                 <Popover content={<FilesMenu/>} position={PopoverPosition.BOTTOM}>
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Files</Button>
                 </Popover>
