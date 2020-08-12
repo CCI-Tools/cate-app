@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { AnchorButton, ControlGroup, Intent } from '@blueprintjs/core';
+import { AnchorButton, Intent } from '@blueprintjs/core';
 import { connect, DispatchProp } from 'react-redux';
+import { toTextValue } from '../../components/field/Field';
 
 import { IValueEditorProps, ValueEditorCallback, ValueEditorValue } from './ValueEditor';
 import * as actions from '../../actions';
 import { OperationInputState, State } from '../../state';
 import { TextField } from '../../components/field/TextField';
-import { SaveDialogResult } from "../../components/desktop/types";
+import { OpenDialogResult, SaveDialogResult } from "../../components/desktop/types";
 
 const DIV_STYLE = {width: '20em', display: 'flex'};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
@@ -39,7 +40,7 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
                                   value: ValueEditorValue<string>,
                                   onChange: ValueEditorCallback<string>) => {
             const saveDialogOptions = {
-                defaultPath: value as string,
+                defaultPath: toTextValue(value, undefined),
                 filters: input.fileFilters,
             };
             dispatch(actions.showFileSaveDialog(saveDialogOptions, (result: SaveDialogResult) => {
@@ -52,21 +53,28 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
         showFileDialogCallback = (input: OperationInputState,
                                   value: ValueEditorValue<string>,
                                   onChange: ValueEditorCallback<string>) => {
+            const properties = input.fileProps as string[];
             const openDialogOptions = {
-                defaultPath: value as string,
+                defaultPath: toTextValue(value, undefined),
                 filters: input.fileFilters,
-                properties: input.fileProps as any,
+                properties: properties as any,
             };
-            dispatch(actions.showSingleFileOpenDialog(openDialogOptions, (filePath: string | null) => {
-                if (filePath) {
-                    onChange(input, filePath);
+            dispatch(actions.showFileOpenDialog(openDialogOptions, (result: OpenDialogResult) => {
+                if (!result.canceled && result.filePaths.length > 0) {
+                    // TODO (forman): file choosers: handle properties=["multiSelection", ...]
+                    //   with result.filePaths.length > 0. In this case concatenate paths in a OS-compliant way,
+                    //   i.e. path separator on Unix is ':', on Windows ';'
+                    if (properties && properties.find(p => p === 'multiSelection')) {
+                        console.error('multi-file selection is not yet implemented, returning first entry only');
+                    }
+                    onChange(input, result.filePaths[0]);
                 }
             }) as any);
         }
     }
 
     return (
-        <ControlGroup style={DIV_STYLE}>
+        <div style={DIV_STYLE}>
             <TextField style={TEXT_FIELD_STYLE}
                        value={value}
                        placeholder="Enter file path"
@@ -75,7 +83,7 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
             />
             <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
                           onClick={() => showFileDialogCallback(input, value, onChange)}>...</AnchorButton>
-        </ControlGroup>
+        </div>
     );
 }
 
