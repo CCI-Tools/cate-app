@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { createRef, CSSProperties } from 'react';
+import {createRef, CSSProperties} from 'react';
 import {
     ButtonGroup,
     Checkbox,
@@ -12,23 +12,23 @@ import {
     Popover,
     Position
 } from '@blueprintjs/core';
-import { connect, Dispatch } from 'react-redux';
-import { Placemark, PlacemarkCollection, State } from '../state';
-import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
+import {connect, Dispatch} from 'react-redux';
+import {Placemark, PlacemarkCollection, State} from '../state';
+import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
+import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
 import LayerSourcesDialog from './LayerSourcesDialog';
-import { ScrollablePanelContent } from '../components/ScrollableContent';
-import { ViewState } from '../components/ViewState';
-import { NO_PLACE_SELECTED, NO_PLACES } from '../messages';
-import { FieldValue } from '../components/field/Field';
-import { TextField } from '../components/field/TextField';
-import { geoJsonToText, geometryGeoJsonToCsv, geometryGeoJsonToGeometryWkt, isBox } from '../../common/geometry-util';
-import { GeometryToolType } from '../components/cesium/geometry-tool';
-import { isBoolean } from '../../common/types';
-import { NumericField, NumericFieldValue } from '../components/field/NumericField';
-import { ToolButton } from '../components/ToolButton';
+import {ScrollablePanelContent} from '../components/ScrollableContent';
+import {ViewState} from '../components/ViewState';
+import {NO_PLACE_SELECTED, NO_PLACES} from '../messages';
+import {FieldValue} from '../components/field/Field';
+import {TextField} from '../components/field/TextField';
+import {geoJsonToText, geometryGeoJsonToCsv, geometryGeoJsonToGeometryWkt, isBox} from '../../common/geometry-util';
+import {GeometryToolType} from '../components/cesium/geometry-tool';
+import {isBoolean} from '../../common/types';
+import {NumericField, NumericFieldValue} from '../components/field/NumericField';
+import {ToolButton} from '../components/ToolButton';
 
 
 interface IPlacemarksPanelDispatch {
@@ -203,38 +203,59 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
         const isBoxToolActive = this.props.geometryToolType === 'BoxTool';
         return (
             <ButtonGroup>
-                <ToolButton tooltipContent="New marker"
-                            onClick={this.handleNewPointToolButtonClicked}
-                            icon="dot"
-                            active={isPointToolActive}
-                            disabled={false}/>
-                <ToolButton tooltipContent="New polyline"
-                            onClick={this.handleNewPolylineToolButtonClicked}
-                            icon="slash"
-                            active={isPolylineToolActive}
-                            disabled={false}/>
-                <ToolButton tooltipContent="New polygon"
-                            onClick={this.handleNewPolygonToolButtonClicked}
-                            icon="polygon-filter"
-                            active={isPolygonToolActive}
-                            disabled={false}/>
-                <ToolButton tooltipContent="New box"
-                            onClick={this.handleNewBoxToolButtonClicked}
-                            icon="widget"
-                            active={isBoxToolActive}
-                            disabled={false}/>
-                <ToolButton tooltipContent="Remove selected place"
-                            disabled={!this.props.selectedPlacemarkId}
-                            onClick={this.handleRemovePlacemarkButtonClicked}
-                            icon="remove"/>
-                <ToolButton tooltipContent="Locate selected place in view"
-                            disabled={!this.props.selectedPlacemarkId}
-                            onClick={this.handleLocatePlacemarkButtonClicked}
-                            icon="locate"/>
+                <ToolButton
+                    tooltipContent="New marker"
+                    onClick={this.handleNewPointToolButtonClicked}
+                    icon="dot"
+                    tooltipPosition={'top'}
+                    active={isPointToolActive}
+                    disabled={false}
+                />
+                <ToolButton
+                    tooltipContent="New polyline"
+                    onClick={this.handleNewPolylineToolButtonClicked}
+                    icon="slash"
+                    tooltipPosition={'top'}
+                    active={isPolylineToolActive}
+                    disabled={false}
+                />
+                <ToolButton
+                    tooltipContent="New polygon"
+                    onClick={this.handleNewPolygonToolButtonClicked}
+                    icon="polygon-filter"
+                    tooltipPosition={'top'}
+                    active={isPolygonToolActive}
+                    disabled={false}
+                />
+                <ToolButton
+                    tooltipContent="New box"
+                    onClick={this.handleNewBoxToolButtonClicked}
+                    icon="widget"
+                    tooltipPosition={'top'}
+                    active={isBoxToolActive}
+                    disabled={false}
+                />
+                <ToolButton
+                    tooltipContent="Remove selected place"
+                    disabled={!this.props.selectedPlacemarkId}
+                    onClick={this.handleRemovePlacemarkButtonClicked}
+                    icon="remove"
+                    tooltipPosition={'top'}
+                />
+                <ToolButton
+                    tooltipContent="Locate selected place in view"
+                    disabled={!this.props.selectedPlacemarkId}
+                    onClick={this.handleLocatePlacemarkButtonClicked}
+                    icon="locate"
+                    tooltipPosition={'top'}
+                />
                 <Popover position={Position.LEFT}>
-                    <ToolButton tooltipContent="Copy selected place"
-                                disabled={!this.props.selectedPlacemarkId}
-                                icon="clipboard"/>
+                    <ToolButton
+                        tooltipContent="Copy selected place"
+                        disabled={!this.props.selectedPlacemarkId}
+                        icon="clipboard"
+                        tooltipPosition={'top'}
+                    />
                     <Menu>
                         <MenuItem onClick={this.handleCopySelectedPlacemarkAsCsv} text="Copy as CSV"/>
                         <MenuItem onClick={this.handleCopySelectedPlacemarkAsWkt} text="Copy as WKT"/>
