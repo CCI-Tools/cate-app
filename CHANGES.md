@@ -10,6 +10,8 @@
   `.env` file.
 * Various UI styling issues have been fixed (#12)
   - Flickering tooltips
+  - Undersized icons in job failure dialogs
+  - Vertical misalignment of widgets in operation step dialogs
 
 ### Changes in v2.0.0-dev.4
 
