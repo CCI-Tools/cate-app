@@ -18,9 +18,12 @@ import FileList from './FileList';
 import {
     addExpandedDirPath,
     ALL_FILES_FILTER,
-    FileNode, fromPathInputValue,
+    FileNode,
+    fromPathInputValue,
     getBasename,
-    getParentDir, HostOS,
+    getFileNode,
+    getParentDir,
+    HostOS,
     toPathInputValue,
 } from './FileNode';
 import FileTree from './FileTree';
@@ -47,6 +50,10 @@ const FILE_INPUT_ROW_STYLE: React.CSSProperties = {
 };
 const FILE_INPUT_STYLE: React.CSSProperties = {
     flexGrow: 1, marginLeft: 10, overflow: 'hidden'
+};
+const INVALID_FILE_INPUT_STYLE: React.CSSProperties = {
+    ...FILE_INPUT_STYLE,
+    color: '#ffaaaa',
 };
 const FILE_NAV_ROW_STYLE: React.CSSProperties = {
     flexGrow: 0, display: 'flex', flexFlow: 'row nowrap', marginBottom: 6
@@ -75,11 +82,20 @@ interface PathState {
      * Current directory for children shown in FileList component.
      */
     currentDirPath: string;
+
+}
+
+interface InputState {
     /**
      * Current value of the path input field.
      */
-    inputValue: string;
+    value: string;
+    /**
+     * Whether current value is valid.
+     */
+    isValid: boolean;
 }
+
 
 const FileFilterSelect = Select.ofType<FileFilter>();
 
@@ -132,18 +148,24 @@ const FileDialog: React.FC<IFileDialogProps> = (
     }
 
     const defaultDirPath: string | null = (defaultPath && defaultPath !== '' && getParentDir(defaultPath)) || null;
-    const initialPathState: PathState = {
-        selectedPaths: (defaultPath && [defaultPath]) || [],
-        expandedPaths: (defaultDirPath && [defaultDirPath]) || [],
-        selectedDirPath: defaultDirPath,
-        currentDirPath: defaultDirPath || '',
-        inputValue: '',
-    };
     const [pathState, dispatchPathState] = React.useReducer(
         (state: PathState, stateUpdate: Partial<PathState>) => {
             return {...state, ...stateUpdate}
         },
-        initialPathState);
+        {
+            selectedPaths: (defaultPath && [defaultPath]) || [],
+            expandedPaths: (defaultDirPath && [defaultDirPath]) || [],
+            selectedDirPath: defaultDirPath,
+            currentDirPath: defaultDirPath || '',
+        });
+    const [inputState, dispatchInputState] = React.useReducer(
+        (state: InputState, stateUpdate: Partial<InputState>) => {
+            return {...state, ...stateUpdate}
+        },
+        {
+            value: '',
+            isValid: true
+        });
 
     const [fileTreeWidth, setFileTreeWidth] = React.useState(300);
     const [selectedFileFilter, setSelectedFileFilter] = React.useState(
@@ -177,7 +199,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     // console.log("FileDialog: pathState=", pathState);
 
     const canConfirm = () => {
-        return pathState.selectedPaths.length > 0;
+        return pathState.selectedPaths.length > 0 && inputState.isValid;
     }
 
     const handleConfirm = () => {
@@ -303,14 +325,14 @@ const FileDialog: React.FC<IFileDialogProps> = (
                                       selectedDirPath: path,
                                       currentDirPath: path,
                                       selectedPaths,
-                                      inputValue
                                   });
+                dispatchInputState({value: inputValue, isValid: true})
             } else {
                 dispatchPathState({
                                       selectedDirPath: null,
                                       selectedPaths: [],
-                                      inputValue: ''
                                   });
+                dispatchInputState({value: '', isValid: true})
             }
         } else {
             // do not change selectedPaths/inputValue
@@ -332,8 +354,11 @@ const FileDialog: React.FC<IFileDialogProps> = (
     const handleSelectedPathsChangeInList = (paths: string[]) => {
         dispatchPathState({
                               selectedPaths: paths,
-                              inputValue: toPathInputValue(paths.map(p => getBasename(p)), multiSelections)
                           });
+        dispatchInputState({
+                               value: toPathInputValue(paths.map(p => getBasename(p)), multiSelections),
+                               isValid: true
+                           })
     };
 
     const handleCurrentDirPathChangeInList = (path: string) => {
@@ -344,8 +369,11 @@ const FileDialog: React.FC<IFileDialogProps> = (
                                   selectedDirPath: path,
                                   currentDirPath: path,
                                   selectedPaths: [path],
-                                  inputValue: toPathInputValue([getBasename(path)], multiSelections),
                               });
+            dispatchInputState({
+                                   value: toPathInputValue([getBasename(path)], multiSelections),
+                                   isValid: true
+                               })
         } else {
             dispatchPathState({
                                   expandedPaths: addExpandedDirPath(pathState.expandedPaths, path),
@@ -357,20 +385,47 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = event.target.value || '';
+        let isInputValid = true;
         const selectedPaths = fromPathInputValue(inputValue, pathState.currentDirPath, multiSelections, hostOS);
-        const expandedPaths = Array.from(new Set(selectedPaths.map(p => getParentDir(p))));
-        const currentDirPath = expandedPaths.length > 0 ? expandedPaths[0] : null;
-        if (currentDirPath) {
-            dispatchPathState({
-                                  selectedDirPath: currentDirPath,
-                                  currentDirPath,
-                                  expandedPaths,
-                                  selectedPaths,
-                                  inputValue
-                              });
+        if (selectedPaths.length) {
+            // User entered files / directories
+
+            // Add parents of selected files to expanded paths
+            let expandedPaths = pathState.expandedPaths;
+            selectedPaths.forEach(p => {
+                const expandedPath = getParentDir(p);
+                expandedPaths = addExpandedDirPath(expandedPaths, expandedPath);
+            });
+            // Check if we have a new current dir
+            let currentDirPath = selectedPaths.length > 0 ? getParentDir(selectedPaths[0]) : null;
+            if (currentDirPath !== null && getFileNode(rootNode, currentDirPath) === null) {
+                currentDirPath = null;
+            }
+            if (currentDirPath !== null) {
+                // New current directory exists
+
+                dispatchPathState({
+                                      selectedDirPath: currentDirPath,
+                                      currentDirPath,
+                                      expandedPaths,
+                                      selectedPaths,
+                                  });
+
+                // Check if selected files / directories exist (yet)
+                if (openFile || openDirectory) {
+                    isInputValid = !selectedPaths.find(p => getFileNode(rootNode, p) === null);
+                }
+
+            } else {
+                // New current directory doe yet exist (yet). But we'll need to update expanded paths.
+                dispatchPathState({selectedPaths, expandedPaths});
+                isInputValid = false;
+            }
         } else {
-            dispatchPathState({selectedPaths, inputValue});
+            // User entered nothing so far
+            dispatchPathState({selectedPaths});
         }
+        dispatchInputState({value: inputValue, isValid: isInputValid});
     }
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {
@@ -496,9 +551,9 @@ const FileDialog: React.FC<IFileDialogProps> = (
                     <span>{openDirectory && !openFile ? 'Directory:' : 'Filename:'}</span>
                     <input
                         className={Classes.INPUT}
-                        style={FILE_INPUT_STYLE}
+                        style={inputState.isValid ? FILE_INPUT_STYLE : INVALID_FILE_INPUT_STYLE}
                         type="text"
-                        value={pathState.inputValue}
+                        value={inputState.value}
                         onChange={handleSelectedPathsChangeInTextField}
                     />
                     <ButtonGroup>
