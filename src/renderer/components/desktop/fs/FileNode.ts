@@ -1,7 +1,7 @@
-import { IconName } from '@blueprintjs/core';
+import {IconName} from '@blueprintjs/core';
 
-import { isNumber, isString } from '../../../../common/types';
-import { FileFilter } from '../types';
+import {isNumber, isString} from '../../../../common/types';
+import {FileFilter} from '../types';
 
 
 /**
@@ -22,12 +22,28 @@ export type FileNodeStatus = 'updating' | 'ready' | 'error';
  * is Windows OS. Therefore path strings ever start with a "/", even absolute paths.
  */
 export interface FileNode {
+    /**
+     * Name of the file or directory. The root node's name is the empty string.
+     */
     name: string;
+    /**
+     * Date-time of last modification.
+     */
     lastModified?: string;
+    /**
+     * Size in bytes
+     */
     size?: number;
+    /**
+     * True, if this node represents a directory
+     */
     isDir: boolean;
+    /**
+     * Child nodes of the directory
+     */
     childNodes?: FileNode[];
     /**
+     * The node's update status.
      * If status === undefined means, we have not updated this node yet (i.e. children not fetched)
      */
     status?: FileNodeStatus;
@@ -39,14 +55,17 @@ export interface FileNode {
 
 export const ALL_FILES_FILTER = {name: "All files", extensions: ["*"]};
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FileNode operations
+
 /**
  * Returns a new `rootNode` where `updatedFileNode` is inserted at position given by `path`.
- * @param rootNode
- * @param path
- * @param updatedFileNode
+ * @param rootNode the root node
+ * @param path normalized path
+ * @param updatedFileNode the file node update that will replace the old one
  */
 export function updateFileNode(rootNode: FileNode, path: string, updatedFileNode: FileNode): FileNode {
-    path = sanitizePath(path);
     if (path === '') {
         return {...rootNode, ...updatedFileNode, status: 'ready'};
     }
@@ -90,14 +109,12 @@ function _updateFileNode(rootNode: FileNode, path: string[], updatedFileNode: Fi
     return newRootNode;
 }
 
-
 /**
  * Get file node path excluding the `rootNode`.
- * @param rootNode
- * @param path
+ * @param rootNode the root node
+ * @param path normalized path
  */
 export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | null {
-    path = sanitizePath(path);
     if (path === '') {
         return [];
     }
@@ -108,11 +125,10 @@ export function getFileNodePath(rootNode: FileNode, path: string): FileNode[] | 
 
 /**
  * Get valid sub file node path excluding the `rootNode`.
- * @param rootNode
- * @param path
+ * @param rootNode the root node
+ * @param path normalized path
  */
 export function getValidSubFileNodePath(rootNode: FileNode, path: string): FileNode[] {
-    path = sanitizePath(path);
     return _getValidSubFileNodePath(rootNode.childNodes, path.split('/'));
 }
 
@@ -134,12 +150,16 @@ function _getValidSubFileNodePath(rootNodes: FileNode[] | undefined, pathNames: 
     return fileNodePath;
 }
 
-
-export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | null {
-    if (dirPath === "") {
+/**
+ * Get the file node in `rootNode` for given `path`.
+ * @param rootNode the root node
+ * @param path normalized path
+ */
+export function getFileNode(rootNode: FileNode, path: string): FileNode | null {
+    if (path === "") {
         return rootNode;
     }
-    const fileNodePath = getFileNodePath(rootNode, dirPath);
+    const fileNodePath = getFileNodePath(rootNode, path);
     if (fileNodePath) {
         if (fileNodePath.length === 0) {
             return rootNode;
@@ -150,78 +170,12 @@ export function getFileNode(rootNode: FileNode, dirPath: string): FileNode | nul
     return null;
 }
 
-export function addExpandedDirPath(expandedPaths: string[], path: string): string[] {
-    const parentDir = getParentDir(path);
-    const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || path.startsWith(p + '/')));
-    return [...cleanedPaths, path];
-}
-
-export function removeExpandedDirPath(expandedPaths: string[], path: string): string[] {
-    const parentDir = getParentDir(path);
-    const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || p.startsWith(path + '/')));
-    return parentDir !== '' ? [...cleanedPaths, parentDir] : cleanedPaths;
-}
-
+/**
+ * Get an icon name for given file node.
+ * @param node the file node
+ */
 export function getFileNodeIcon(node: FileNode): IconName {
     return node.isDir ? "folder-close" : "document";
-}
-
-export function getParentDir(path: string): string {
-    const index = path.lastIndexOf('/');
-    if (index > 0) {
-        return path.substring(0, index);
-    }
-    return "";
-}
-
-export function getBasename(path: string): string {
-    const index = path.lastIndexOf('/');
-    if (index >= 0) {
-        return path.substring(index + 1);
-    }
-    return path;
-}
-
-export function getBasenameExtension(basename: string): string {
-    const index = basename.lastIndexOf('.');
-    if (index > 0) {
-        return basename.substring(index + 1);
-    }
-    return '';
-}
-
-export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
-    return index < path.length && path[index] === name;
-}
-
-export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter): FileNode[] {
-    const extSet = new Set<string>(fileFilter.extensions);
-    if (extSet.has('*')) {
-        return nodes;
-    }
-    return nodes.filter(node => {
-        if (node.isDir) {
-            return true;
-        }
-        const ext = getBasenameExtension(node.name);
-        return extSet.has(ext);
-    });
-}
-
-export function sanitizePath(path: string): string {
-    while (path.indexOf('\\') >= 0) {
-        path = path.replace('\\', '/')
-    }
-    while (path.indexOf('//') >= 0) {
-        path = path.replace('//', '/')
-    }
-    while (path.startsWith('/')) {
-        path = path.substring(1);
-    }
-    while (path.endsWith('/')) {
-        path = path.substring(0, path.length - 1);
-    }
-    return path;
 }
 
 export function compareFileNames(a: FileNode, b: FileNode) {
@@ -277,15 +231,88 @@ export function compareFileSize(a: FileNode, b: FileNode) {
     return a.name.localeCompare(b.name);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Path operations
+
 /**
- * Parse a text value entered by the user into an array of selected paths.
- * @param inputValue text value entered by the user
+ * Add `path` to the expanded paths `expandedPaths`. Return a new, updated array of expanded paths.
+ * @param expandedPaths array of expanded paths
+ * @param path normalized path
+ * @returns a new array of expanded paths
+ */
+export function addExpandedDirPath(expandedPaths: string[], path: string): string[] {
+    const parentDir = getParentDir(path);
+    const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || path.startsWith(p + '/')));
+    return [...cleanedPaths, path];
+}
+
+/**
+ * Remove `path` from the expanded paths `expandedPaths`. Return new, updated array of expanded paths.
+ * @param expandedPaths array of expanded paths
+ * @param path normalized path
+ * @returns a new array of expanded paths
+ */
+export function removeExpandedDirPath(expandedPaths: string[], path: string): string[] {
+    const parentDir = getParentDir(path);
+    const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || p.startsWith(path + '/')));
+    return parentDir !== '' ? [...cleanedPaths, parentDir] : cleanedPaths;
+}
+
+export function getParentDir(path: string): string {
+    if (path.startsWith('//')) {
+        const index = path.substring(2).lastIndexOf('/');
+        return (index > 0) ? path.substring(0, index + 2) : '';
+    }
+    const index = path.lastIndexOf('/');
+    return (index > 0) ? path.substring(0, index) : '';
+}
+
+export function getBasename(path: string): string {
+    const index = path.lastIndexOf('/');
+    if (index >= 0) {
+        return path.substring(index + 1);
+    }
+    return path;
+}
+
+export function getBasenameExtension(basename: string): string {
+    const index = basename.lastIndexOf('.');
+    if (index > 0) {
+        return basename.substring(index + 1);
+    }
+    return '';
+}
+
+export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
+    return index < path.length && path[index] === name;
+}
+
+export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter): FileNode[] {
+    const extSet = new Set<string>(fileFilter.extensions);
+    if (extSet.has('*')) {
+        return nodes;
+    }
+    return nodes.filter(node => {
+        if (node.isDir) {
+            return true;
+        }
+        const ext = getBasenameExtension(node.name);
+        return extSet.has(ext);
+    });
+}
+
+/**
+ * Parse a text value entered by the user into an array of normalized paths.
+ * @param inputValue text value entered by the user, note this is an un-normalized path
  * @param currentDirPath the current directory
  * @param multiSelection if multiple selections are allowed
- * @returns an array of selected paths
+ * @param hostOS host OS name
+ * @returns an array of normalized paths
  */
-export function fromPathInputValue(inputValue: string, currentDirPath: string, multiSelection: boolean, hostOS?: string): string[] {
-    const isWindows = !hostOS || hostOS === 'Windows';
+export function fromPathInputValue(inputValue: string,
+                                   currentDirPath: string,
+                                   multiSelection: boolean,
+                                   hostOS?: HostOS): string[] {
     inputValue = inputValue.trim()
     if (inputValue === '') {
         return [];
@@ -294,6 +321,7 @@ export function fromPathInputValue(inputValue: string, currentDirPath: string, m
     if (!multiSelection) {
         paths = [inputValue];
     } else {
+        const isWindows = hostOS === 'Windows';
         paths = [];
         let escChar = null;
         let token = '';
@@ -327,49 +355,55 @@ export function fromPathInputValue(inputValue: string, currentDirPath: string, m
             paths.push(token);
         }
     }
-    return paths.map(p => toAbsolutePath(p, currentDirPath, isWindows));
+    return paths.map(p => toAbsolutePath(p, currentDirPath, hostOS));
+}
+
+export function isAbsolutePath(path: string, hostOS?: HostOS) {
+    if (hostOS === 'Windows') {
+        return isWindowsNetworkDevicePath(path) || isWindowsDrivePath(path);
+    } else {
+        return isLinuxRootPath(path);
+    }
+}
+
+function isWindowsNetworkDevicePath(path: string): boolean {
+    return path.startsWith('//') || path.startsWith('\\\\');
+}
+
+function isWindowsDrivePath(path: string): boolean {
+    return path.length >= 2
+        && /^[a-z]+$/i.test(path[0])
+        && path[1] === ':'
+        && (path.length === 2 || path[2] === '/' || path[2] === '\\');
+}
+
+function isLinuxRootPath(path: string): boolean {
+    return path.startsWith('/');
 }
 
 /**
- * Return an absolute path for given `path`. Note that the returned absolute path *never* start with
- * a slash ('/').
- * @param path an absolute or relative path
- * @param currentDirPath current path
- * @param isWindows windows host OS?
+ * Convert path into normalized form used in the UI and server communication.
+ * @param path a unnormalized path, e.g. from user input
+ * @param hostOS host OS name
  */
-export function toAbsolutePath(path: string, currentDirPath: string, isWindows?: boolean): string {
+function normalizePath(path: string, hostOS?: HostOS): string {
+    let prefix;
 
-    let abs = false;
-
-    if (isWindows) {
+    if (hostOS === 'Windows') {
         // Normalize back-slashes into forward slashes
         while (path.indexOf('\\') >= 0) {
-            path.replace('\\', '/');
+            path = path.replace('\\', '/');
         }
-        // On Windows, absolute path may start with a drive letter or double back-slashes.
-        if (path.length >= 2
-            && /^[a-z]+$/i.test(path[0])
-            && path[1] === ':'
-            && (path.length === 2 || path[2] === '/')) {
-            // Windows absolute path
-            abs = true;
+        if (path.startsWith('//')) {
+            // Note special case on Windows, where '//' are prefixes for network devices
+            prefix = '//';
+            path = path.substring(2);
         }
     } else {
         // Remove back-slashes, because they escape special characters on non-Windows hosts
         while (path.indexOf('\\') >= 0) {
-            path.replace('\\', '');
+            path = path.replace('\\', '');
         }
-    }
-
-    let prefix = '';
-    if (isWindows && path.startsWith('//')) {
-        // Note special case on Windows, where '//' are prefixes for network devices
-        prefix = '//';
-        path = path.substring(2);
-        abs = true;
-    } else if (!isWindows && path.startsWith('/')) {
-        // Absolute Unix path
-        abs = true;
     }
 
     // Normalize by trimming leading '/'
@@ -385,8 +419,20 @@ export function toAbsolutePath(path: string, currentDirPath: string, isWindows?:
         path = path.replace('//', '/')
     }
 
-    path = prefix + path;
+    return prefix ? prefix + path : path;
+}
 
+
+/**
+ * Return an absolute path for given `path`. Note that the returned absolute path *never* start with
+ * a slash ('/').
+ * @param path an absolute or relative path
+ * @param currentDirPath current path
+ * @param hostOS host OS name
+ */
+export function toAbsolutePath(path: string, currentDirPath: string, hostOS?: HostOS): string {
+    const abs = isAbsolutePath(path, hostOS);
+    path = normalizePath(path, hostOS);
     if (abs) {
         return path;
     }

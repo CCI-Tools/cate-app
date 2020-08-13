@@ -59,10 +59,25 @@ const FILE_NAV_BC_STYLE: React.CSSProperties = {
 };
 
 interface PathState {
+    /**
+     * The actually selected file or directory paths.
+     */
     selectedPaths: string[];
+    /**
+     * Expanded directory paths in the FileTree component.
+     */
     expandedPaths: string[];
+    /**
+     * Selected directory in the FileTree component.
+     */
     selectedDirPath: string | null;
+    /**
+     * Current directory for children shown in FileList component.
+     */
     currentDirPath: string;
+    /**
+     * Current value of the path input field.
+     */
     inputValue: string;
 }
 
@@ -343,8 +358,19 @@ const FileDialog: React.FC<IFileDialogProps> = (
     const handleSelectedPathsChangeInTextField = (event: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = event.target.value || '';
         const selectedPaths = fromPathInputValue(inputValue, pathState.currentDirPath, multiSelections, hostOS);
-        console.log(`Input [${inputValue}]:`, selectedPaths);
-        dispatchPathState({selectedPaths, inputValue});
+        const expandedPaths = Array.from(new Set(selectedPaths.map(p => getParentDir(p))));
+        const currentDirPath = expandedPaths.length > 0 ? expandedPaths[0] : null;
+        if (currentDirPath) {
+            dispatchPathState({
+                                  selectedDirPath: currentDirPath,
+                                  currentDirPath,
+                                  expandedPaths,
+                                  selectedPaths,
+                                  inputValue
+                              });
+        } else {
+            dispatchPathState({selectedPaths, inputValue});
+        }
     }
 
     const getBreadcrumbs = (): IBreadcrumbProps[] => {
