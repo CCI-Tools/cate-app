@@ -10,7 +10,7 @@ import {
 import { hasWebGL, MY_PLACES_LAYER, newWorldView } from './state-util';
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { ViewState } from './components/ViewState';
-// import { localStorage } from './typedStorage';
+
 
 export const DEFAULT_SERVICE_URL = 'http://localhost:9090';
 
@@ -128,9 +128,9 @@ export const INITIAL_SESSION_STATE: SessionState = {
 
 
 export const INITIAL_COMMUNICATION_STATE: CommunicationState = {
-    webAPIProvision: null,
-    webAPIServiceURL: DEFAULT_SERVICE_URL,
-    webAPIServiceCustomURL: DEFAULT_SERVICE_URL,
+    webAPIProvision: (process.env.REACT_APP_WEB_API_PROVISION as any) || null,
+    webAPIServiceURL: process.env.REACT_APP_WEB_API_SERVICE_URL || DEFAULT_SERVICE_URL,
+    webAPIServiceCustomURL: process.env.REACT_APP_WEB_API_SERVICE_URL || DEFAULT_SERVICE_URL,
     webAPIStatus: null,
     webAPIServiceInfo: null,
     webAPIClient: null,
