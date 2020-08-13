@@ -8,6 +8,7 @@ import * as actions from './actions'
 import ApplicationPage from './containers/ApplicationPage'
 import { requireElectron } from './electron';
 import { showPwaInstallPromotion } from './actions';
+import { DEFAULT_SERVICE_URL } from './initial-state';
 import { stateReducer } from './reducers';
 import { State } from './state';
 
@@ -45,6 +46,13 @@ export function main() {
         </Provider>,
         document.getElementById('root')
     );
+
+    const webAPIProvision = process.env.REACT_APP_WEB_API_PROVISION;
+    if (webAPIProvision === 'CustomURL' || webAPIProvision === 'CateHub') {
+        // If REACT_APP_WEB_API_PROVISION is valid, skip AppModePage:
+        const webAPIServiceURL = process.env.REACT_APP_WEB_API_SERVICE_URL || DEFAULT_SERVICE_URL;
+        store.dispatch(actions.setWebAPIProvision(webAPIProvision, webAPIServiceURL) as any);
+    }
 
     if (electron && electron.ipcRenderer) {
         const ipcRenderer = electron.ipcRenderer;
