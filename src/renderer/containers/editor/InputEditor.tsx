@@ -42,7 +42,9 @@ export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
 
         const editorSwitch = this.renderEditorSwitch();
         return (
-            <div key={this.props.name} style={{display: 'flex', alignItems: 'center', padding: '0.1em'}}>
+            <div key={this.props.name}
+                 style={{display: 'flex', alignItems: 'baseline',
+                         padding: '0.1em'}}>
                 <LabelWithType style={{flex: 'auto'}}
                                label={this.props.name}
                                units={this.props.units}
@@ -106,15 +108,15 @@ export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
         const resourceSelectorDisabled = !this.hasCompatibleResources();
         const switchDisabled = valueEditorDisabled || resourceSelectorDisabled;
         return (
-            <div>
+            <span>
                 <Tooltip
                     content={(valueEditorShown ? 'Switch to resource selection' : 'Switch to value entry') + (switchDisabled ? ' (disabled)' : '')}>
                     <Switch checked={valueEditorShown}
                             disabled={switchDisabled}
-                            style={{marginLeft: '1em', marginBottom: 0}}
+                            style={{marginLeft: '1em'}}
                             onChange={(event: any) => this.handleChange(this.props.resourceName, event.target.checked)}/>
                 </Tooltip>
-            </div>
+            </span>
         );
     }
 
