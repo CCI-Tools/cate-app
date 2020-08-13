@@ -4,9 +4,14 @@ import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { Intent } from "@blueprintjs/core";
-import { showMultiFileOpenDialog } from "../actions";
-import { ToolButton } from "../components/ToolButton";
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
+import { showFileOpenDialog } from "../actions";
+import { OpenDialogResult } from "../components/desktop/types";
+import { TextField } from "../components/field/TextField";
+
+const DIV_STYLE = {width: '30em', marginBottom: '2em', display: 'flex', flexGrow: 1};
+const TEXT_FIELD_STYLE = {flexGrow: 1};
+const BUTTON_STYLE = {flex: 'none'};
 
 
 interface IFileDownloadDialogProps {
@@ -15,7 +20,7 @@ interface IFileDownloadDialogProps {
 }
 
 interface IFileDownloadDialogState extends DialogState {
-    filePaths: string[];
+    filePaths?: string[];
 }
 
 function mapStateToProps(state: State): IFileDownloadDialogProps {
@@ -52,9 +57,7 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
 
     private onConfirm() {
         this.props.dispatch(actions.hideDialog(FileDownloadDialog.DIALOG_ID, this.state));
-        for (let file of this.state.filePaths) {
-            this.props.dispatch(actions.downloadFiles(this.state.filePaths) as any);
-        }
+        this.props.dispatch(actions.downloadFiles(this.state.filePaths[0]) as any);
     }
 
     render() {
@@ -78,14 +81,19 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
             />);
     }
 
-    handleOpenDirectoryOnClose = (filePaths: string[]) => {
-        this.setState({...this.state, filePaths});
-        console.log(filePaths);
+    handleOpenDirectoryOnClose = (result: OpenDialogResult) => {
+        if (!result.canceled) {
+            this.setState({...this.state, filePaths: result.filePaths});
+        }
     };
 
     handleOpenDirectoryOpen = () => {
         this.props.dispatch(
-            showMultiFileOpenDialog({title: 'test'}, this.handleOpenDirectoryOnClose) as any);
+            showFileOpenDialog({
+                    title: 'Select Files',
+                    properties: ['openFile', 'openDirectory', 'multiSelections']
+                },
+                this.handleOpenDirectoryOnClose) as any);
     };
 
     private renderBody() {
@@ -93,24 +101,19 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
             return null;
         }
 
-        const files = this.state.filePaths.map(file => (
-            <li key={file}>
-                {file}
-            </li>
-        ));
-
         return (
-            <div>
-                <ToolButton tooltipContent="Select files to download."
-                            intent={Intent.PRIMARY}
-                            onClick={this.handleOpenDirectoryOpen}
-                            text="Select Files..."
-                            icon="play"/>
-                <aside>
-                    {files.length > 0 ? (<h4>Files</h4>) : ''}
-                    <ul>{files}</ul>
-                </aside>
-            </div>
+            <ControlGroup style={DIV_STYLE} fill={true}>
+                <TextField style={TEXT_FIELD_STYLE}
+                           value={this.state.filePaths[0]}
+                           placeholder="Enter file path"
+                           onChange={value => {
+                               console.log(value);
+                           }}
+                           nullable={false}
+                />
+                <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                              onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
+            </ControlGroup>
         );
     }
 }

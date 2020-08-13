@@ -6,10 +6,13 @@ import * as actions from '../actions';
 import * as selectors from '../selectors';
 import Dropzone from 'react-dropzone';
 import { CSSProperties } from "react";
-import { Intent } from "@blueprintjs/core";
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
 import { showDirectorySelectDialog } from "../actions";
-import { ToolButton } from "../components/ToolButton";
+import { TextField } from "../components/field/TextField";
 
+const DIV_STYLE = {width: '30em', marginBottom: '2em', display: 'flex', flexGrow: 1};
+const TEXT_FIELD_STYLE = {flexGrow: 1};
+const BUTTON_STYLE = {flex: 'none'};
 
 const baseStyle: CSSProperties = {
     flex: 1,
@@ -17,14 +20,11 @@ const baseStyle: CSSProperties = {
     flexDirection: 'column',
     alignItems: 'center',
     padding: '20px',
-    borderWidth: 20,
-    borderRadius: 2,
-    borderBlockColor: 'red',
-    borderColor: '#eeeeee',
-    borderLeftStyle: 'dashed',
-    background: '#fafafa',
-    color: '#bdbdbd',
-    outline: 'none',
+    border: '2px dashed #137cbd',
+    borderRadius: '5px',
+    background: 'rgba(16, 22, 26, 0.3)',
+    color: '#f5f8fa',
+    // outline: 'dotted',
     transition: 'border .24s ease-in-out'
 };
 
@@ -86,11 +86,11 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         return (
             <ModalDialog
                 isOpen={isOpen}
-                title="Add file data source"
-                icon="add"
-                confirmTitle="Add"
-                confirmIconName="add"
-                confirmTooltip="Add file data source."
+                title="Upload files"
+                icon="upload"
+                confirmTitle="Upload"
+                confirmIconName="upload"
+                confirmTooltip="Upload files."
                 onCancel={this.onCancel}
                 canConfirm={this.canConfirm}
                 onConfirm={this.onConfirm}
@@ -124,28 +124,35 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         }
         return (
             <div>
-                <ToolButton tooltipContent="Select directory to upload to."
-                            intent={Intent.PRIMARY}
-                            onClick={this.handleOpenDirectoryOpen}
-                            text="Select Directory..."
-                            icon="play"/>
+                <ControlGroup style={DIV_STYLE} fill={true}>
+                    <TextField style={TEXT_FIELD_STYLE}
+                               value={this.state.dir}
+                               placeholder="Enter file path"
+                               onChange={value => {
+                                   console.log(value);
+                               }}
+                               nullable={false}
+                    />
+                    <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                                  onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
+                </ControlGroup>
 
-                {this.state.dir ? (<ul><li>Dir: {this.state.dir}</li></ul>) : ''}
-
-                <Dropzone onDrop={this.handleOnDrop}>
-                    {({getRootProps, getInputProps}) => (
-                        <section className="container">
-                            <div {...getRootProps({style: baseStyle})}>
-                                <input {...getInputProps()} />
-                                <p>Drag 'n' drop some files here, or click to select files</p>
-                            </div>
-                            <aside>
-                                {files.length > 0 ? (<h4>Files</h4>) : ''}
-                                <ul>{files}</ul>
-                            </aside>
-                        </section>
-                    )}
-                </Dropzone>
+                <ControlGroup style={DIV_STYLE} fill={true}>
+                    <Dropzone onDrop={this.handleOnDrop}>
+                        {({getRootProps, getInputProps}) => (
+                            <section className="container">
+                                <div {...getRootProps({style: baseStyle})}>
+                                    <input {...getInputProps()} />
+                                    <p>Drag 'n' drop some files here, or click to select files</p>
+                                </div>
+                                <aside>
+                                    {files.length > 0 ? (<h4>Files</h4>) : ''}
+                                    <ul>{files}</ul>
+                                </aside>
+                            </section>
+                        )}
+                    </Dropzone>
+                </ControlGroup>
             </div>
         );
     }

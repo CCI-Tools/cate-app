@@ -34,19 +34,19 @@ const _FilesMenu: React.FC<IFilesMenuProps & IDispatch> = (props) => {
         <div>
             <Menu>
                 <MenuItem
-                    text="Upload Files"
+                    text="Upload Files..."
                     icon="upload"
                     onClick={handleUploadFiles}
                 />
                 <MenuDivider/>
                 <MenuItem
-                    text="Download Files"
+                    text="Download Files..."
                     icon="download"
                     onClick={handleDownloadFiles}
                 />
                 <MenuDivider/>
                 <MenuItem
-                    text="Browse Files"
+                    text="Browse Files..."
                     icon="folder-close"
                     onClick={handleBrowseFiles}
                 />

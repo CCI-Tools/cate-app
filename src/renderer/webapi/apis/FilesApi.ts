@@ -29,15 +29,15 @@ export class FilesAPI {
             });
     }
 
-    downloadFiles(filePaths: string[], serviceUrl: string) {
-        const file_names = {'filenames': filePaths}
+    downloadFiles(filePath: string, serviceUrl: string) {
+        const target_dir = {'target_dir': filePath}
 
         return callBlobApi(serviceUrl + '/files/download',
             undefined,
             {
                 mode: 'cors',
                 method: 'POST',
-                body: JSON.stringify(file_names)
+                body: JSON.stringify(target_dir)
             });
     }
 }

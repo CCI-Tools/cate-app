@@ -438,12 +438,14 @@ export function updateControlState(controlState: Partial<ControlState>): Action 
 export function loadPreferences(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
-            return selectors.remoteStorageAPISelector(getState()).getPreferences();
+            return selectors.remoteStorageAPISelector(getState()).loadPreferences();
         }
 
-        function action(session: SessionState) {
+        function action(session: Partial<SessionState>) {
             dispatch(updateSessionState(session));
-            dispatch(loadInitialWorkspace(session.reopenLastWorkspace, session.lastWorkspacePath));
+            dispatch(loadInitialWorkspace(
+                getState().session.reopenLastWorkspace,
+                getState().session.lastWorkspacePath));
         }
 
         function planB(jobFailure: JobFailure) {
@@ -466,7 +468,7 @@ export function loadPreferences(): ThunkAction {
 export function updatePreferences(session: Partial<SessionState>, sendToMain: boolean = true): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
-            return selectors.remoteStorageAPISelector(getState()).setPreferences(session);
+            return selectors.remoteStorageAPISelector(getState()).updatePreferences(session);
         }
 
         function action(session: Partial<SessionState>) {
@@ -1160,7 +1162,7 @@ export function updateWorkspaceNames(workspaceNames: string[]): Action {
  *
  * @returns a Redux thunk action
  */
-export function loadInitialWorkspace(reopenLastWorkspace: boolean, lastWorkspacePath: string): ThunkAction {
+export function loadInitialWorkspace(reopenLastWorkspace?: boolean, lastWorkspacePath?: string): ThunkAction {
     return (dispatch: Dispatch) => {
         if (reopenLastWorkspace && lastWorkspacePath) {
             dispatch(openWorkspace(lastWorkspacePath));
@@ -2414,15 +2416,15 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
 
 /**
  *
- * @param filePaths File paths that will be downloaded
+ * @param filePath File path that will be zipped and downloaded
  */
 
-export function downloadFiles(filePaths: string[]): ThunkAction {
+export function downloadFiles(filePath: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
 
-        selectors.fileAPISelector(state).downloadFiles(filePaths, webAPIServiceURL)
+        selectors.fileAPISelector(state).downloadFiles(filePath, webAPIServiceURL)
             .then(() => {
                 showToast({type: 'info', text: 'Download finished.'});
             })
