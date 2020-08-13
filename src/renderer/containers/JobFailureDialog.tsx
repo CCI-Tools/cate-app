@@ -154,7 +154,7 @@ class JobFailureDialog extends React.Component<DispatchProp<State> & IJobFailure
         return (
             <div style={{display: 'flex'}}>
                 <div style={{fontSize: '4em', flex: '0 1 1em'}}>
-                    <Icon icon={icon} intent={iconIntent}/>
+                    <Icon icon={icon} intent={iconIntent} iconSize={48}/>
                 </div>
                 <div style={{flex: '1 1 90%', marginLeft: '1em'}}>
                     {messageDiv}

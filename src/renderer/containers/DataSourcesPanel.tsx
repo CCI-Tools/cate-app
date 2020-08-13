@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { CSSProperties } from 'react';
-import { connect } from 'react-redux';
-import { Cell, Column, Table, TruncatedFormat } from '@blueprintjs/table';
+import {CSSProperties} from 'react';
+import {connect} from 'react-redux';
+import {Cell, Column, Table, TruncatedFormat} from '@blueprintjs/table';
 import ReactMarkdown from 'react-markdown';
-import { EcvMeta } from '../ecv-meta';
-import { DataSourceState, DataStoreNotice, DataStoreState, State } from '../state';
+import {EcvMeta} from '../ecv-meta';
+import {DataSourceState, DataStoreNotice, DataStoreState, State} from '../state';
 import {
     AnchorButton,
     ButtonGroup,
@@ -22,19 +22,19 @@ import {
     Tabs,
     Tag
 } from '@blueprintjs/core';
-import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
-import { Card } from '../components/Card';
-import { ScrollablePanelContent } from '../components/ScrollableContent';
-import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
-import { ToolButton } from '../components/ToolButton';
-import { TextWithLinks } from '../components/TextWithLinks';
+import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
+import {Card} from '../components/Card';
+import {ScrollablePanelContent} from '../components/ScrollableContent';
+import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
+import {ToolButton} from '../components/ToolButton';
+import {TextWithLinks} from '../components/TextWithLinks';
 import DownloadDatasetDialog from './DownloadDataSourceDialog';
 import OpenDatasetDialog from './OpenDatasetDialog';
 import AddDatasetDialog from './AddDatasetDialog';
 import RemoveDatasetDialog from './RemoveDatasetDialog';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES } from '../messages';
+import {NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES} from '../messages';
 
 import _ecvMeta from '../resources/ecv-meta.json';
 
@@ -206,32 +206,44 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             let primaryAction;
             if (isLocalStore) {
                 primaryAction = (
-                    <ToolButton tooltipContent="Open file data source"
-                                intent={Intent.PRIMARY}
-                                onClick={this.handleShowOpenDatasetDialog}
-                                disabled={!canOpen}
-                                icon="folder-shared-open"/>
+                    <ToolButton
+                        tooltipContent="Open file data source"
+                        intent={Intent.PRIMARY}
+                        onClick={this.handleShowOpenDatasetDialog}
+                        disabled={!canOpen}
+                        icon="folder-shared-open"
+                        tooltipPosition={'top'}
+                    />
                 );
             } else {
                 primaryAction = (
-                    <ToolButton tooltipContent="Download and/or open remote data source"
-                                intent={Intent.PRIMARY}
-                                onClick={this.handleShowDownloadDataSourceDialog}
-                                disabled={!canDownload}
-                                icon="cloud-download"/>
+                    <ToolButton
+                        tooltipContent="Download and/or open remote data source"
+                        intent={Intent.PRIMARY}
+                        onClick={this.handleShowDownloadDataSourceDialog}
+                        disabled={!canDownload}
+                        icon="cloud-download"
+                        tooltipPosition={'top'}
+                    />
                 );
             }
             const actionComponent = (
                 <ButtonGroup>
-                    <ToolButton tooltipContent="Add file data source"
-                                intent={(isDynamicLocalStore && !hasDataSources) ? Intent.PRIMARY : Intent.NONE}
-                                onClick={this.handleAddDatasetDialog}
-                                disabled={!canAdd}
-                                icon="add"/>
-                    <ToolButton tooltipContent="Remove file data source"
-                                onClick={this.handleRemoveDatasetDialog}
-                                disabled={!canRemove}
-                                icon="trash"/>
+                    <ToolButton
+                        tooltipContent="Add file data source"
+                        intent={(isDynamicLocalStore && !hasDataSources) ? Intent.PRIMARY : Intent.NONE}
+                        onClick={this.handleAddDatasetDialog}
+                        disabled={!canAdd}
+                        icon="add"
+                        tooltipPosition={'top'}
+                    />
+                    <ToolButton
+                        tooltipContent="Remove file data source"
+                        onClick={this.handleRemoveDatasetDialog}
+                        disabled={!canRemove}
+                        icon="trash"
+                        tooltipPosition={'top'}
+                    />
                     {primaryAction}
                     <AddDatasetDialog/>
                     <RemoveDatasetDialog/>
@@ -363,16 +375,22 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                     </Label>
                     <span style={DataSourcesPanel.SPACER_STYLE}/>
                     <ButtonGroup>
-                        <ToolButton tooltipContent="Show/hide data store description"
-                                    onClick={this.handleShowDataStoreDescriptionChanged}
-                                    disabled={!hasDataStoreDescription}
-                                    active={showDataStoreDescription}
-                                    icon="help"/>
-                        <ToolButton tooltipContent="Show/hide data store notices"
-                                    onClick={this.handleShowDataStoreNoticesChanged}
-                                    disabled={!hasDataStoreNotices}
-                                    active={showDataStoreNotices}
-                                    icon="notifications"/>
+                        <ToolButton
+                            tooltipContent="Show/hide data store description"
+                            onClick={this.handleShowDataStoreDescriptionChanged}
+                            disabled={!hasDataStoreDescription}
+                            active={showDataStoreDescription}
+                            icon="help"
+                            tooltipPosition={'top'}
+                        />
+                        <ToolButton
+                            tooltipContent="Show/hide data store notices"
+                            onClick={this.handleShowDataStoreNoticesChanged}
+                            disabled={!hasDataStoreNotices}
+                            active={showDataStoreNotices}
+                            icon="notifications"
+                            tooltipPosition={'top'}
+                        />
                     </ButtonGroup>
                 </div>
 
@@ -538,8 +556,8 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
                         <div className="user-selectable" style={DataSourcesList.ID_DIV_STYLE}>{dataSource.id}</div>
                     </div>
                 ) : (
-                     <span className="user-selectable">{title}</span>
-                 )}
+                    <span className="user-selectable">{title}</span>
+                )}
             </div>
         );
     }
