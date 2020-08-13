@@ -80,6 +80,7 @@ import {
 } from './containers/editor/value-editor-assign';
 import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
+import { ProcessState } from './webapi/apis/FilesApi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { requireElectron } from './electron';
@@ -2419,19 +2420,44 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
  * @param filePath File path that will be zipped and downloaded
  */
 
+
+export function monitorProcess(processId: string): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        function call(onProgress) {
+            return selectors.fileAPISelector(getState()).monitorProcess(processId, onProgress);
+        }
+
+        function action() {
+            console.info('testing');
+        }
+
+        callAPI({title: 'Monitoring Progress', dispatch, call, action});
+    }
+}
+
+
 export function downloadFiles(filePath: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
+        const api = selectors.fileAPISelector(state);
 
-        selectors.fileAPISelector(state).downloadFiles(filePath, webAPIServiceURL)
-            .then(() => {
-                showToast({type: 'info', text: 'Download finished.'});
-            })
-            .catch((error) => {
-                showToast({type: 'error', text: error.toString()});
-                console.error(error);
-            });
+        api.registerProcess(webAPIServiceURL)
+           .then((process: ProcessState) => {
+               dispatch(monitorProcess(process.process_id));
+               api.downloadFiles(filePath, process.process_id, webAPIServiceURL)
+                  .then(() => {
+                      showToast({type: 'success', text: 'Zip ready for download.'});
+                  })
+                  .catch((error) => {
+                      showToast({type: 'error', text: error.toString()});
+                      console.error(error);
+                  });
+           })
+           .catch((error) => {
+               showToast({type: 'error', text: error.toString()});
+               console.error(error);
+           });;
     }
 }
 

@@ -24,7 +24,6 @@ const baseStyle: CSSProperties = {
     borderRadius: '5px',
     background: 'rgba(16, 22, 26, 0.3)',
     color: '#f5f8fa',
-    // outline: 'dotted',
     transition: 'border .24s ease-in-out'
 };
 
