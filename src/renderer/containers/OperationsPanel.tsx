@@ -148,7 +148,7 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
             const actionComponent = (
                 <ButtonGroup>
                     <ToolButton
-                        tooltipContent={<span>Add a new operation step to<br />the workspace's workflow</span>}
+                        tooltipContent={<span>Add a new operation step to<br/>the workspace's workflow</span>}
                         intent={Intent.PRIMARY}
                         onClick={this.handleAddOperationStepButtonClicked}
                         disabled={!canAddStepOperation}

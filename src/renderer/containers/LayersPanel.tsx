@@ -207,7 +207,6 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
                     onClick={this.handleMoveLayerUpButtonClicked}
                     icon="arrow-up"
                     tooltipPosition={'top'}
-
                 />
                 <ToolButton
                     tooltipContent="Move layer down"
@@ -215,7 +214,6 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
                     onClick={this.handleMoveLayerDownButtonClicked}
                     icon="arrow-down"
                     tooltipPosition={'top'}
-
                 />
                 <LayerSourcesDialog/>
             </ButtonGroup>
