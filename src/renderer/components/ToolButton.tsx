@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {Button, IconName, Intent, Popover, PopoverPosition, Tooltip} from '@blueprintjs/core';
+import {AnchorButton, IconName, Intent, Popover, PopoverPosition, Tooltip} from '@blueprintjs/core';
 
 export interface IToolButtonProps {
     onClick?: () => void;
@@ -25,7 +25,7 @@ export function ToolButton(props: IToolButtonProps) {
         className = `${className} ${props.className}`;
     }
     const button = (
-        <Button
+        <AnchorButton
             className={className}
             onClick={props.onClick}
             disabled={props.disabled}
