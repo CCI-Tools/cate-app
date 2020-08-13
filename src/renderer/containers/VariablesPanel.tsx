@@ -198,21 +198,26 @@ class VariablesPanel extends React.Component<IVariablesPanelProps & DispatchProp
             <ButtonGroup>
                 <ToolButton tooltipContent="Toggle image layer visibility"
                             icon={this.props.showSelectedVariableLayer ? 'eye-open' : 'eye-off'}
+                            tooltipPosition={'top'}
                             onClick={this.handleShowSelectedVariableLayer}/>
                 <ToolButton tooltipContent="Add a new image layer"
                             disabled={!canAddLayer}
                             icon="layer"
+                            tooltipPosition={'top'}
                             onClick={this.handleAddVariableLayer}/>
                 <ToolButton tooltipContent="Create a time series plot from selected placemark"
                             disabled={!canAddTimeSeriesPlot}
                             icon="timeline-line-chart"
+                            tooltipPosition={'top'}
                             onClick={this.handleAddVariableTimeSeriesPlot}/>
                 <ToolButton tooltipContent="Create a histogram plot"
                             disabled={!canAddHistogramPlot}
                             icon="timeline-bar-chart"
+                            tooltipPosition={'top'}
                             onClick={this.handleAddVariableHistogramPlot}/>
                 <ToolButton tooltipContent={`Show data in table (only first ${maxSize} values)`}
                             icon="th"
+                            tooltipPosition={'top'}
                             onClick={this.handleShowVariableTableView}/>
             </ButtonGroup>
         );

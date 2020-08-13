@@ -7,6 +7,7 @@ export function BooleanValueEditor(props: IValueEditorProps<boolean>) {
         <Checkbox className="bp3-large"
                   checked={(props.value as any) || false}
                   indeterminate={props.value === null}
+                  style={{marginTop: '0', marginBottom: '0'}}
                   onChange={(event: any) => props.onChange(props.input, event.target.checked)}/>
     );
 }

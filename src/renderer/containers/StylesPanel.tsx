@@ -1,4 +1,4 @@
-import { connect, DispatchProp } from 'react-redux';
+import {connect, DispatchProp} from 'react-redux';
 import {
     ColorMapCategoryState,
     ColorMapState,
@@ -15,8 +15,8 @@ import {
     VectorLayerState
 } from '../state';
 import * as React from 'react';
-import { NO_ENTITY_FOR_STYLE, NO_LAYER_FOR_STYLE } from '../messages';
-import { SubPanelHeader } from '../components/SubPanelHeader';
+import {NO_ENTITY_FOR_STYLE, NO_LAYER_FOR_STYLE} from '../messages';
+import {SubPanelHeader} from '../components/SubPanelHeader';
 import {
     AnchorButton,
     Button,
@@ -38,18 +38,18 @@ import {
 } from '@blueprintjs/core';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { NumericRangeField } from '../components/field/NumericRangeField';
-import { FieldValue } from '../components/field/Field';
-import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
-import { TextField } from '../components/field/TextField';
+import {NumericRangeField} from '../components/field/NumericRangeField';
+import {FieldValue} from '../components/field/Field';
+import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
+import {TextField} from '../components/field/TextField';
 import SketchPicker from 'react-color/lib/components/sketch/Sketch';
-import { ColorState } from 'react-color';
-import { SimpleStyle } from '../../common/geojson-simple-style';
-import { NumericField } from '../components/field/NumericField';
-import { ViewState } from '../components/ViewState';
+import {ColorState} from 'react-color';
+import {SimpleStyle} from '../../common/geojson-simple-style';
+import {NumericField} from '../components/field/NumericField';
+import {ViewState} from '../components/ViewState';
 import * as Cesium from 'cesium';
-import { getLayerDisplayName } from '../state-util';
-import { ToolButton } from '../components/ToolButton';
+import {getLayerDisplayName} from '../state-util';
+import {ToolButton} from '../components/ToolButton';
 
 function getDisplayFractionDigits(min: number, max: number) {
     const n = Math.round(Math.log10(max - min));
@@ -230,12 +230,15 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
                                            onChange={this.handleChangedDisplayMinMax}
                                            uncontrolled={true}
                         />
-                        <ToolButton tooltipContent="Compute valid min/max"
-                                    intent={Intent.PRIMARY}
-                                    icon="arrows-horizontal"
-                                    style={{flex: 'none', marginTop: '5px'}}
-                                    disabled={this.props.isComputingVariableStatistics}
-                                    onClick={this.handleUpdateDisplayStatistics}/>
+                        <ToolButton
+                            tooltipContent="Compute valid min/max"
+                            intent={Intent.PRIMARY}
+                            icon="arrows-horizontal"
+                            tooltipPosition={'top'}
+                            style={{flex: 'none', marginTop: '5px'}}
+                            disabled={this.props.isComputingVariableStatistics}
+                            onClick={this.handleUpdateDisplayStatistics}
+                        />
                     </div>
                 </Label>
                 <div style={StylesPanel.SLIDER_DIV_STYLE_15}>
@@ -632,13 +635,13 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             return;
         }
         this.props.dispatch(actions.getWorkspaceVariableStatistics(resource.name, variable.name, imageLayer.varIndex,
-                                                                   (statistics) => {
-                                                                       return actions.updateLayer(this.props.activeView.id, imageLayer, {
-                                                                           displayMin: statistics.min,
-                                                                           displayMax: statistics.max,
-                                                                           statistics
-                                                                       });
-                                                                   }
+            (statistics) => {
+                return actions.updateLayer(this.props.activeView.id, imageLayer, {
+                    displayMin: statistics.min,
+                    displayMax: statistics.max,
+                    statistics
+                });
+            }
         ) as any);
     }
 
@@ -710,12 +713,12 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
         //style = {...this.props.vectorStyle, ...style};
         if (this.props.styleContext === STYLE_CONTEXT_ENTITY) {
             this.props.dispatch(actions.updateEntityStyle(this.props.activeView,
-                                                          this.props.selectedEntity,
-                                                          style) as any);
+                this.props.selectedEntity,
+                style) as any);
         } else {
             this.props.dispatch(actions.updateLayerStyle(this.props.activeView.id,
-                                                         this.props.selectedVectorLayer.id,
-                                                         style));
+                this.props.selectedVectorLayer.id,
+                style));
         }
     }
 }

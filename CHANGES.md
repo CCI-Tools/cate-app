@@ -6,6 +6,7 @@
 * The UI uses now web versions of native (electron) file and directory choosers. (#64)   
 * The UI uses now web versions of native (electron) message boxes. (#47)
 * Fixed storing of preferences
+* Fixed flickering tooltips
 
 ### Changes in v2.0.0-dev.4
 
