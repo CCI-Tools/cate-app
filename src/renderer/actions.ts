@@ -80,7 +80,6 @@ import {
 } from './containers/editor/value-editor-assign';
 import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
 import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
-import { ProcessState } from './webapi/apis/FilesApi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { HttpError } from './webapi/HttpError';
 import { requireElectron } from './electron';
@@ -2210,7 +2209,7 @@ function hidePwaInstallPromotion(): Action {
     return {type: HIDE_PWA_INSTALL_PROMOTION};
 }
 
-export const showPwaInstallPrompt = (): ThunkAction => (dispatch, getState) => {
+export const showPwaInstallPrompt = (): ThunkAction => (dispatch) => {
     // Hide the app provided install promotion
     dispatch(hidePwaInstallPromotion());
     // Show the install prompt
@@ -2417,7 +2416,7 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
 
 /**
  *
- * @param filePath File path that will be zipped and downloaded
+ * @param processId Process ID
  */
 
 
@@ -2442,22 +2441,32 @@ export function downloadFiles(filePath: string): ThunkAction {
         const webAPIServiceURL = state.communication.webAPIServiceURL;
         const api = selectors.fileAPISelector(state);
 
-        api.registerProcess(webAPIServiceURL)
-           .then((process: ProcessState) => {
-               dispatch(monitorProcess(process.process_id));
-               api.downloadFiles(filePath, process.process_id, webAPIServiceURL)
-                  .then(() => {
-                      showToast({type: 'success', text: 'Zip ready for download.'});
-                  })
-                  .catch((error) => {
-                      showToast({type: 'error', text: error.toString()});
-                      console.error(error);
-                  });
+        api.downloadFiles(filePath, 'ignore', webAPIServiceURL)
+           .then(() => {
+               showToast({type: 'success', text: 'Zip ready for download.'});
            })
            .catch((error) => {
                showToast({type: 'error', text: error.toString()});
                console.error(error);
-           });;
+           });
+
+
+        //     api.registerProcess(webAPIServiceURL)
+    //        .then((process: ProcessState) => {
+    //            dispatch(monitorProcess(process.process_id));
+    //            api.downloadFiles(filePath, process.process_id, webAPIServiceURL)
+    //               .then(() => {
+    //                   showToast({type: 'success', text: 'Zip ready for download.'});
+    //               })
+    //               .catch((error) => {
+    //                   showToast({type: 'error', text: error.toString()});
+    //                   console.error(error);
+    //               });
+    //        })
+    //        .catch((error) => {
+    //            showToast({type: 'error', text: error.toString()});
+    //            console.error(error);
+    //        });;
     }
 }
 
