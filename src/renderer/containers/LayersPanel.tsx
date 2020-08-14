@@ -70,6 +70,7 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
         height: '100%'
     };
     static readonly LAYER_LABEL_ELEMENT_STYLE = {marginLeft: '0.5em'};
+    static readonly LAYER_CHECKBOX_STYLE = {marginBlock: '4px'};
 
     constructor(props: ILayersPanelProps & DispatchProp<State>) {
         super(props);
@@ -167,6 +168,7 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
         return (
             <div style={LayersPanel.LAYER_DIV_STYLE}>
                 <Checkbox
+                    style={LayersPanel.LAYER_CHECKBOX_STYLE}
                     checked={layer.visible}
                     onClick={LayersPanel.stopPropagation}
                     onChange={(event: any) => {
