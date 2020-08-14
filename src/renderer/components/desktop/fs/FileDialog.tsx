@@ -23,7 +23,7 @@ import {
     getBasename,
     getFileNode,
     getParentDir,
-    HostOS,
+    HostOS, isWindowsRootPath,
     toPathInputValue,
 } from './FileNode';
 import FileTree from './FileTree';
@@ -65,6 +65,13 @@ const FILE_NAV_BC_STYLE: React.CSSProperties = {
     paddingRight: 10
 };
 
+/**
+ * Various paths used in the UI. All paths have normalized from,
+ * that is, backslashes on Windows host OS replaced by '/',
+ * leading and trailing '/' removed, '//' replaced by single '/'.
+ * All paths are meant absolute with respect to the fle system root `fsRootNode`,
+ * even if the trailing '/' is removed.
+ */
 interface PathState {
     /**
      * The actually selected file or directory paths.
@@ -85,9 +92,12 @@ interface PathState {
 
 }
 
+/**
+ * State of the file path input field.
+ */
 interface InputState {
     /**
-     * Current value of the path input field.
+     * Current value of the path input field. May not (yet) refer to any valid path at all.
      */
     value: string;
     /**
@@ -204,13 +214,20 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     const handleConfirm = () => {
         if (onClose) {
-            onClose({filePaths: pathState.selectedPaths, canceled: false});
+            onClose({
+                        // Make returned path absolute. Note that pathState.selectedPaths are always normalized.
+                        filePaths: pathState.selectedPaths.map(p => !(hostOS === 'Windows' && isWindowsRootPath(p)) ? '/' + p : p),
+                        canceled: false
+                    });
         }
     }
 
     const handleCancel = () => {
         if (onClose) {
-            onClose({filePaths: [], canceled: true});
+            onClose({
+                        filePaths: [],
+                        canceled: true
+                    });
         }
     }
 

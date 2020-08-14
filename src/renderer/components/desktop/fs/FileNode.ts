@@ -360,10 +360,18 @@ export function fromPathInputValue(inputValue: string,
 
 export function isAbsolutePath(path: string, hostOS?: HostOS) {
     if (hostOS === 'Windows') {
-        return isWindowsNetworkDevicePath(path) || isWindowsDrivePath(path);
+        return isWindowsRootPath(path);
     } else {
         return isLinuxRootPath(path);
     }
+}
+
+export function isLinuxRootPath(path: string): boolean {
+    return path.startsWith('/');
+}
+
+export function isWindowsRootPath(path: string): boolean {
+    return isWindowsNetworkDevicePath(path) || isWindowsDrivePath(path);
 }
 
 function isWindowsNetworkDevicePath(path: string): boolean {
@@ -375,10 +383,6 @@ function isWindowsDrivePath(path: string): boolean {
         && /^[a-z]+$/i.test(path[0])
         && path[1] === ':'
         && (path.length === 2 || path[2] === '/' || path[2] === '\\');
-}
-
-function isLinuxRootPath(path: string): boolean {
-    return path.startsWith('/');
 }
 
 /**
