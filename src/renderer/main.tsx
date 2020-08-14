@@ -105,7 +105,7 @@ export function main() {
             console.log('BEFORE INSTALL PROMPT:', event);
         });
 
-        window.addEventListener('appinstalled', (event: Event) => {
+        window.addEventListener('appinstalled', () => {
             // Log install to analytics
             console.log('INSTALL: Success');
         });
@@ -166,11 +166,12 @@ function readDroppedFile(file: File, dispatch: Dispatch<State>) {
         opArgs = {file: {value: file.name}};
     }
     if (opName) {
-        dispatch(actions.setWorkspaceResource(opName,
-                                              opArgs,
-                                              null,
-                                              false,
-                                              `Reading dropped file ${file.name}`) as any);
+        dispatch(actions.dropDatasource(opName,
+                                        file,
+                                        opArgs,
+                                        null,
+                                        false,
+                                        `Reading dropped file ${file.name}`) as any);
     } else {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
