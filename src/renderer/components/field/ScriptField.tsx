@@ -15,9 +15,9 @@ interface IScriptFieldState {
 }
 
 export class ScriptField extends React.Component<IScriptFieldProps, IScriptFieldState> {
-    private static DIV_STYLE = {width: '28em', display: 'flex'};
+    private static DIV_STYLE = {display: 'flex'};
     private static TEXT_FIELD_STYLE = {flexGrow: 1};
-    private static BUTTON_STYLE = {flex: 'none'};
+    private static BUTTON_STYLE = {flexGrow: 0};
 
     constructor(props: IScriptFieldProps) {
         super(props);
@@ -32,7 +32,7 @@ export class ScriptField extends React.Component<IScriptFieldProps, IScriptField
     render() {
         let placeholder = this.props.placeholder;
         return (
-            <ControlGroup style={ScriptField.DIV_STYLE}>
+            <ControlGroup style={ScriptField.DIV_STYLE} fill={true}>
                 <TextField
                     value={this.props.value}
                     onChange={this.props.onChange}

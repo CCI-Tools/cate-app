@@ -17,9 +17,9 @@ interface IVariableNamesValueEditorState {
 
 export class VarNameValueEditor extends React.Component<IVariableNamesValueEditorProps, IVariableNamesValueEditorState> {
 
-    private static DIV_STYLE = {width: '24em', display: 'flex', flexGrow: 1};
+    private static DIV_STYLE = {display: 'flex', justifySelf: 'stretch'};
     private static TEXT_FIELD_STYLE = {flexGrow: 1};
-    private static BUTTON_STYLE = {flex: 'none'};
+    private static BUTTON_STYLE = {flexGrow: 0};
 
     constructor(props: IVariableNamesValueEditorProps) {
         super(props);
@@ -40,12 +40,12 @@ export class VarNameValueEditor extends React.Component<IVariableNamesValueEdito
         const textValue = toTextValue(this.props.value);
         const varNames = textValue !== '' ? textValue.split(',').map(name => name.trim()) : [];
         const hasSelectableVariables = this.props.resource && this.props.resource.variables && this.props.resource.variables.length;
+
         return (
-            <ControlGroup style={VarNameValueEditor.DIV_STYLE}>
+            <ControlGroup fill={true} style={VarNameValueEditor.DIV_STYLE}>
                 <TextField
                     value={this.props.value}
                     validator={this.validate}
-                    size={this.props.multi ? 36 : 24}
                     placeholder={this.props.multi ? 'Enter variable names, separated by comma' : 'Enter variable name'}
                     onChange={this.onChange}
                     nullable={this.props.input.nullable}
