@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AnchorButton, Intent } from '@blueprintjs/core';
+import { AnchorButton, Intent, ControlGroup } from '@blueprintjs/core';
 import { connect, DispatchProp } from 'react-redux';
 import { toTextValue } from '../../components/field/Field';
 
@@ -9,9 +9,9 @@ import { OperationInputState, State } from '../../state';
 import { TextField } from '../../components/field/TextField';
 import { OpenDialogResult, SaveDialogResult } from "../../components/desktop/types";
 
-const DIV_STYLE = {width: '20em', display: 'flex'};
+const DIV_STYLE = {display: 'flex', justifySelf: 'stretch'};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
-const BUTTON_STYLE = {flex: 'none'};
+const BUTTON_STYLE = {flexGrow: 0};
 
 
 interface IFileValueEditorProps extends IValueEditorProps<string> {
@@ -74,7 +74,7 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
     }
 
     return (
-        <div style={DIV_STYLE}>
+        <ControlGroup fill={true} style={DIV_STYLE}>
             <TextField style={TEXT_FIELD_STYLE}
                        value={value}
                        placeholder="Enter file path"
@@ -83,7 +83,7 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
             />
             <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
                           onClick={() => showFileDialogCallback(input, value, onChange)}>...</AnchorButton>
-        </div>
+        </ControlGroup>
     );
 }
 

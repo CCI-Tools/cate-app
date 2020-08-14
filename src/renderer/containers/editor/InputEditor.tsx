@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ReactChild } from 'react';
-import { HTMLSelect, Popover, PopoverInteractionKind, PopoverPosition, Switch, Tooltip } from '@blueprintjs/core';
+import { HTMLSelect, Popover, PopoverInteractionKind, PopoverPosition, Switch, Tooltip, Alignment } from '@blueprintjs/core';
 import { LabelWithType } from '../../components/LabelWithType';
 import { ResourceState } from '../../state';
 import * as cateTypes from '../../../common/cate-types';
@@ -31,6 +31,11 @@ export interface IInputEditorProps {
  */
 export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
 
+    private static readonly LABEL_STYLE = 
+            {justifySelf: 'end', justifyContent: 'end'};
+    private static readonly EDITOR_SWITCH_STYLE = {margin: 0}
+    private static readonly RESOURCE_NAME_STYLE = {justifySelf: 'stretch'};
+
     render() {
 
         let editor;
@@ -42,17 +47,15 @@ export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
 
         const editorSwitch = this.renderEditorSwitch();
         return (
-            <div key={this.props.name}
-                 style={{display: 'flex', alignItems: 'baseline',
-                         padding: '0.1em'}}>
-                <LabelWithType style={{flex: 'auto'}}
+           <React.Fragment key={this.props.name}>
+                <LabelWithType style={InputEditor.LABEL_STYLE}
                                label={this.props.name}
                                units={this.props.units}
                                dataType={this.props.dataType}
                                tooltipText={this.props.tooltipText}/>
                 {editor}
                 {editorSwitch}
-            </div>
+            </React.Fragment>
         );
     }
 
@@ -72,8 +75,10 @@ export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
         const resourceOptions = [firstResourceOption].concat(otherResourceOptions);
 
         let editor = (
-            <div className="bp3-intent-primary">
+            <div className="bp3-intent-primary" style={InputEditor.RESOURCE_NAME_STYLE}>
                 <HTMLSelect
+                    fill={true}
+                    style={InputEditor.RESOURCE_NAME_STYLE}
                     value={this.props.resourceName || NULL_VALUE}
                     disabled={otherResourceOptions.length === 0}
                     onChange={(event: any) => this.handleChange(event.target.value === NULL_VALUE ? null : event.target.value, false)}
@@ -86,7 +91,9 @@ export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
         if (otherResourceOptions.length === 0) {
             editor = (
                 <Popover interactionKind={PopoverInteractionKind.HOVER} hoverOpenDelay={0} hoverCloseDelay={0}
-                         position={PopoverPosition.TOP}>
+                         position={PopoverPosition.TOP}
+                         fill={true}
+                         >
                     {editor}
                     <div style={{padding: 8}}>
                         This parameter requires a resource of type <span
@@ -110,11 +117,14 @@ export class InputEditor extends React.PureComponent<IInputEditorProps, null> {
         return (
             <span>
                 <Tooltip
-                    content={(valueEditorShown ? 'Switch to resource selection' : 'Switch to value entry') + (switchDisabled ? ' (disabled)' : '')}>
+                    content={(valueEditorShown ? 'Switch to resource selection' : 'Switch to value entry')
+                             + (switchDisabled ? ' (disabled)' : '')}>
                     <Switch checked={valueEditorShown}
                             disabled={switchDisabled}
-                            style={{marginLeft: '1em'}}
-                            onChange={(event: any) => this.handleChange(this.props.resourceName, event.target.checked)}/>
+                            alignIndicator={Alignment.LEFT}
+                            style={InputEditor.EDITOR_SWITCH_STYLE}
+                            onChange={(event: any) =>
+                                      this.handleChange(this.props.resourceName, event.target.checked)}/>
                 </Tooltip>
             </span>
         );
