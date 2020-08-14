@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {AnchorButton, IconName, Intent, Popover, PopoverPosition, Tooltip} from '@blueprintjs/core';
+import {AnchorButton, IconName, Intent, PopoverPosition, Tooltip} from '@blueprintjs/core';
 
 export interface IToolButtonProps {
     onClick?: () => void;
@@ -38,14 +38,12 @@ export function ToolButton(props: IToolButtonProps) {
     );
     if (props.tooltipContent) {
         return (
-            <Popover>
-                <Tooltip
-                    content={props.tooltipContent}
-                    position={props.tooltipPosition || PopoverPosition.AUTO}
-                >
-                    {button}
-                </Tooltip>
-            </Popover>
+            <Tooltip
+                content={props.tooltipContent}
+                position={props.tooltipPosition || PopoverPosition.AUTO}
+            >
+                {button}
+            </Tooltip>
         );
     } else {
         return button;

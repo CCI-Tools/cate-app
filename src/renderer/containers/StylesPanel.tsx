@@ -1,22 +1,3 @@
-import {connect, DispatchProp} from 'react-redux';
-import {
-    ColorMapCategoryState,
-    ColorMapState,
-    ImageLayerState,
-    LayerState,
-    Placemark,
-    ResourceState,
-    ResourceVectorLayerState,
-    State,
-    STYLE_CONTEXT_ENTITY,
-    STYLE_CONTEXT_LAYER,
-    VariableImageLayerState,
-    VariableState,
-    VectorLayerState
-} from '../state';
-import * as React from 'react';
-import {NO_ENTITY_FOR_STYLE, NO_LAYER_FOR_STYLE} from '../messages';
-import {SubPanelHeader} from '../components/SubPanelHeader';
 import {
     AnchorButton,
     Button,
@@ -36,20 +17,39 @@ import {
     Switch,
     Tooltip
 } from '@blueprintjs/core';
-import * as actions from '../actions';
-import * as selectors from '../selectors';
-import {NumericRangeField} from '../components/field/NumericRangeField';
-import {FieldValue} from '../components/field/Field';
-import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
-import {TextField} from '../components/field/TextField';
-import SketchPicker from 'react-color/lib/components/sketch/Sketch';
-import {ColorState} from 'react-color';
-import {SimpleStyle} from '../../common/geojson-simple-style';
-import {NumericField} from '../components/field/NumericField';
-import {ViewState} from '../components/ViewState';
 import * as Cesium from 'cesium';
-import {getLayerDisplayName} from '../state-util';
-import {ToolButton} from '../components/ToolButton';
+import * as React from 'react';
+import { ColorState } from 'react-color';
+import SketchPicker from 'react-color/lib/components/sketch/Sketch';
+import { connect, DispatchProp } from 'react-redux';
+import { SimpleStyle } from '../../common/geojson-simple-style';
+import * as actions from '../actions';
+import { FieldValue } from '../components/field/Field';
+import { NumericField } from '../components/field/NumericField';
+import { NumericRangeField } from '../components/field/NumericRangeField';
+import { TextField } from '../components/field/TextField';
+import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
+import { SubPanelHeader } from '../components/SubPanelHeader';
+import { ToolButton } from '../components/ToolButton';
+import { ViewState } from '../components/ViewState';
+import { NO_ENTITY_FOR_STYLE, NO_LAYER_FOR_STYLE } from '../messages';
+import * as selectors from '../selectors';
+import {
+    ColorMapCategoryState,
+    ColorMapState,
+    ImageLayerState,
+    LayerState,
+    Placemark,
+    ResourceState,
+    ResourceVectorLayerState,
+    State,
+    STYLE_CONTEXT_ENTITY,
+    STYLE_CONTEXT_LAYER,
+    VariableImageLayerState,
+    VariableState,
+    VectorLayerState
+} from '../state';
+import { getLayerDisplayName } from '../state-util';
 
 function getDisplayFractionDigits(min: number, max: number) {
     const n = Math.round(Math.log10(max - min));
@@ -578,7 +578,8 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             const colorMaps = cat.colorMaps;
             children.push(
                 <p key={cat.name + '_head'} style={{marginTop: 2, marginBottom: 2}}>
-                    <Tooltip content={cat.description}>
+                    <Tooltip content={<div style={{width: "19em"}}>{cat.description}</div>}
+                             position='top'>
                         {cat.name}
                     </Tooltip>
                 </p>
@@ -595,7 +596,7 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             );
         }
 
-        return <div style={{padding: 5, overflowY: 'auto'}}>{children}</div>;
+        return <div style={{padding: 5, overflowY: 'auto', height: '87vh'}}>{children}</div>;
     }
 
     //noinspection JSMethodCanBeStatic
@@ -635,13 +636,13 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             return;
         }
         this.props.dispatch(actions.getWorkspaceVariableStatistics(resource.name, variable.name, imageLayer.varIndex,
-            (statistics) => {
-                return actions.updateLayer(this.props.activeView.id, imageLayer, {
-                    displayMin: statistics.min,
-                    displayMax: statistics.max,
-                    statistics
-                });
-            }
+                                                                   (statistics) => {
+                                                                       return actions.updateLayer(this.props.activeView.id, imageLayer, {
+                                                                           displayMin: statistics.min,
+                                                                           displayMax: statistics.max,
+                                                                           statistics
+                                                                       });
+                                                                   }
         ) as any);
     }
 
@@ -713,12 +714,12 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
         //style = {...this.props.vectorStyle, ...style};
         if (this.props.styleContext === STYLE_CONTEXT_ENTITY) {
             this.props.dispatch(actions.updateEntityStyle(this.props.activeView,
-                this.props.selectedEntity,
-                style) as any);
+                                                          this.props.selectedEntity,
+                                                          style) as any);
         } else {
             this.props.dispatch(actions.updateLayerStyle(this.props.activeView.id,
-                this.props.selectedVectorLayer.id,
-                style));
+                                                         this.props.selectedVectorLayer.id,
+                                                         style));
         }
     }
 }
