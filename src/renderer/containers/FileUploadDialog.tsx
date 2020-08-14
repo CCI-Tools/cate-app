@@ -108,7 +108,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
 
     handleOpenDirectoryOpen = () => {
         this.props.dispatch(
-            showDirectorySelectDialog({title: 'test'}, this.handleOpenDirectoryOnClose) as any);
+            showDirectorySelectDialog({title: 'Select Target Directory'}, this.handleOpenDirectoryOnClose) as any);
     };
 
     private renderBody() {
@@ -126,7 +126,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
                 <ControlGroup style={DIV_STYLE} fill={true}>
                     <TextField style={TEXT_FIELD_STYLE}
                                value={this.state.dir}
-                               placeholder="Enter file path"
+                               placeholder="Enter target directory"
                                onChange={value => {
                                    console.log(value);
                                }}

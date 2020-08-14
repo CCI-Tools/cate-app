@@ -105,7 +105,7 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
             <ControlGroup style={DIV_STYLE} fill={true}>
                 <TextField style={TEXT_FIELD_STYLE}
                            value={this.state.filePaths[0]}
-                           placeholder="Enter file path"
+                           placeholder="Enter target directory"
                            onChange={value => {
                                console.log(value);
                            }}
