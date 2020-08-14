@@ -29,13 +29,13 @@ export interface IFieldProps {
 
 type IFieldState = AnyFieldValue | null;
 
-export function toTextValue(value: AnyFieldValue | any) {
+export function toTextValue(value: AnyFieldValue | any, defaultValue: any = '') {
     if (isFieldValue(value)) {
         return isDefinedAndNotNull(value.textValue) ? value.textValue : `${value.value}`;
     } else if (isString(value)) {
         return value;
     }
-    return isDefinedAndNotNull(value) ? `${value}` : '';
+    return isDefinedAndNotNull(value) ? `${value}` : defaultValue;
 }
 
 export function toValue(value: any) {
@@ -177,7 +177,7 @@ export class Field<P extends IFieldProps> extends React.PureComponent<P, IFieldS
         return {textValue, value, error};
     }
 
-    private newFieldValueFromValueAndTextValue(value: any | any, textValue: string): AnyFieldValue {
+    private newFieldValueFromValueAndTextValue(value: any, textValue: string): AnyFieldValue {
         let error;
         try {
             this.validateValue(value);
