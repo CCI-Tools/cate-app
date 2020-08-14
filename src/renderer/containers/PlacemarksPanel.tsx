@@ -384,7 +384,7 @@ interface IPlacemarkItemProps {
 class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
     static readonly DIV_STYLE: CSSProperties = {display: 'flex', alignItems: 'center'};
-    static readonly CHECK_STYLE: CSSProperties = {flexGrow: 0};
+    static readonly CHECK_STYLE: CSSProperties = {flexGrow: 0, margin: 0};
     static readonly LABEL_STYLE: CSSProperties = {flexGrow: 1};
     static readonly ICON_STYLE: CSSProperties = {marginLeft: '0.5em'};
     static readonly NAME_STYLE: CSSProperties = {marginLeft: '0.5em'};
