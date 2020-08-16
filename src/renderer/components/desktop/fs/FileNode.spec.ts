@@ -8,9 +8,53 @@ import {
     applyFileFilter,
     ALL_FILES_FILTER,
     fromPathInputValue,
-    toPathInputValue
+    toPathInputValue, makeRelativePath
 } from "./FileNode";
 import { testData } from "./testData";
+
+describe('makeRelativePath', () => {
+    it('works with empty path', () => {
+        const nodes = makeRelativePath("",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("");
+    });
+
+    it('works with same path', () => {
+        const nodes = makeRelativePath("/home/users/norman/workspaces/test2",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("");
+    });
+
+    it('works with 1 element inside', () => {
+        const nodes = makeRelativePath("/home/users/norman/workspaces/test2/precip.nc",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("precip.nc");
+    });
+
+    it('works with 2 elements inside', () => {
+        const nodes = makeRelativePath("/home/users/norman/workspaces/test2/data/precip.nc",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("data/precip.nc");
+    });
+
+    it('works with 1 element outside', () => {
+        const nodes = makeRelativePath("/home/users/norman/workspaces/test1/precip.nc",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("../test1/precip.nc");
+    });
+
+    it('works with 2 elements outside', () => {
+        const nodes = makeRelativePath("/home/users/norman/precip.nc",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("../../precip.nc");
+    });
+
+    it('works with 2 elements outside (2)', () => {
+        const nodes = makeRelativePath("/home/users/norman/data/precip.nc",
+                                       "/home/users/norman/workspaces/test2");
+        expect(nodes).toEqual("../../data/precip.nc");
+    });
+});
 
 describe('toPathInputValue', () => {
 
@@ -93,7 +137,7 @@ describe('fromPathInputValue', () => {
     });
 
     it('works for quoted multi inputValue with quotes inside', () => {
-        const selectedPath = fromPathInputValue('"my data.csv" \"you\'r a weirdo\" \'\"chl\".zarr\'', '', true);
+        const selectedPath = fromPathInputValue('"my data.csv" "you\'r a weirdo" \'"chl".zarr\'', '', true);
         expect(selectedPath).toEqual(['my data.csv', "you'r a weirdo", '"chl".zarr']);
     });
 
@@ -139,12 +183,6 @@ describe('getFileNode', () => {
         expect(node.name).toEqual('File-2111.txt');
     });
 
-    it('returns correct path for trailing "/"', () => {
-        const node = getFileNode(testData, 'Dir-2/Dir-21/Dir-211/');
-        expect(node).not.toBeFalsy();
-        expect(node.name).toEqual('Dir-211');
-    });
-
     it('returns null on invalid path', () => {
         const node = getFileNode(testData, 'Dir-2/Dir-211/Dir-21/File-2111.txt');
         expect(node).toBe(null);
@@ -169,13 +207,6 @@ describe('getFileNodePath', () => {
         expect(path).not.toBeFalsy();
         expect(path.length).toBe(4);
         expect(path.map(n => n.name).join('/')).toEqual('Dir-2/Dir-21/Dir-211/File-2111.txt');
-    });
-
-    it('returns correct path for trailing "/"', () => {
-        const path = getFileNodePath(testData, 'Dir-2/Dir-21/Dir-211/');
-        expect(path).not.toBeFalsy();
-        expect(path.length).toBe(3);
-        expect(path.map(n => n.name).join('/')).toEqual('Dir-2/Dir-21/Dir-211');
     });
 
     it('returns null on invalid path', () => {

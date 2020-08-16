@@ -386,6 +386,51 @@ function isWindowsDrivePath(path: string): boolean {
 }
 
 /**
+ * Make `path1` relative to another (directory) path `path2`.
+ * Both paths must be either relative or absolute, otherwise the
+ * result is not defined.
+ *
+ * @param path1 first normalized path
+ * @param path2 second normalized path
+ * @returns `path1` relative to `path2`.
+ */
+export function makeRelativePath(path1: string, path2: string): string {
+    if (path1 === '' || path1 === path2) {
+        return "";
+    }
+    const comps1 = path1.split('/');
+    const comps2 = path2.split('/');
+    let n1 = comps1.length;
+    let n2 = comps2.length;
+    let n = Math.max(n1, n2);
+
+    let iFirstDiff = Math.min(n1, n2);
+    for (let i = 0; i < n; i++) {
+        if (i < n1 && i < n2) {
+            let comp1 = comps1[i];
+            let comp2 = comps2[i];
+            if (comp1 !== comp2) {
+                iFirstDiff = i;
+                break;
+            }
+        }
+    }
+    if (iFirstDiff === n) {
+        return '';
+    }
+    let relPathComps: string[];
+    if (n2 > iFirstDiff) {
+        relPathComps = Array<string>(n2 - iFirstDiff).fill('..');
+    } else {
+        relPathComps = [];
+    }
+    if (n1 > iFirstDiff) {
+        relPathComps = relPathComps.concat(comps1.slice(iFirstDiff));
+    }
+    return relPathComps.join('/');
+}
+
+/**
  * Convert path into normalized form used in the UI and server communication.
  * @param path a unnormalized path, e.g. from user input
  * @param hostOS host OS name
