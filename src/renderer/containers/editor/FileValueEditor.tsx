@@ -1,14 +1,15 @@
 import * as React from 'react';
-import { AnchorButton, Intent, ControlGroup } from '@blueprintjs/core';
 import { connect, DispatchProp } from 'react-redux';
+import { Button, Intent, ControlGroup } from '@blueprintjs/core';
+
 import { HostOS, makeAbsolutePath, makeRelativePath } from '../../../common/paths';
 import { toTextValue } from '../../components/field/Field';
-
 import { IValueEditorProps, ValueEditorCallback, ValueEditorValue } from './ValueEditor';
 import * as actions from '../../actions';
 import { OperationInputState, State } from '../../state';
 import { TextField } from '../../components/field/TextField';
 import { OpenDialogResult, SaveDialogResult } from "../../components/desktop/types";
+
 
 const DIV_STYLE = {display: 'flex', justifySelf: 'stretch'};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
@@ -110,8 +111,8 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
                        onChange={value => onChange(input, value)}
                        nullable={input.nullable}
             />
-            <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                          onClick={() => showFileDialogCallback(input, value, onChange)}>...</AnchorButton>
+            <Button intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                    onClick={() => showFileDialogCallback(input, value, onChange)}>...</Button>
         </ControlGroup>
     );
 }
