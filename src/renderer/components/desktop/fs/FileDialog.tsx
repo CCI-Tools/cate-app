@@ -10,6 +10,7 @@ import {
 } from '@blueprintjs/core';
 import { IItemRendererProps, ItemRenderer, Select } from '@blueprintjs/select';
 import * as React from 'react';
+import { getBasename, getParentPath, HostOS, isWindowsRootPath } from '../../../../common/paths';
 
 import { ModalDialog } from '../../ModalDialog';
 import { SplitPane } from '../../SplitPane';
@@ -20,10 +21,7 @@ import {
     ALL_FILES_FILTER,
     FileNode,
     fromPathInputValue,
-    getBasename,
     getFileNode,
-    getParentDir,
-    HostOS, isWindowsRootPath,
     toPathInputValue,
 } from './FileNode';
 import FileTree from './FileTree';
@@ -157,7 +155,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
         console.warn('showHiddenFiles flag ignored (not implemented yet))');
     }
 
-    const defaultDirPath: string | null = (defaultPath && defaultPath !== '' && getParentDir(defaultPath)) || null;
+    const defaultDirPath: string | null = (defaultPath && defaultPath !== '' && getParentPath(defaultPath)) || null;
     const [pathState, dispatchPathState] = React.useReducer(
         (state: PathState, stateUpdate: Partial<PathState>) => {
             return {...state, ...stateUpdate}
@@ -262,7 +260,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
 
     const handleNavigateUp = () => {
         if (canNavigateUp()) {
-            const parentDir = getParentDir(pathState.currentDirPath);
+            const parentDir = getParentPath(pathState.currentDirPath);
             dispatchPathState({
                                   selectedDirPath: parentDir !== '' ? parentDir : null,
                                   currentDirPath: parentDir,
@@ -410,11 +408,11 @@ const FileDialog: React.FC<IFileDialogProps> = (
             // Add parents of selected files to expanded paths
             let expandedPaths = pathState.expandedPaths;
             selectedPaths.forEach(p => {
-                const expandedPath = getParentDir(p);
+                const expandedPath = getParentPath(p);
                 expandedPaths = addExpandedDirPath(expandedPaths, expandedPath);
             });
             // Check if we have a new current dir
-            let currentDirPath = selectedPaths.length > 0 ? getParentDir(selectedPaths[0]) : null;
+            let currentDirPath = selectedPaths.length > 0 ? getParentPath(selectedPaths[0]) : null;
             if (currentDirPath !== null && getFileNode(rootNode, currentDirPath) === null) {
                 currentDirPath = null;
             }

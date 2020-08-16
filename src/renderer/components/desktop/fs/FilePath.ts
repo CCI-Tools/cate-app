@@ -1,4 +1,4 @@
-import { HostOS } from './FileNode';
+import { HostOS } from "../../../../common/paths";
 
 // TODO (forman): file choosers: use FilePath class internally in FileDialog instead of the path strings used now.
 

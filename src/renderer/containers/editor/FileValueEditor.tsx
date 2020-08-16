@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { AnchorButton, Intent } from '@blueprintjs/core';
+import { Button, Intent } from '@blueprintjs/core';
 import { connect, DispatchProp } from 'react-redux';
+import { HostOS, makeAbsolutePath, makeRelativePath } from '../../../common/paths';
 import { toTextValue } from '../../components/field/Field';
 
 import { IValueEditorProps, ValueEditorCallback, ValueEditorValue } from './ValueEditor';
@@ -15,11 +16,16 @@ const BUTTON_STYLE = {flex: 'none'};
 
 
 interface IFileValueEditorProps extends IValueEditorProps<string> {
+    hostOS?: HostOS;
+    workspaceDir: string | null;
 }
 
 function mapStateToProps(state: State, ownProps: IFileValueEditorProps) {
-    // we only need dispatch property
-    return {...ownProps};
+    return {
+        ...ownProps,
+        hostOS: state.communication.webAPIServiceInfo.hostOS,
+        workspaceDir: state.data.workspace ? state.data.workspace.baseDir : null
+    };
 }
 
 // TODO (forman): complete me, i.e. validate file name
@@ -29,10 +35,29 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
         input,
         value,
         onChange,
+        hostOS,
+        workspaceDir,
         dispatch
     }) => {
 
     value = (value as any) || '';
+
+    console.log('_FileValueEditor: hostOS =', hostOS);
+    console.log('_FileValueEditor: workspaceDir =', workspaceDir);
+
+    const toRelativePath = (path: string) => {
+        if (workspaceDir !== null) {
+            return makeRelativePath(path, workspaceDir, hostOS);
+        }
+        return path
+    };
+
+    const toAbsolutePath = (path: string) => {
+        if (workspaceDir !== null) {
+            return makeAbsolutePath(workspaceDir, path, hostOS);
+        }
+        return path
+    };
 
     let showFileDialogCallback;
     if (input.fileOpenMode === 'w') {
@@ -40,12 +65,14 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
                                   value: ValueEditorValue<string>,
                                   onChange: ValueEditorCallback<string>) => {
             const saveDialogOptions = {
-                defaultPath: toTextValue(value, undefined),
+                defaultPath: toAbsolutePath(toTextValue(value, undefined)),
                 filters: input.fileFilters,
             };
             dispatch(actions.showFileSaveDialog(saveDialogOptions, (result: SaveDialogResult) => {
-                if (!result.canceled && result.filePath) {
-                    onChange(input, result.filePath);
+                let filePath = result.filePath;
+                if (!result.canceled && filePath) {
+                    filePath = toRelativePath(filePath);
+                    onChange(input, filePath);
                 }
             }) as any);
         }
@@ -55,19 +82,21 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
                                   onChange: ValueEditorCallback<string>) => {
             const properties = input.fileProps as string[];
             const openDialogOptions = {
-                defaultPath: toTextValue(value, undefined),
+                defaultPath: toAbsolutePath(toTextValue(value, undefined)),
                 filters: input.fileFilters,
                 properties: properties as any,
             };
             dispatch(actions.showFileOpenDialog(openDialogOptions, (result: OpenDialogResult) => {
-                if (!result.canceled && result.filePaths.length > 0) {
+                let filePaths = result.filePaths;
+                if (!result.canceled && filePaths.length > 0) {
+                    filePaths = filePaths.map(toRelativePath);
                     // TODO (forman): file choosers: handle properties=["multiSelection", ...]
                     //   with result.filePaths.length > 0. In this case concatenate paths in a OS-compliant way,
                     //   i.e. path separator on Unix is ':', on Windows ';'
                     if (properties && properties.find(p => p === 'multiSelection')) {
                         console.error('multi-file selection is not yet implemented, returning first entry only');
                     }
-                    onChange(input, result.filePaths[0]);
+                    onChange(input, filePaths[0]);
                 }
             }) as any);
         }
@@ -81,8 +110,8 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
                        onChange={value => onChange(input, value)}
                        nullable={input.nullable}
             />
-            <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                          onClick={() => showFileDialogCallback(input, value, onChange)}>...</AnchorButton>
+            <Button intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                    onClick={() => showFileDialogCallback(input, value, onChange)}>...</Button>
         </div>
     );
 }
