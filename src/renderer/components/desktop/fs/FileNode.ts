@@ -1,6 +1,13 @@
 import { IconName } from '@blueprintjs/core';
-import { getBasename, getBasenameExtension, getParentPath, HostOS, isAbsolutePath } from '../../../../common/paths';
 
+import {
+    getBasename,
+    getBasenameExtension,
+    getParentPath,
+    HostOS,
+    isAbsolutePath,
+    isWindowsRootPath
+} from '../../../../common/paths';
 import { isNumber, isString } from '../../../../common/types';
 import { FileFilter } from '../types';
 
@@ -369,10 +376,21 @@ function normalizePath(path: string, hostOS?: HostOS): string {
     return prefix ? prefix + path : path;
 }
 
+export function denormalizePath(path: string, hostOS?: HostOS) {
+    if (hostOS === 'Windows') {
+        path = path.split('/').join('\\');
+        if (!isWindowsRootPath(path)) {
+            return '\\' + path;
+        }
+        return path;
+    } else {
+        return '/' + path;
+    }
+}
 
 /**
- * Return an absolute path for given `path`. Note that the returned absolute path *never* start with
- * a slash ('/').
+ * Return an absolute path for given `path`. Note that the returned absolute path are normalized and
+ * *never* start with a slash ('/').
  * @param path an absolute or relative path
  * @param currentDirPath current, normalized path
  * @param hostOS host OS name

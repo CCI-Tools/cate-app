@@ -15,13 +15,15 @@ const DIV_STYLE = {display: 'flex', justifySelf: 'stretch'};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flexGrow: 0};
 
+interface IFileValueEditorOwnProps extends IValueEditorProps<string> {
+}
 
-interface IFileValueEditorProps extends IValueEditorProps<string> {
+interface IFileValueEditorProps extends IFileValueEditorOwnProps {
     hostOS?: HostOS;
     workspaceDir: string | null;
 }
 
-function mapStateToProps(state: State, ownProps: IFileValueEditorProps) {
+function mapStateToProps(state: State, ownProps: IFileValueEditorOwnProps): IFileValueEditorProps  {
     return {
         ...ownProps,
         hostOS: state.communication.webAPIServiceInfo.hostOS,
@@ -48,12 +50,14 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
 
     const toRelativePath = (path: string) => {
         if (workspaceDir !== null) {
+            console.log('_FileValueEditor.toRelativePath: path =', path);
             return makeRelativePath(path, workspaceDir, hostOS);
         }
         return path
     };
 
     const toAbsolutePath = (path: string) => {
+        console.log('_FileValueEditor.toAbsolutePath: path =', path);
         if (workspaceDir !== null) {
             return makeAbsolutePath(workspaceDir, path, hostOS);
         }
