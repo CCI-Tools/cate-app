@@ -1,11 +1,13 @@
 import * as React from 'react';
+import { connect, DispatchProp } from 'react-redux';
+import { Checkbox, Tooltip } from '@blueprintjs/core';
+
 import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
-import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
-import { Checkbox } from '@blueprintjs/core';
+
 
 interface IChooseWorkspaceDialogState extends DialogState {
     workspaceDir: string | null;
@@ -145,7 +147,6 @@ class ChooseWorkspaceDialog extends React.Component<IChooseWorkspaceDialogProps 
             return null;
         }
 
-
         let title: string;
         let confirmTitle: string;
         if (this.props.dialogId === DELETE_WORKSPACE_DIALOG_ID) {
@@ -155,6 +156,7 @@ class ChooseWorkspaceDialog extends React.Component<IChooseWorkspaceDialogProps 
             title = 'Open Workspace';
             confirmTitle = 'Open';
         }
+
         return (
             <ModalDialog
                 isOpen={isOpen}
@@ -184,16 +186,17 @@ class ChooseWorkspaceDialog extends React.Component<IChooseWorkspaceDialogProps 
             );
         }
 
-        let checkbox: any;
+        let checkbox;
         if (this.props.dialogId === DELETE_WORKSPACE_DIALOG_ID) {
             checkbox =
-                <Checkbox
-                    label={'Delete entire workspace'}
-                    checked={this.state.deleteEntireWorkspace}
-                    onChange={this.handleCheckboxChange.bind(this)}
-                />
-        } else {
-            checkbox = ''
+                <Tooltip content={"Also delete other files in the workspace folder"}>
+                    <Checkbox
+                        style={{marginTop: '1em'}}
+                        label={'Delete entire workspace'}
+                        checked={this.state.deleteEntireWorkspace}
+                        onChange={this.handleCheckboxChange.bind(this)}
+                    />
+                </Tooltip>
         }
 
         return (
