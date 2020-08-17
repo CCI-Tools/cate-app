@@ -109,16 +109,16 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
                 <p style={{marginTop: '1em'}}>Name:</p>
                 <InputGroup
                     type="text"
-                    style={{width: '100%', marginLeft: '1em'}}
+                    style={{width: '100%'}}
                     value={this.state.dataSourceName}
                     onChange={this.onDataSourceNameChange}
                 />
                 <p style={{marginTop: '1em'}}>Path pattern<span className="bp3-text-muted"> (can contain wildcards like "*" or "?")</span>:
                 </p>
-                <ControlGroup style={{flexGrow: 1, display: 'flex', marginLeft: '1em', width: '100%'}}>
+                <ControlGroup style={{flexGrow: 1, width: '100%'}}>
                     <InputGroup
                         type="text"
-                        style={{flex: 'auto'}}
+                        fill={true}
                         value={this.state.filePathPattern}
                         onChange={this.onFilePathPatternChange}
                     />
