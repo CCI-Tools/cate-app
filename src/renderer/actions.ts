@@ -5,6 +5,7 @@ import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
 import { FileNode, getFileNode, sanitizePath } from './components/desktop/fs/FileNode';
 import { FILE_UPLOAD_DIALOG_ID } from './containers/FileUploadDialog';
+import { FileNode, getFileNode } from './components/desktop/fs/FileNode';
 
 import {
     BackendConfigState,
@@ -738,7 +739,6 @@ function updateFsRootNode(path: string, updatedFileNode: FileNode): Action {
 }
 
 export function updateFileNode(path: string, force: boolean): ThunkAction {
-    path = sanitizePath(path);
     const pathComponents = path.split('/');
 
     return (dispatch: Dispatch, getState: GetState) => {

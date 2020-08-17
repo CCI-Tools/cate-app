@@ -1,24 +1,34 @@
 import * as React from 'react';
-import { AnchorButton, ControlGroup, Intent } from '@blueprintjs/core';
 import { connect, DispatchProp } from 'react-redux';
+import { Button, Intent, ControlGroup } from '@blueprintjs/core';
 
+import { HostOS, makeAbsolutePath, makeRelativePath } from '../../../common/paths';
+import { toTextValue } from '../../components/field/Field';
 import { IValueEditorProps, ValueEditorCallback, ValueEditorValue } from './ValueEditor';
 import * as actions from '../../actions';
 import { OperationInputState, State } from '../../state';
 import { TextField } from '../../components/field/TextField';
-import { SaveDialogResult } from "../../components/desktop/types";
+import { OpenDialogResult, SaveDialogResult } from "../../components/desktop/types";
 
-const DIV_STYLE = {width: '20em', display: 'flex'};
+
+const DIV_STYLE = {display: 'flex', justifySelf: 'stretch'};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
-const BUTTON_STYLE = {flex: 'none'};
+const BUTTON_STYLE = {flexGrow: 0};
 
-
-interface IFileValueEditorProps extends IValueEditorProps<string> {
+interface IFileValueEditorOwnProps extends IValueEditorProps<string> {
 }
 
-function mapStateToProps(state: State, ownProps: IFileValueEditorProps) {
-    // we only need dispatch property
-    return {...ownProps};
+interface IFileValueEditorProps extends IFileValueEditorOwnProps {
+    hostOS?: HostOS;
+    workspaceDir: string | null;
+}
+
+function mapStateToProps(state: State, ownProps: IFileValueEditorOwnProps): IFileValueEditorProps  {
+    return {
+        ...ownProps,
+        hostOS: state.communication.webAPIServiceInfo.hostOS,
+        workspaceDir: state.data.workspace ? state.data.workspace.baseDir : null
+    };
 }
 
 // TODO (forman): complete me, i.e. validate file name
@@ -28,10 +38,31 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
         input,
         value,
         onChange,
+        hostOS,
+        workspaceDir,
         dispatch
     }) => {
 
     value = (value as any) || '';
+
+    console.log('_FileValueEditor: hostOS =', hostOS);
+    console.log('_FileValueEditor: workspaceDir =', workspaceDir);
+
+    const toRelativePath = (path: string) => {
+        if (workspaceDir !== null) {
+            console.log('_FileValueEditor.toRelativePath: path =', path);
+            return makeRelativePath(path, workspaceDir, hostOS);
+        }
+        return path
+    };
+
+    const toAbsolutePath = (path: string) => {
+        console.log('_FileValueEditor.toAbsolutePath: path =', path);
+        if (workspaceDir !== null) {
+            return makeAbsolutePath(workspaceDir, path, hostOS);
+        }
+        return path
+    };
 
     let showFileDialogCallback;
     if (input.fileOpenMode === 'w') {
@@ -39,12 +70,14 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
                                   value: ValueEditorValue<string>,
                                   onChange: ValueEditorCallback<string>) => {
             const saveDialogOptions = {
-                defaultPath: value as string,
+                defaultPath: toAbsolutePath(toTextValue(value, undefined)),
                 filters: input.fileFilters,
             };
             dispatch(actions.showFileSaveDialog(saveDialogOptions, (result: SaveDialogResult) => {
-                if (!result.canceled && result.filePath) {
-                    onChange(input, result.filePath);
+                let filePath = result.filePath;
+                if (!result.canceled && filePath) {
+                    filePath = toRelativePath(filePath);
+                    onChange(input, filePath);
                 }
             }) as any);
         }
@@ -52,29 +85,38 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
         showFileDialogCallback = (input: OperationInputState,
                                   value: ValueEditorValue<string>,
                                   onChange: ValueEditorCallback<string>) => {
+            const properties = input.fileProps as string[];
             const openDialogOptions = {
-                defaultPath: value as string,
+                defaultPath: toAbsolutePath(toTextValue(value, undefined)),
                 filters: input.fileFilters,
-                properties: input.fileProps as any,
+                properties: properties as any,
             };
-            dispatch(actions.showSingleFileOpenDialog(openDialogOptions, (filePath: string | null) => {
-                if (filePath) {
-                    onChange(input, filePath);
+            dispatch(actions.showFileOpenDialog(openDialogOptions, (result: OpenDialogResult) => {
+                let filePaths = result.filePaths;
+                if (!result.canceled && filePaths.length > 0) {
+                    filePaths = filePaths.map(toRelativePath);
+                    // TODO (forman): file choosers: handle properties=["multiSelection", ...]
+                    //   with result.filePaths.length > 0. In this case concatenate paths in a OS-compliant way,
+                    //   i.e. path separator on Unix is ':', on Windows ';'
+                    if (properties && properties.find(p => p === 'multiSelection')) {
+                        console.error('multi-file selection is not yet implemented, returning first entry only');
+                    }
+                    onChange(input, filePaths[0]);
                 }
             }) as any);
         }
     }
 
     return (
-        <ControlGroup style={DIV_STYLE}>
+        <ControlGroup fill={true} style={DIV_STYLE}>
             <TextField style={TEXT_FIELD_STYLE}
                        value={value}
                        placeholder="Enter file path"
                        onChange={value => onChange(input, value)}
                        nullable={input.nullable}
             />
-            <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                          onClick={() => showFileDialogCallback(input, value, onChange)}>...</AnchorButton>
+            <Button intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                    onClick={() => showFileDialogCallback(input, value, onChange)}>...</Button>
         </ControlGroup>
     );
 }

@@ -23,9 +23,9 @@ interface IGeometryFieldState {
 }
 
 export class GeometryField extends React.Component<IGeometryFieldProps, IGeometryFieldState> {
-    private static DIV_STYLE = {width: '24em', display: 'flex', flexGrow: 1};
+    private static DIV_STYLE = {display: 'flex', justifySelf: 'stretch'};
     private static TEXT_FIELD_STYLE = {flexGrow: 1};
-    private static BUTTON_STYLE = {flex: 'none'};
+    private static BUTTON_STYLE = {flexGrow: 0};
 
     constructor(props: IGeometryFieldProps) {
         super(props);
@@ -61,11 +61,10 @@ export class GeometryField extends React.Component<IGeometryFieldProps, IGeometr
             }
         }
         return (
-            <ControlGroup style={GeometryField.DIV_STYLE}>
+            <ControlGroup style={GeometryField.DIV_STYLE} fill={true}>
                 <TextField
                     value={this.props.value}
                     onChange={this.props.onChange}
-                    size={this.props.size || 32}
                     placeholder={placeholder}
                     validator={this.validateGeometryText}
                     nullable={this.props.nullable}
