@@ -41,7 +41,7 @@ function mapStateToProps(state: State): IFileUploadDialogProps {
     const dialogState = selectors.dialogStateSelector(FileUploadDialog.DIALOG_ID)(state);
     return {
         isOpen: dialogState.isOpen,
-        dialogId: 'fileUploadDialog'
+        dialogId: FileUploadDialog.DIALOG_ID
     };
 }
 
@@ -156,5 +156,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         );
     }
 }
+
+export const FILE_UPLOAD_DIALOG_ID = FileUploadDialog.DIALOG_ID;
 
 export default connect(mapStateToProps)(FileUploadDialog);

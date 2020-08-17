@@ -4,6 +4,7 @@ import * as Cesium from 'cesium';
 import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
 import { FileNode, getFileNode, sanitizePath } from './components/desktop/fs/FileNode';
+import { FILE_UPLOAD_DIALOG_ID } from './containers/FileUploadDialog';
 
 import {
     BackendConfigState,
@@ -1701,17 +1702,21 @@ export function dropDatasource(opName: string,
                                postSetAction?): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
+        const dialogState = selectors.dialogStateSelector(FILE_UPLOAD_DIALOG_ID)(state);
         const webAPIServiceURL = state.communication.webAPIServiceURL;
 
-        selectors.fileAPISelector(state).uploadFiles('upload', file, webAPIServiceURL)
-                 .then((res) => {
-                     showToast({type: res.status, text: 'Upload finished: ' + res.message});
-                     dispatch(setWorkspaceResource(opName, opArgs, resName, overwrite, title, postSetAction));
-                 })
-                 .catch((error) => {
-                     showToast({type: 'error', text: error.toString()});
-                     console.error(error);
-                 });
+        // Do not fire action when the FileUploadDialog is open as the dialog also uses a drop like event.
+        if (!dialogState.isOpen) {
+            selectors.fileAPISelector(state).uploadFiles('upload', file, webAPIServiceURL)
+                     .then((res) => {
+                         showToast({type: res.status, text: 'Upload finished: ' + res.message});
+                         dispatch(setWorkspaceResource(opName, opArgs, resName, overwrite, title, postSetAction));
+                     })
+                     .catch((error) => {
+                         showToast({type: 'error', text: error.toString()});
+                         console.error(error);
+                     });
+        }
     }
 }
 
