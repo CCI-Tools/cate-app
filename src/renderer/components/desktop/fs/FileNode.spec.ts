@@ -2,15 +2,13 @@ import {
     getFileNodePath,
     isPathValidAtIndex,
     getFileNode,
-    getParentDir,
-    getBasenameExtension,
-    getBasename,
     applyFileFilter,
     ALL_FILES_FILTER,
     fromPathInputValue,
     toPathInputValue
 } from "./FileNode";
 import { testData } from "./testData";
+
 
 describe('toPathInputValue', () => {
 
@@ -93,7 +91,7 @@ describe('fromPathInputValue', () => {
     });
 
     it('works for quoted multi inputValue with quotes inside', () => {
-        const selectedPath = fromPathInputValue('"my data.csv" \"you\'r a weirdo\" \'\"chl\".zarr\'', '', true);
+        const selectedPath = fromPathInputValue('"my data.csv" "you\'r a weirdo" \'"chl".zarr\'', '', true);
         expect(selectedPath).toEqual(['my data.csv', "you'r a weirdo", '"chl".zarr']);
     });
 
@@ -139,12 +137,6 @@ describe('getFileNode', () => {
         expect(node.name).toEqual('File-2111.txt');
     });
 
-    it('returns correct path for trailing "/"', () => {
-        const node = getFileNode(testData, 'Dir-2/Dir-21/Dir-211/');
-        expect(node).not.toBeFalsy();
-        expect(node.name).toEqual('Dir-211');
-    });
-
     it('returns null on invalid path', () => {
         const node = getFileNode(testData, 'Dir-2/Dir-211/Dir-21/File-2111.txt');
         expect(node).toBe(null);
@@ -171,13 +163,6 @@ describe('getFileNodePath', () => {
         expect(path.map(n => n.name).join('/')).toEqual('Dir-2/Dir-21/Dir-211/File-2111.txt');
     });
 
-    it('returns correct path for trailing "/"', () => {
-        const path = getFileNodePath(testData, 'Dir-2/Dir-21/Dir-211/');
-        expect(path).not.toBeFalsy();
-        expect(path.length).toBe(3);
-        expect(path.map(n => n.name).join('/')).toEqual('Dir-2/Dir-21/Dir-211');
-    });
-
     it('returns null on invalid path', () => {
         const path = getFileNodePath(testData, 'Dir-2/Dir-211/Dir-21/File-2111.txt');
         expect(path).toBe(null);
@@ -189,24 +174,6 @@ describe('getFileNodePath', () => {
     });
 });
 
-describe('getParentDir', () => {
-    it('works as expected', () => {
-        expect(getParentDir('Dir-2/Dir-21/Dir-211')).toEqual('Dir-2/Dir-21');
-    });
-});
-
-describe('getBasename', () => {
-    it('works as expected', () => {
-        expect(getBasename('Dir-2/Dir-21/Dir-211/File-2111.txt')).toEqual('File-2111.txt');
-    });
-});
-
-
-describe('getBasenameExtension', () => {
-    it('works as expected', () => {
-        expect(getBasenameExtension('File-2111.txt')).toEqual('txt');
-    });
-});
 
 describe('isPathValidAtIndex', () => {
 

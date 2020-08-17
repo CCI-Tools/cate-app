@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { AnchorButton, ControlGroup, InputGroup, Intent } from '@blueprintjs/core';
-import { getParentDir } from '../components/desktop/fs/FileNode';
 import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import { OpenDialogOptions } from "../components/desktop/types";
+import { getParentPath } from "../../common/paths";
 
 interface IAddDatasetDialogProps {
     isOpen: boolean;
@@ -68,7 +68,7 @@ class AddDatasetDialog extends React.Component<IAddDatasetDialogProps & Dispatch
         const openDialogOptions: OpenDialogOptions = {
             title: 'Select Directory',
             buttonLabel: 'Select',
-            defaultPath: this.state.filePathPattern !== '' ? getParentDir(this.state.filePathPattern) : undefined,
+            defaultPath: this.state.filePathPattern !== '' ? getParentPath(this.state.filePathPattern) : undefined,
         };
         this.props.dispatch(actions.showDirectorySelectDialog(openDialogOptions, (dirPath: string | null) => {
             if (dirPath) {

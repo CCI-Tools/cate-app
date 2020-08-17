@@ -1,14 +1,16 @@
-import {IconName} from '@blueprintjs/core';
+import { IconName } from '@blueprintjs/core';
 
-import {isNumber, isString} from '../../../../common/types';
-import {FileFilter} from '../types';
+import {
+    getBasename,
+    getBasenameExtension,
+    getParentPath,
+    HostOS,
+    isAbsolutePath,
+    isWindowsRootPath
+} from '../../../../common/paths';
+import { isNumber, isString } from '../../../../common/types';
+import { FileFilter } from '../types';
 
-
-/**
- * Used to parse users' text inputs into normalized paths and to format normalized paths into user text outputs.
- * Values are according to output of Python's platform.system() call.
- */
-export type HostOS = 'Windows' | 'Linux' | 'Java';
 
 /**
  * Represents the current update status of a file node.
@@ -232,7 +234,7 @@ export function compareFileSize(a: FileNode, b: FileNode) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Path operations
+// FileDialog-internal path operations
 
 /**
  * Add `path` to the expanded paths `expandedPaths`. Return a new, updated array of expanded paths.
@@ -241,7 +243,7 @@ export function compareFileSize(a: FileNode, b: FileNode) {
  * @returns a new array of expanded paths
  */
 export function addExpandedDirPath(expandedPaths: string[], path: string): string[] {
-    const parentDir = getParentDir(path);
+    const parentDir = getParentPath(path);
     const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || path.startsWith(p + '/')));
     return [...cleanedPaths, path];
 }
@@ -253,34 +255,9 @@ export function addExpandedDirPath(expandedPaths: string[], path: string): strin
  * @returns a new array of expanded paths
  */
 export function removeExpandedDirPath(expandedPaths: string[], path: string): string[] {
-    const parentDir = getParentDir(path);
+    const parentDir = getParentPath(path);
     const cleanedPaths = expandedPaths.filter(p => !(p === path || p === parentDir || p.startsWith(path + '/')));
     return parentDir !== '' ? [...cleanedPaths, parentDir] : cleanedPaths;
-}
-
-export function getParentDir(path: string): string {
-    if (path.startsWith('//')) {
-        const index = path.substring(2).lastIndexOf('/');
-        return (index > 0) ? path.substring(0, index + 2) : '';
-    }
-    const index = path.lastIndexOf('/');
-    return (index > 0) ? path.substring(0, index) : '';
-}
-
-export function getBasename(path: string): string {
-    const index = path.lastIndexOf('/');
-    if (index >= 0) {
-        return path.substring(index + 1);
-    }
-    return path;
-}
-
-export function getBasenameExtension(basename: string): string {
-    const index = basename.lastIndexOf('.');
-    if (index > 0) {
-        return basename.substring(index + 1);
-    }
-    return '';
 }
 
 export function isPathValidAtIndex(path: string[], index: number, name: string): boolean {
@@ -304,7 +281,7 @@ export function applyFileFilter(nodes: FileNode[], fileFilter: FileFilter): File
 /**
  * Parse a text value entered by the user into an array of normalized paths.
  * @param inputValue text value entered by the user, note this is an un-normalized path
- * @param currentDirPath the current directory
+ * @param currentDirPath the current, normalized directory
  * @param multiSelection if multiple selections are allowed
  * @param hostOS host OS name
  * @returns an array of normalized paths
@@ -358,36 +335,9 @@ export function fromPathInputValue(inputValue: string,
     return paths.map(p => toAbsolutePath(p, currentDirPath, hostOS));
 }
 
-export function isAbsolutePath(path: string, hostOS?: HostOS) {
-    if (hostOS === 'Windows') {
-        return isWindowsRootPath(path);
-    } else {
-        return isLinuxRootPath(path);
-    }
-}
-
-export function isLinuxRootPath(path: string): boolean {
-    return path.startsWith('/');
-}
-
-export function isWindowsRootPath(path: string): boolean {
-    return isWindowsNetworkDevicePath(path) || isWindowsDrivePath(path);
-}
-
-function isWindowsNetworkDevicePath(path: string): boolean {
-    return path.startsWith('//') || path.startsWith('\\\\');
-}
-
-function isWindowsDrivePath(path: string): boolean {
-    return path.length >= 2
-        && /^[a-z]+$/i.test(path[0])
-        && path[1] === ':'
-        && (path.length === 2 || path[2] === '/' || path[2] === '\\');
-}
-
 /**
- * Convert path into normalized form used in the UI and server communication.
- * @param path a unnormalized path, e.g. from user input
+ * Convert path into internal normalized form used in the FileDialog UI.
+ * @param path a non-normalized path, e.g. from user input
  * @param hostOS host OS name
  */
 function normalizePath(path: string, hostOS?: HostOS): string {
@@ -426,12 +376,23 @@ function normalizePath(path: string, hostOS?: HostOS): string {
     return prefix ? prefix + path : path;
 }
 
+export function denormalizePath(path: string, hostOS?: HostOS) {
+    if (hostOS === 'Windows') {
+        path = path.split('/').join('\\');
+        if (!isWindowsRootPath(path)) {
+            return '\\' + path;
+        }
+        return path;
+    } else {
+        return '/' + path;
+    }
+}
 
 /**
- * Return an absolute path for given `path`. Note that the returned absolute path *never* start with
- * a slash ('/').
+ * Return an absolute path for given `path`. Note that the returned absolute path are normalized and
+ * *never* start with a slash ('/').
  * @param path an absolute or relative path
- * @param currentDirPath current path
+ * @param currentDirPath current, normalized path
  * @param hostOS host OS name
  */
 export function toAbsolutePath(path: string, currentDirPath: string, hostOS?: HostOS): string {

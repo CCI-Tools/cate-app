@@ -1,6 +1,8 @@
 import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
+
 import { SimpleStyle } from '../common/geojson-simple-style';
+import { HostOS } from '../common/paths';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { FileNode } from './components/desktop/fs/FileNode';
 import {
@@ -15,6 +17,7 @@ import { PanelContainerLayout } from './components/PanelContainer';
 import { ViewLayoutState, ViewState } from './components/ViewState';
 import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
 import { User } from './webapi/apis/AuthAPI';
+
 
 /**
  * Interface describing Cate's application state structure.
@@ -57,7 +60,7 @@ export interface WebAPIServiceInfo {
     version: string;
     timestamp: string;
     userRootMode: boolean;
-    hostOS?: string;
+    hostOS?: HostOS;
 }
 
 export interface DataStoreNotice {
