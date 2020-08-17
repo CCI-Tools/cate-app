@@ -112,6 +112,13 @@ function mapStateToProps(state: State) {
     };
 }
 
+const DISPLAY_RANGE_STYLE = {
+    display: 'grid',
+    gridTemplateColumns: 'auto auto auto',
+    justifyItems: 'stretch',
+    alignItems: 'center',
+    columnGap: '0.7em'};
+
 class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State>, null> {
     static readonly SLIDER_DIV_STYLE_05 = {width: '100%', paddingLeft: '0.5em', paddingRight: '0.5em'};
     static readonly SLIDER_DIV_STYLE_10 = {width: '100%', paddingLeft: '1em', paddingRight: '1em'};
@@ -224,7 +231,7 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             <div style={{width: '100%', marginBottom: '20px'}}>
                 <Label key="drange" style={{display: 'flex'}}>
                     <span style={{...StylesPanel.LABEL_SPAN_STYLE_100, margin: 'auto 0'}}>Display range</span>
-                    <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div style={DISPLAY_RANGE_STYLE}>
                         <NumericRangeField value={this.props.displayMinMax}
                                            style={{flex: 'auto'}}
                                            onChange={this.handleChangedDisplayMinMax}
@@ -235,7 +242,7 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
                             intent={Intent.PRIMARY}
                             icon="arrows-horizontal"
                             tooltipPosition={'top'}
-                            style={{flex: 'none', marginTop: '5px'}}
+                            style={{flexGrow: 0, margin: 0}}
                             disabled={this.props.isComputingVariableStatistics}
                             onClick={this.handleUpdateDisplayStatistics}
                         />
