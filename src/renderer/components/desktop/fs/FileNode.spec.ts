@@ -2,18 +2,110 @@ import {
     getFileNodePath,
     isPathValidAtIndex,
     getFileNode,
-    getParentDir,
-    getBasenameExtension,
-    getBasename,
-    applyFileFilter, ALL_FILES_FILTER
+    applyFileFilter,
+    ALL_FILES_FILTER,
+    fromPathInputValue,
+    toPathInputValue
 } from "./FileNode";
 import { testData } from "./testData";
+
+
+describe('toPathInputValue', () => {
+
+    it('works for single empty selectedPaths', () => {
+        const selectedPath = toPathInputValue([], false);
+        expect(selectedPath).toEqual('');
+    });
+
+    it('works for multi empty selectedPaths', () => {
+        const selectedPath = toPathInputValue([], true);
+        expect(selectedPath).toEqual('');
+    });
+
+    it('works for single selectedPaths', () => {
+        const selectedPath = toPathInputValue(['report.txt'], false);
+        expect(selectedPath).toEqual('report.txt');
+    });
+
+    it('works for multi selectedPaths', () => {
+        const selectedPath = toPathInputValue(['report.txt', 'data.csv'], true);
+        expect(selectedPath).toEqual('report.txt data.csv');
+    });
+
+    it('works for single selectedPaths with space', () => {
+        const selectedPath = toPathInputValue(['my report.txt'], false);
+        expect(selectedPath).toEqual('my report.txt');
+    });
+
+    it('works for multi selectedPaths with space', () => {
+        const selectedPath = toPathInputValue(['my report.txt', 'my data.csv'], true);
+        expect(selectedPath).toEqual('"my report.txt" "my data.csv"');
+    });
+
+    it('works for multi selectedPaths with current dir', () => {
+        const selectedPath = toPathInputValue(['home/norman/report.txt', 'home/norman/data.csv'], true);
+        expect(selectedPath).toEqual('report.txt data.csv');
+    });
+
+    it('works for multi selectedPaths with space with current dir', () => {
+        const selectedPath = toPathInputValue(['home/norman/my report.txt', 'home/norman/my data.csv'], true);
+        expect(selectedPath).toEqual('"my report.txt" "my data.csv"');
+    });
+});
+
+describe('fromPathInputValue', () => {
+
+    it('works for empty inputValue', () => {
+        const selectedPath = fromPathInputValue('', '', false);
+        expect(selectedPath).toEqual([]);
+    });
+
+    it('works for single inputValue', () => {
+        const selectedPath = fromPathInputValue('data.csv', '', false);
+        expect(selectedPath).toEqual(['data.csv']);
+    });
+
+    it('works for single inputValue with current dir', () => {
+        const selectedPath = fromPathInputValue('data.csv', 'home/norman', false);
+        expect(selectedPath).toEqual(['home/norman/data.csv']);
+    });
+
+    it('works for single inputValue with space', () => {
+        const selectedPath = fromPathInputValue('my data.csv', '', false);
+        expect(selectedPath).toEqual(['my data.csv']);
+    });
+
+    it('works for non-quoted multi inputValue with space', () => {
+        const selectedPath = fromPathInputValue('my data.csv', '', true);
+        expect(selectedPath).toEqual(['my', 'data.csv']);
+    });
+
+    it('works for multi selectedPaths with current dir', () => {
+        const selectedPath = fromPathInputValue('report.txt data.csv', 'home/norman', true);
+        expect(selectedPath).toEqual(['home/norman/report.txt', 'home/norman/data.csv']);
+    });
+
+    it('works for quoted multi inputValue with space inside', () => {
+        const selectedPath = fromPathInputValue('"my data.csv"', '', true);
+        expect(selectedPath).toEqual(['my data.csv']);
+    });
+
+    it('works for quoted multi inputValue with quotes inside', () => {
+        const selectedPath = fromPathInputValue('"my data.csv" "you\'r a weirdo" \'"chl".zarr\'', '', true);
+        expect(selectedPath).toEqual(['my data.csv', "you'r a weirdo", '"chl".zarr']);
+    });
+
+    it('works for non-quoted multi inputValue', () => {
+        const selectedPath = fromPathInputValue('my_data.csv you-are-a-weirdo chl.zarr', '', true);
+        expect(selectedPath).toEqual(['my_data.csv', 'you-are-a-weirdo', 'chl.zarr']);
+    });
+});
 
 describe('applyFileFilter', () => {
 
     it('works for single extension', () => {
         const nodes = applyFileFilter(testData.childNodes[1].childNodes[0].childNodes,
-                                     {name: 'netcdf', extensions: ['nc']});
+                                      {name: 'netcdf', extensions: ['nc']});
         expect(nodes).not.toBeFalsy();
         expect(nodes.map(n => n.name)).toEqual(['Dir-211', 'File-211.nc', 'File-212.nc']);
     });
@@ -45,12 +137,6 @@ describe('getFileNode', () => {
         expect(node.name).toEqual('File-2111.txt');
     });
 
-    it('returns correct path for trailing "/"', () => {
-        const node = getFileNode(testData, 'Dir-2/Dir-21/Dir-211/');
-        expect(node).not.toBeFalsy();
-        expect(node.name).toEqual('Dir-211');
-    });
-
     it('returns null on invalid path', () => {
         const node = getFileNode(testData, 'Dir-2/Dir-211/Dir-21/File-2111.txt');
         expect(node).toBe(null);
@@ -77,13 +163,6 @@ describe('getFileNodePath', () => {
         expect(path.map(n => n.name).join('/')).toEqual('Dir-2/Dir-21/Dir-211/File-2111.txt');
     });
 
-    it('returns correct path for trailing "/"', () => {
-        const path = getFileNodePath(testData, 'Dir-2/Dir-21/Dir-211/');
-        expect(path).not.toBeFalsy();
-        expect(path.length).toBe(3);
-        expect(path.map(n => n.name).join('/')).toEqual('Dir-2/Dir-21/Dir-211');
-    });
-
     it('returns null on invalid path', () => {
         const path = getFileNodePath(testData, 'Dir-2/Dir-211/Dir-21/File-2111.txt');
         expect(path).toBe(null);
@@ -95,24 +174,6 @@ describe('getFileNodePath', () => {
     });
 });
 
-describe('getParentDir', () => {
-    it('works as expected', () => {
-        expect(getParentDir('Dir-2/Dir-21/Dir-211')).toEqual('Dir-2/Dir-21');
-    });
-});
-
-describe('getBasename', () => {
-    it('works as expected', () => {
-        expect(getBasename('Dir-2/Dir-21/Dir-211/File-2111.txt')).toEqual('File-2111.txt');
-    });
-});
-
-
-describe('getBasenameExtension', () => {
-    it('works as expected', () => {
-        expect(getBasenameExtension('File-2111.txt')).toEqual('txt');
-    });
-});
 
 describe('isPathValidAtIndex', () => {
 

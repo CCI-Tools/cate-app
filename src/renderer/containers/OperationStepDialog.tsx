@@ -99,6 +99,14 @@ class OperationStepDialog extends React.Component<IOperationStepDialogProps & Di
 
     private static readonly DIALOG_STYLE: React.CSSProperties = {width: '42em'};
     private static readonly NO_STATE = {inputAssignments: {}};
+    private static readonly PARAMETER_PANEL_STYLE = {
+        display: 'grid',
+        gridTemplateColumns: 'auto auto 28px',
+        alignItems: 'center',
+        justifyItems: 'stretch',
+        rowGap: '1ex',
+        columnGap: '0.5em'
+    };
 
     constructor(props: IOperationStepDialogProps & DispatchProp<State>) {
         super(props);
@@ -209,7 +217,7 @@ class OperationStepDialog extends React.Component<IOperationStepDialogProps & Di
         } else {
             confirmTitle = 'Add Step';
             dialogTitle = `Add Operation Step - ${operation.name}`;
-            tooltipText = 'Add a new operation step to the workspace\'s workflow.';
+            tooltipText = 'Add a new operation step to the workspace’s workflow.';
         }
 
         return (
@@ -247,8 +255,7 @@ class OperationStepDialog extends React.Component<IOperationStepDialogProps & Di
             <p key='footer' style={{marginTop: '1em'}}>
                 Pressing <Icon icon="play"/> will add operation <code>{operation.name}</code> as a new
                 workflow step to the current workspace. The result of the step is a new <em>resource</em> which can
-                be
-                used as input for other operations. You can remove the step or change it's parameters later.
+                be used as input for other operations. You can remove the step or change its parameters later.
             </p>
         );
 
@@ -297,7 +304,10 @@ class OperationStepDialog extends React.Component<IOperationStepDialogProps & Di
             this.onConstantValueChange,
             this.onResourceNameChange
         );
-        return (<div key='parameterPanel'>{inputEditors}</div>);
+        return (<div key='parameterPanel'
+                     style={OperationStepDialog.PARAMETER_PANEL_STYLE}>
+                    {inputEditors}
+                </div>);
     }
 }
 

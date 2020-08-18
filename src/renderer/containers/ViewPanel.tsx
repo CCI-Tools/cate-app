@@ -34,6 +34,8 @@ class ViewPanel extends React.Component<IViewPanelProps & IViewPanelDispatch, nu
 
     private static ACTION_ITEM_STYLE = {margin: '0.1em 0em 2em 0em'};
     private static PROPERTY_ITEM_STYLE = {margin: '0.1em 0em 0.6em 0em'};
+    private static PROPERTY_ITEM_CONTROL_GROUP_STYLE = {display: 'flex', alignItems: 'center'};
+    private static PROPERTY_ITEM_CONTROL_GROUP_MEMBER_STYLE = {marginBlock: 0};
 
     constructor(props: IViewPanelProps & IViewPanelDispatch) {
         super(props);
@@ -77,9 +79,11 @@ class ViewPanel extends React.Component<IViewPanelProps & IViewPanelDispatch, nu
         const titleField = (
             <Label style={ViewPanel.PROPERTY_ITEM_STYLE}>
                 Active view:
-                <ControlGroup>
-                    <Icon icon={activeView.icon}/>
+                <ControlGroup style={ViewPanel.PROPERTY_ITEM_CONTROL_GROUP_STYLE}>
+                    <Icon icon={activeView.icon}
+                          style={ViewPanel.PROPERTY_ITEM_CONTROL_GROUP_MEMBER_STYLE}/>
                     <InputGroup
+                     style={ViewPanel.PROPERTY_ITEM_CONTROL_GROUP_MEMBER_STYLE}
                         type="text"
                         value={activeView.title}
                         dir="auto"

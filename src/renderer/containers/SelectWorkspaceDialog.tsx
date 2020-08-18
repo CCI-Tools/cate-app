@@ -170,7 +170,7 @@ class SelectWorkspaceDialog extends React.Component<ISelectWorkspaceDialogProps 
                 <p style={{marginTop: '1em'}}>Workspace name:</p>
                 <InputGroup
                     type="text"
-                    style={{width: '100%', marginLeft: '1em'}}
+                    style={{width: '100%'}}
                     value={this.state.workspaceName}
                     onChange={this.onWorkspaceNameChange}
                 />
