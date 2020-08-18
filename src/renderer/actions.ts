@@ -2421,32 +2421,22 @@ export function fileDownloadInteractive() {
 }
 
 
-/**
- *
- * @param dir Directory to be used
- * @param file File to upload
- */
-
 export function uploadFiles(dir: string, file: File): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
 
         selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
-                 .then((res) => {
-                     showToast({type: res.status, text: 'Upload finished: ' + res.message});
-                 })
-                 .catch((error) => {
-                     showToast({type: 'error', text: error.toString()});
-                     console.error(error);
-                 });
+            .then((res) => {
+                // dispatch(updateFileNode(dir + '/' + file.name, true));
+                showToast({type: res.status, text: 'Upload finished: ' + res.message});
+            })
+            .catch((error) => {
+                showToast({type: 'error', text: error.toString()});
+                console.error(error);
+            });
     }
 }
-
-/**
- *
- * @param processId Process ID
- */
 
 
 export function monitorProcess(processId: string): ThunkAction {
@@ -2464,13 +2454,13 @@ export function monitorProcess(processId: string): ThunkAction {
 }
 
 
-export function downloadFiles(filePath: string): ThunkAction {
+export function downloadFiles(filePaths: string[]): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
         const api = selectors.fileAPISelector(state);
 
-        api.downloadFiles(filePath, 'ignore', webAPIServiceURL)
+        api.downloadFiles(filePaths, 'ignore', webAPIServiceURL)
            .then(() => {
                showToast({type: 'success', text: 'Zip ready for download.'});
            })

@@ -6,14 +6,24 @@ import Dropzone from 'react-dropzone';
 
 import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
+import { CSSProperties } from "react";
+import { connect, DispatchProp } from 'react-redux';
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
 import * as actions from '../actions';
 import * as selectors from '../selectors';
+import Dropzone from 'react-dropzone';
+
+import { DialogState, State } from '../state';
+import { ModalDialog } from '../components/ModalDialog';
 import { showDirectorySelectDialog } from "../actions";
 import { TextField } from "../components/field/TextField";
 
 const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
+
+const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
+
 
 const baseStyle: CSSProperties = {
     flex: 1,
@@ -124,35 +134,40 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         }
         return (
             <div>
-                <ControlGroup style={DIV_STYLE} fill={true}>
-                    <TextField style={TEXT_FIELD_STYLE}
-                               value={this.state.dir}
-                               placeholder="Enter target directory"
-                               onChange={value => {
-                                   console.log(value);
-                               }}
-                               nullable={false}
-                    />
-                    <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                                  onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
-                </ControlGroup>
+                <div>
+                    Remote target directory:
+                    <ControlGroup style={DIV_STYLE} fill={true}>
+                        <TextField style={TEXT_FIELD_STYLE}
+                                   value={this.state.dir}
+                                   onChange={value => {
+                                       console.log(value);
+                                   }}
+                                   nullable={false}
+                        />
+                        <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                                      onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
 
-                <ControlGroup style={DIV_STYLE} fill={true}>
-                    <Dropzone onDrop={this.handleOnDrop}>
-                        {({getRootProps, getInputProps}) => (
-                            <section className="container">
-                                <div {...getRootProps({style: baseStyle})}>
-                                    <input {...getInputProps()} />
-                                    <p>Drag 'n' drop some files here, or click to select files</p>
-                                </div>
-                                <aside>
-                                    {files.length > 0 ? (<h4>Files</h4>) : ''}
-                                    <ul>{files}</ul>
-                                </aside>
-                            </section>
-                        )}
-                    </Dropzone>
-                </ControlGroup>
+                    </ControlGroup>
+                </div>
+
+                <div>Files to upload:
+                    <ControlGroup style={DIV_STYLE} fill={true}>
+                        <Dropzone onDrop={this.handleOnDrop}>
+                            {({getRootProps, getInputProps}) => (
+                                <section className="container">
+                                    <div {...getRootProps({style: baseStyle})}>
+                                        <input {...getInputProps()} />
+                                        <p>Drag 'n' drop files here, or click to select files</p>
+                                    </div>
+                                    <aside>
+                                        {files.length > 0 ? (<h4>Files</h4>) : ''}
+                                        <ul>{files}</ul>
+                                    </aside>
+                                </section>
+                            )}
+                        </Dropzone>
+                    </ControlGroup>
+                </div>
             </div>
         );
     }
