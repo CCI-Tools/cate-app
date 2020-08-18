@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { AnchorButton, ControlGroup, Intent, Label, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
 
 import * as actions from '../actions';
 import * as selectors from '../selectors';
@@ -103,24 +103,24 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
         }
 
         return (
-            <Label>
-                File download:
+
+            <div>
+                Directory download:
                 <ControlGroup style={DIV_STYLE} fill={true}>
                     <TextField style={TEXT_FIELD_STYLE}
                                value={this.state.filePaths[0]}
-                               placeholder="Enter directory"
+                               placeholder="Enter remote directory"
                                onChange={value => {
                                    console.log(value);
                                }}
                                nullable={false}
                     />
-                    <Tooltip content={'Select a remote directory that contains files for downloading. ' +
-                                      'The directory will be zipped.'}>
-                        <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                                      onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
-                    </Tooltip>
+                    <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                                  onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
+
                 </ControlGroup>
-            </Label>
+            </div>
+
         );
     }
 }

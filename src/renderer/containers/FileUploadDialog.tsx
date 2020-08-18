@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from "react";
 import { connect, DispatchProp } from 'react-redux';
-import { AnchorButton, ControlGroup, Intent, Label, Tooltip } from "@blueprintjs/core";
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import Dropzone from 'react-dropzone';
@@ -126,7 +126,8 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
         }
         return (
             <div>
-                <Label>Remote target directory:
+                <div>
+                    Remote target directory:
                     <ControlGroup style={DIV_STYLE} fill={true}>
                         <TextField style={TEXT_FIELD_STYLE}
                                    value={this.state.dir}
@@ -135,14 +136,13 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
                                    }}
                                    nullable={false}
                         />
-                        <Tooltip content={'Select a remote target directory. File will be uploaded to that directory.'}>
-                            <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                                          onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
-                        </Tooltip>
-                    </ControlGroup>
-                </Label>
+                        <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                                      onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
 
-                <Label>Files to upload:
+                    </ControlGroup>
+                </div>
+
+                <div>Files to upload:
                     <ControlGroup style={DIV_STYLE} fill={true}>
                         <Dropzone onDrop={this.handleOnDrop}>
                             {({getRootProps, getInputProps}) => (
@@ -159,7 +159,7 @@ class FileUploadDialog extends React.Component<IFileUploadDialogProps & Dispatch
                             )}
                         </Dropzone>
                     </ControlGroup>
-                </Label>
+                </div>
             </div>
         );
     }
