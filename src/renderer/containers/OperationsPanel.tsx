@@ -227,7 +227,9 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
         const tagCounts = this.props.operationsTagCounts;
 
         const tagContainerStyle = {padding: '0.2em', display: 'flex', alignItems: 'center'};
-        const tagStyle = {marginRight: '0.2em'};
+        const tagStyle = {marginRight: '0.2em', marginTop: '0',
+            marginBottom: '0', paddingTop: '0', paddingBottom: '0',
+            height: '4ex'};
 
         let selectedTagItems = [];
         selectedOperationTags.forEach(tagName => {
