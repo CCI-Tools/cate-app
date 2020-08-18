@@ -1,5 +1,7 @@
 import * as React from 'react';
 import {connect, DispatchProp} from 'react-redux';
+import {ButtonGroup, Checkbox, Icon, Intent, Label, Radio, RadioGroup, Slider} from '@blueprintjs/core';
+
 import {
     ColorMapCategoryState,
     ImageLayerState,
@@ -11,7 +13,6 @@ import {
     VariableImageLayerState,
     VariableState
 } from '../state';
-import {ButtonGroup, Checkbox, Icon, Intent, Label, Radio, RadioGroup, Slider} from '@blueprintjs/core';
 import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
@@ -23,6 +24,7 @@ import {ViewState} from '../components/ViewState';
 import {NO_LAYER_SELECTED, NO_LAYERS_EMPTY_VIEW, NO_LAYERS_NO_VIEW} from '../messages';
 import {SubPanelHeader} from '../components/SubPanelHeader';
 import {ToolButton} from '../components/ToolButton';
+
 
 interface ILayersPanelProps {
     selectedVariable: VariableState | null,
@@ -230,12 +232,14 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
 
         return (
             <ScrollablePanelContent>
-                <ListBox items={layers}
+                <ListBox
+                    items={layers}
                          getItemKey={LayersPanel.getLayerItemKey}
                          renderItem={this.renderLayerItem}
                          selectionMode={ListBoxSelectionMode.SINGLE}
                          selection={this.props.selectedLayerId}
-                         onSelection={this.handleChangedLayerSelection}/>
+                         onSelection={this.handleChangedLayerSelection}
+                />
             </ScrollablePanelContent>
         );
     }
