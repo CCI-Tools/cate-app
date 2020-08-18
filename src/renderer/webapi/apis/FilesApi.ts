@@ -1,6 +1,7 @@
+import * as path from "path";
+
 import { callBlobApi, callJsonApi } from "./callHttpApi";
 import { WebAPIClient } from "../WebAPIClient";
-import * as path from "path";
 import { JobProgress, JobPromise } from "../Job";
 
 

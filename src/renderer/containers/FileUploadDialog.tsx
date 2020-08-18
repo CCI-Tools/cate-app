@@ -1,18 +1,21 @@
 import * as React from 'react';
-import { DialogState, State } from '../state';
-import { ModalDialog } from '../components/ModalDialog';
+import { CSSProperties } from "react";
 import { connect, DispatchProp } from 'react-redux';
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import Dropzone from 'react-dropzone';
-import { CSSProperties } from "react";
-import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
+
+import { DialogState, State } from '../state';
+import { ModalDialog } from '../components/ModalDialog';
 import { showDirectorySelectDialog } from "../actions";
 import { TextField } from "../components/field/TextField";
+
 
 const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
+
 
 const baseStyle: CSSProperties = {
     flex: 1,

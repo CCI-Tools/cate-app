@@ -2391,12 +2391,6 @@ export function fileDownloadInteractive() {
 }
 
 
-/**
- *
- * @param dir Directory to be used
- * @param file File to upload
- */
-
 export function uploadFiles(dir: string, file: File): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
@@ -2418,7 +2412,6 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
  *
  * @param processId Process ID
  */
-
 
 export function monitorProcess(processId: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
@@ -2449,24 +2442,6 @@ export function downloadFiles(filePath: string): ThunkAction {
                showToast({type: 'error', text: error.toString()});
                console.error(error);
            });
-
-
-        //     api.registerProcess(webAPIServiceURL)
-    //        .then((process: ProcessState) => {
-    //            dispatch(monitorProcess(process.process_id));
-    //            api.downloadFiles(filePath, process.process_id, webAPIServiceURL)
-    //               .then(() => {
-    //                   showToast({type: 'success', text: 'Zip ready for download.'});
-    //               })
-    //               .catch((error) => {
-    //                   showToast({type: 'error', text: error.toString()});
-    //                   console.error(error);
-    //               });
-    //        })
-    //        .catch((error) => {
-    //            showToast({type: 'error', text: error.toString()});
-    //            console.error(error);
-    //        });;
     }
 }
 

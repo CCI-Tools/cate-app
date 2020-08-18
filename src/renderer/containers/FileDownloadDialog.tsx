@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { DialogState, State } from '../state';
-import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
+
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
+import { DialogState, State } from '../state';
+import { ModalDialog } from '../components/ModalDialog';
 import { showFileOpenDialog } from "../actions";
 import { OpenDialogResult } from "../components/desktop/types";
 import { TextField } from "../components/field/TextField";

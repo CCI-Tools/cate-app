@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
+
 import { State } from '../state';
 import { fileDownloadInteractive, fileUploadInteractive, showMultiFileOpenDialog } from "../actions";
 
