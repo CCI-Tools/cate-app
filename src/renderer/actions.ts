@@ -2424,13 +2424,13 @@ export function monitorProcess(processId: string): ThunkAction {
 }
 
 
-export function downloadFiles(filePath: string): ThunkAction {
+export function downloadFiles(filePaths: string[]): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const webAPIServiceURL = state.communication.webAPIServiceURL;
         const api = selectors.fileAPISelector(state);
 
-        api.downloadFiles(filePath, 'ignore', webAPIServiceURL)
+        api.downloadFiles(filePaths, 'ignore', webAPIServiceURL)
            .then(() => {
                showToast({type: 'success', text: 'Zip ready for download.'});
            })
