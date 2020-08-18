@@ -1,15 +1,17 @@
 import * as React from 'react';
+import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
+import { connect, DispatchProp } from 'react-redux';
+
 import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
-import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
 import { showFileOpenDialog } from "../actions";
 import { OpenDialogResult } from "../components/desktop/types";
 import { TextField } from "../components/field/TextField";
 
-const DIV_STYLE = {width: '30em', marginBottom: '2em', display: 'flex', flexGrow: 1};
+
+const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
 
