@@ -27,7 +27,7 @@ const baseStyle: CSSProperties = {
     border: '2px dashed #137cbd',
     borderRadius: '5px',
     background: 'rgba(16, 22, 26, 0.3)',
-    color: '#f5f8fa',
+    color: '#5c7080',
     transition: 'border .24s ease-in-out'
 };
 
