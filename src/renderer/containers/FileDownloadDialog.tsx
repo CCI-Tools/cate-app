@@ -4,19 +4,12 @@ import { connect, DispatchProp } from 'react-redux';
 
 import { DialogState, State } from '../state';
 import { ModalDialog } from '../components/ModalDialog';
-import { connect, DispatchProp } from 'react-redux';
-import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
-
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { DialogState, State } from '../state';
-import { ModalDialog } from '../components/ModalDialog';
 import { showFileOpenDialog } from "../actions";
 import { OpenDialogResult } from "../components/desktop/types";
 
 
-const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
-const TEXT_FIELD_STYLE = {flexGrow: 1};
 const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
 
