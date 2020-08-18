@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { HttpError } from '../HttpError';
 
 export type QueryComponent = [string, string];
@@ -28,10 +29,11 @@ export function callApi(endpointUrl: string, queryComponents?: QueryComponent[],
         });
 }
 
+
 function download(blob: Blob, fileName?: string) {
     if (!fileName) {
-        const dtt = new Date(Date.now());
-        fileName = 'cate_' + dtt.getFullYear() + '-' + dtt.getMonth() + '-' + dtt.getDay() + '.zip';
+        const suffix = uuidv4();
+        fileName = 'cate_' + suffix + '.zip';
     }
     const objectUrl: string = URL.createObjectURL(blob);
     const a: HTMLAnchorElement = document.createElement('a') as HTMLAnchorElement;

@@ -2428,7 +2428,7 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
 
         selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
             .then((res) => {
-                // dispatch(updateFileNode(dir + '/' + file.name, true));
+                dispatch(updateFileNode(dir + '/' + file.name, true));
                 showToast({type: res.status, text: 'Upload finished: ' + res.message});
             })
             .catch((error) => {
@@ -2469,23 +2469,6 @@ export function downloadFiles(filePaths: string[]): ThunkAction {
                console.error(error);
            });
 
-
-        //     api.registerProcess(webAPIServiceURL)
-        //        .then((process: ProcessState) => {
-        //            dispatch(monitorProcess(process.process_id));
-        //            api.downloadFiles(filePath, process.process_id, webAPIServiceURL)
-        //               .then(() => {
-        //                   showToast({type: 'success', text: 'Zip ready for download.'});
-        //               })
-        //               .catch((error) => {
-        //                   showToast({type: 'error', text: error.toString()});
-        //                   console.error(error);
-        //               });
-        //        })
-        //        .catch((error) => {
-        //            showToast({type: 'error', text: error.toString()});
-        //            console.error(error);
-        //        });;
     }
 }
 

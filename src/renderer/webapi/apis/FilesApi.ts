@@ -1,5 +1,3 @@
-import * as path from "path";
-
 import { callBlobApi, callJsonApi } from "./callHttpApi";
 import { WebAPIClient } from "../WebAPIClient";
 import { JobProgress, JobPromise } from "../Job";
@@ -59,7 +57,6 @@ export class FilesAPI {
 
     downloadFiles(filePaths: string[], processId: string, serviceUrl: string) {
         const target_files = {'target_files': filePaths, 'process_id': processId};
-        const zip_file_name = path.basename('test');
 
         return callBlobApi(serviceUrl + '/files/download',
                            undefined,
@@ -67,7 +64,7 @@ export class FilesAPI {
                                mode: 'cors',
                                method: 'POST',
                                body: JSON.stringify(target_files)
-                           },
-                           zip_file_name + '.zip');
+                           }
+        );
     }
 }
