@@ -170,12 +170,13 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
             //baseLayerImageryProvider = new Cesium.BingMapsImageryProvider({url: 'https://dev.virtualearth.net', key: BING_MAPS_API_DEFAULT_KEY});
             //baseLayerImageryProvider.errorEvent.addEventListener(this.handleRemoteBaseLayerError);
         }
+        /*
         baseLayerImageryProvider = new Cesium.UrlTemplateImageryProvider(
             {
                 url: 'https://storage.googleapis.com/esa-cfs-tiles/0.7.0/basemaps/atmosphere/{z}/{x}/{reverseY}.png',
                 tilingScheme : new Cesium.GeographicTilingScheme(),
             });
-
+           */
         const cesiumViewerOptions: Cesium.Viewer.ConstructorOptions = {
             animation: false,
             baseLayerPicker: false,

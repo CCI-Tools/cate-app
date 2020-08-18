@@ -1,4 +1,3 @@
-import { Credit } from "cesium";
 import * as React from 'react';
 import { connect, DispatchProp } from 'react-redux';
 import { ColorState } from 'react-color';
@@ -22,7 +21,6 @@ import {
     Switch,
     Tooltip
 } from '@blueprintjs/core';
-import { Select } from "@blueprintjs/select";
 import * as Cesium from 'cesium';
 
 import { SimpleStyle } from '../../common/geojson-simple-style';
@@ -54,20 +52,6 @@ import {
 } from '../state';
 import { getLayerDisplayName } from '../state-util';
 
-
-/**
- * See Cesium.UrlTemplateImageryProvider.
- */
-export interface BackgroundMapState {
-    url: string;
-    tilingScheme?: 'Geographic' | 'WebMercator';
-    credit?: string;
-    minimumLevel?: number;
-    maximumLevel?: number;
-    ellipsoid?: {x?: number, y?: number, z?: number};
-}
-
-const BackgroundMapSelect = Select.ofType<BackgroundMapState | null>();
 
 function getDisplayFractionDigits(min: number, max: number) {
     const n = Math.round(Math.log10(max - min));
@@ -182,7 +166,6 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
     }
 
     private renderLayerDetails() {
-        const backgroundMaps = this.renderBackgroundMapSelector();
         let detailsPanel;
         if (this.props.styleContext === STYLE_CONTEXT_ENTITY) {
             if (this.props.selectedEntity) {
@@ -202,7 +185,6 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
 
         return (
             <div style={{width: '100%'}}>
-                {backgroundMaps}
                 {this.renderStyleContext()}
                 {detailsPanel}
             </div>
@@ -280,7 +262,7 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             return null;
         }
 
-        let colorBarButton = null;
+        let colorBarButton;
         if (this.props.colorMapCategories) {
             const popoverContent = this.renderColorBarBox(layer);
             colorBarButton = (
@@ -325,14 +307,6 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
                             onChange={(value: number) => handleChangedImageEnhancement(key, value)}/>
                 </div>
             </Label>
-        );
-    }
-
-    private renderBackgroundMapSelector() {
-        return (
-            <React.Fragment>
-
-            </React.Fragment>
         );
     }
 

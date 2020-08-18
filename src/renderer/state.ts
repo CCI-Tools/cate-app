@@ -48,6 +48,7 @@ export interface DataState {
     workspace: WorkspaceState | null;
     fsRootNode: FileNode;
     colorMaps: ColorMapCategoryState[] | null;
+    backgroundMaps: BackgroundMapState[];
     workspaceNames: string[] | null;
     hasWebGL: boolean;
 }
@@ -611,6 +612,20 @@ export class LayerVariableState {
     variable: VariableState;
 }
 
+/**
+ * BackgroundMapState consists basically of properties to create an instance of Cesium.UrlTemplateImageryProvider.
+ * See https://cesium.com/docs/cesiumjs-ref-doc/UrlTemplateImageryProvider.html.
+ */
+export interface BackgroundMapState {
+    id: string;
+    title: string;
+    url: string;
+    tilingScheme?: 'Geographic' | 'WebMercator';
+    credit?: string;
+    minimumLevel?: number;
+    maximumLevel?: number;
+    ellipsoid?: {x?: number, y?: number, z?: number};
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ColorMapState
@@ -821,6 +836,7 @@ export interface SessionState {
     showSelectedVariableLayer: boolean;
     layerListHeight: number;
     showLayerDetails: boolean;
+    backgroundMapId: string | null;
     savedLayers: SavedLayers;
     styleContext: StyleContext;
 

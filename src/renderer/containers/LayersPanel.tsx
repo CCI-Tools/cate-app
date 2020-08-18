@@ -1,8 +1,10 @@
 import * as React from 'react';
-import {connect, DispatchProp} from 'react-redux';
-import {ButtonGroup, Checkbox, Icon, Intent, Label, Radio, RadioGroup, Slider} from '@blueprintjs/core';
+import { connect, DispatchProp } from 'react-redux';
+import { ButtonGroup, Checkbox, HTMLSelect, Icon, Intent, Label, Radio, RadioGroup, Slider } from '@blueprintjs/core';
+import { Select } from "@blueprintjs/select";
 
 import {
+    BackgroundMapState,
     ColorMapCategoryState,
     ImageLayerState,
     LayerState,
@@ -13,18 +15,20 @@ import {
     VariableImageLayerState,
     VariableState
 } from '../state';
-import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
+import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
+import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
 import LayerSourcesDialog from './LayerSourcesDialog';
-import {AUTO_LAYER_ID, getLayerDisplayName, getLayerTypeIconName} from '../state-util';
-import {ScrollablePanelContent} from '../components/ScrollableContent';
-import {ViewState} from '../components/ViewState';
-import {NO_LAYER_SELECTED, NO_LAYERS_EMPTY_VIEW, NO_LAYERS_NO_VIEW} from '../messages';
-import {SubPanelHeader} from '../components/SubPanelHeader';
-import {ToolButton} from '../components/ToolButton';
+import { AUTO_LAYER_ID, getLayerDisplayName, getLayerTypeIconName } from '../state-util';
+import { ScrollablePanelContent } from '../components/ScrollableContent';
+import { ViewState } from '../components/ViewState';
+import { NO_LAYER_SELECTED, NO_LAYERS_EMPTY_VIEW, NO_LAYERS_NO_VIEW } from '../messages';
+import { SubPanelHeader } from '../components/SubPanelHeader';
+import { ToolButton } from '../components/ToolButton';
 
+
+const BackgroundMapSelect = Select.ofType<BackgroundMapState>();
 
 interface ILayersPanelProps {
     selectedVariable: VariableState | null,
@@ -35,6 +39,8 @@ interface ILayersPanelProps {
     selectedLayer: LayerState | null;
     selectedImageLayer: ImageLayerState | null;
     selectedVariableImageLayer: VariableImageLayerState | null;
+    backgroundMaps: BackgroundMapState[];
+    backgroundMapId: string;
     layerListHeight: number;
     showLayerDetails: boolean;
     colorMapCategories: Array<ColorMapCategoryState>;
@@ -50,6 +56,8 @@ function mapStateToProps(state: State): ILayersPanelProps {
         selectedLayer: selectors.selectedLayerSelector(state),
         selectedImageLayer: selectors.selectedImageLayerSelector(state),
         selectedVariableImageLayer: selectors.selectedVariableImageLayerSelector(state),
+        backgroundMaps: state.data.backgroundMaps,
+        backgroundMapId: state.session.backgroundMapId,
         layerListHeight: state.session.layerListHeight,
         showLayerDetails: state.session.showLayerDetails,
         colorMapCategories: selectors.colorMapCategoriesSelector(state)
@@ -85,6 +93,7 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
         this.handleChangedLayerSelection = this.handleChangedLayerSelection.bind(this);
         this.handleChangedLayerVisibility = this.handleChangedLayerVisibility.bind(this);
         this.handleChangedLayerSplitMode = this.handleChangedLayerSplitMode.bind(this);
+        this.handleChangedBackgroundMap = this.handleChangedBackgroundMap.bind(this);
         this.renderLayerItem = this.renderLayerItem.bind(this);
     }
 
@@ -157,13 +166,18 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
 
     private handleChangedLayerSplitMode(event) {
         this.props.dispatch(actions.setLayerSplitMode(this.props.activeView.id,
-            this.props.selectedLayerId,
-            event.target.value));
+                                                      this.props.selectedLayerId,
+                                                      event.target.value));
     }
 
     private handleChangedLayerSelection(newSelection: string[]) {
         const selectedLayerId = newSelection.length ? newSelection[0] : null;
         this.props.dispatch(actions.setSelectedLayerId(this.props.activeView.id, selectedLayerId));
+    }
+
+    private handleChangedBackgroundMap() {
+        // TODO (forman):
+        // this.props.dispatch(actions.setBackgroundMap(this.props.activeView.id, selectedLayerId));
     }
 
     private renderLayerItem(layer: LayerState) {
@@ -232,13 +246,26 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
 
         return (
             <ScrollablePanelContent>
+                <div style={{display: 'flex', alignItems: 'center', marginTop: 3, marginBottom: 3}}>
+                    <div style={{flexGrow: 0, marginRight: 3}}>Background map:</div>
+                    <div style={{flexGrow: 1, marginRight: 1, display: 'flex', justifyContent: 'flex-end'}}>
+                        <HTMLSelect value={this.props.backgroundMapId}
+                                    onChange={this.handleChangedBackgroundMap}>
+                            {this.props.backgroundMaps.map(bgMap => (
+                                <option key={bgMap.id} value={bgMap.id}>
+                                    {bgMap.title}
+                                </option>)
+                            )}
+                        </HTMLSelect>
+                    </div>
+                </div>
                 <ListBox
                     items={layers}
-                         getItemKey={LayersPanel.getLayerItemKey}
-                         renderItem={this.renderLayerItem}
-                         selectionMode={ListBoxSelectionMode.SINGLE}
-                         selection={this.props.selectedLayerId}
-                         onSelection={this.handleChangedLayerSelection}
+                    getItemKey={LayersPanel.getLayerItemKey}
+                    renderItem={this.renderLayerItem}
+                    selectionMode={ListBoxSelectionMode.SINGLE}
+                    selection={this.props.selectedLayerId}
+                    onSelection={this.handleChangedLayerSelection}
                 />
             </ScrollablePanelContent>
         );

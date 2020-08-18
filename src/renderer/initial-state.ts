@@ -1,4 +1,5 @@
 import {
+    BackgroundMapState,
     CommunicationState,
     ControlState,
     DataState,
@@ -14,11 +15,32 @@ import { ViewState } from './components/ViewState';
 
 export const DEFAULT_SERVICE_URL = 'http://localhost:9090';
 
+const newCfSBackgroundMap = (id: string): BackgroundMapState => {
+    return {
+        id,
+        title: id[0].toUpperCase() + id.substring(1),
+        url: `https://storage.googleapis.com/esa-cfs-tiles/0.7.0/basemaps/${id}/{z}/{x}/{reverseY}.png`,
+        tilingScheme: 'Geographic'
+    };
+};
+
 export const INITIAL_DATA_STATE: DataState = {
     dataStores: null,
     operations: null,
     workspace: null,
     colorMaps: null,
+    backgroundMaps: [
+        {
+            id: 'natural',
+            title: 'Natural',
+            url: '',
+        },
+        newCfSBackgroundMap('atmosphere'),
+        newCfSBackgroundMap('blue'),
+        newCfSBackgroundMap('dark'),
+        newCfSBackgroundMap('land'),
+        newCfSBackgroundMap('ocean'),
+    ],
     fsRootNode: {name: '', isDir: true, lastModified: '', size: 0},
     workspaceNames: null,
     hasWebGL: hasWebGL(),
@@ -91,6 +113,7 @@ export const INITIAL_SESSION_STATE: SessionState = {
     showVariableDetails: true,
     layerListHeight: 160,
     showLayerDetails: true,
+    backgroundMapId: 'natural',
 
     panelContainerUndockedMode: false,
     leftPanelContainerLayout: {horPos: 300, verPos: 400},
