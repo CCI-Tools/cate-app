@@ -2404,7 +2404,7 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
 
         selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
             .then((res) => {
-                dispatch(updateFileNode(dir + '/' + file.name, true));
+                // dispatch(updateFileNode(dir + '/' + file.name, true));
                 showToast({type: res.status, text: 'Upload finished: ' + res.message});
             })
             .catch((error) => {
