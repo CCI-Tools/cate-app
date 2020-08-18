@@ -23,7 +23,7 @@ import {
     Tag
 } from '@blueprintjs/core';
 import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
-import {Card} from '../components/Card';
+import {Card} from '@blueprintjs/core';
 import {ScrollablePanelContent} from '../components/ScrollableContent';
 import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
 import {ToolButton} from '../components/ToolButton';
