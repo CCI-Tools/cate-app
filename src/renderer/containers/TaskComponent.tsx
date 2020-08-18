@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { AnchorButton, ButtonGroup, Icon, Intent, ProgressBar } from '@blueprintjs/core';
-import { Card } from '../components/Card';
+import { AnchorButton, ButtonGroup, Icon, Intent, ProgressBar, Card } from '@blueprintjs/core';
 import { State, TaskState } from '../state';
 import * as actions from '../actions';
 import {

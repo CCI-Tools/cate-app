@@ -4,7 +4,7 @@ import { connect, DispatchProp } from 'react-redux';
 import { ViewState } from '../components/ViewState';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import { Card } from '../components/Card';
+import { Card } from '@blueprintjs/core';
 import { isNumber } from '../../common/types';
 
 
