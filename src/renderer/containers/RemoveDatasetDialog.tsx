@@ -1,10 +1,13 @@
 import * as React from 'react';
-import { Checkbox } from '@blueprintjs/core';
-import { DataSourceState, DialogState, State } from '../state';
-import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
+import { Checkbox } from '@blueprintjs/core';
+
 import * as actions from '../actions';
+import LongIdLabel from '../components/LongIdLabel';
+import { ModalDialog } from '../components/ModalDialog';
 import * as selectors from '../selectors';
+import { DataSourceState, DialogState, State } from '../state';
+
 
 interface IRemoveDatasetDialogProps {
     isOpen: boolean;
@@ -78,13 +81,16 @@ class RemoveDatasetDialog extends React.Component<IRemoveDatasetDialogProps & Di
         }
         return (
             <div>
-                <p>You are about to remove the definition for the file data source
-                    <strong>{this.props.dataSource.id}</strong>.
-                </p>
+                <LongIdLabel
+                    label='You are about to remove the definition for the file data source'
+                    longId={this.props.dataSource.id}
+                />
 
-                <Checkbox style={{marginTop: '1em'}} checked={this.state.removeFiles}
-                          label="Remove data files from disk too"
-                          onChange={this.onRemoveFilesChange}/>
+                <Checkbox
+                    style={{marginTop: '1em'}} checked={this.state.removeFiles}
+                    label="Remove data files from disk too"
+                    onChange={this.onRemoveFilesChange}
+                />
             </div>
         );
     }
