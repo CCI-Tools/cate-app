@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { AnchorButton, ControlGroup, Intent } from "@blueprintjs/core";
+import { AnchorButton, ControlGroup, Intent, Label, Tooltip } from "@blueprintjs/core";
 
 import * as actions from '../actions';
 import * as selectors from '../selectors';
@@ -10,7 +10,7 @@ import { showFileOpenDialog } from "../actions";
 import { OpenDialogResult } from "../components/desktop/types";
 import { TextField } from "../components/field/TextField";
 
-const DIV_STYLE = {width: '30em', marginBottom: '2em', display: 'flex', flexGrow: 1};
+const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
 
@@ -91,10 +91,10 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
     handleOpenDirectoryOpen = () => {
         this.props.dispatch(
             showFileOpenDialog({
-                    title: 'Select Files',
-                    properties: ['openFile', 'openDirectory', 'multiSelections']
-                },
-                this.handleOpenDirectoryOnClose) as any);
+                                   title: 'Select Files',
+                                   properties: ['openFile', 'openDirectory', 'multiSelections']
+                               },
+                               this.handleOpenDirectoryOnClose) as any);
     };
 
     private renderBody() {
@@ -103,18 +103,24 @@ class FileDownloadDialog extends React.Component<IFileDownloadDialogProps & Disp
         }
 
         return (
-            <ControlGroup style={DIV_STYLE} fill={true}>
-                <TextField style={TEXT_FIELD_STYLE}
-                           value={this.state.filePaths[0]}
-                           placeholder="Enter target directory"
-                           onChange={value => {
-                               console.log(value);
-                           }}
-                           nullable={false}
-                />
-                <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
-                              onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
-            </ControlGroup>
+            <Label>
+                File download:
+                <ControlGroup style={DIV_STYLE} fill={true}>
+                    <TextField style={TEXT_FIELD_STYLE}
+                               value={this.state.filePaths[0]}
+                               placeholder="Enter directory"
+                               onChange={value => {
+                                   console.log(value);
+                               }}
+                               nullable={false}
+                    />
+                    <Tooltip content={'Select a remote directory that contains files for downloading. ' +
+                                      'The directory will be zipped.'}>
+                        <AnchorButton intent={Intent.PRIMARY} style={BUTTON_STYLE}
+                                      onClick={this.handleOpenDirectoryOpen}>...</AnchorButton>
+                    </Tooltip>
+                </ControlGroup>
+            </Label>
         );
     }
 }

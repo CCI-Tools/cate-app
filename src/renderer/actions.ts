@@ -2408,10 +2408,6 @@ export function uploadFiles(dir: string, file: File): ThunkAction {
     }
 }
 
-/**
- *
- * @param processId Process ID
- */
 
 export function monitorProcess(processId: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
