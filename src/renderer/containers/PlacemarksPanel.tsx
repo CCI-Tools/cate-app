@@ -471,13 +471,15 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
             icon = isBox(geometry) ? 'widget' : 'polygon-filter';
         }
 
+
         return (
             <div ref={this.placemarkItemRef} style={PlacemarkItem.DIV_STYLE}>
+                <Icon style={{marginRight: '4px'}} icon={visible ? 'eye-open': 'eye-off'} />
                 <Checkbox
                     style={PlacemarkItem.CHECK_STYLE}
                     checked={isBoolean(visible) ? visible : true}
-                    onChange={this.handleVisibilityChanged}
-                />
+                    onChange={this.handleVisibilityChanged}>
+                </Checkbox>
                 <div onDoubleClick={this.handleDoubleClick} style={PlacemarkItem.LABEL_STYLE}>
                     <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
                     <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
