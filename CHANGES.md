@@ -17,7 +17,9 @@
   - Selectable Colormaps Popup not being scrollable
   - Alignment of Display Value Range within the styles setting
   - Wrapping of dataset labels so they stay in dialog boxes
+  - Data Access Error text message alignment, so they stay in dialog boxes
   - Data Access Error text message alignment so they stay in dialog boxes
+  - Wrapping of "About" contents, so it stays in preferences dialog
 * Drawing and selecting points and polygons now works again (#11, #10)
 
 ### Changes in v2.0.0-dev.4

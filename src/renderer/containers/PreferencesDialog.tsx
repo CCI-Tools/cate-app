@@ -36,6 +36,11 @@ function mapStateToProps(state: State): IPreferencesDialogProps {
 }
 
 
+const ABOUT_LABEL_STYLE = {width: '40%'};
+const ABOUT_CONTROL_GROUP_STYLE = {width: '100%', marginBottom: '1em'};
+const ABOUT_DIV_STYLE = {width: '100%', marginTop: '1em'};
+const ABOUT_ITEM_STYLE:  React.CSSProperties = {width: '60%', wordWrap: 'break-word'};
+
 class PreferencesDialog extends React.Component<IPreferencesDialogProps & DispatchProp<State>, SessionState> {
     static readonly DIALOG_ID = 'preferencesDialog';
     static readonly DIALOG_TITLE = 'Preferences';
@@ -149,22 +154,22 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
 
     private renderAboutPanel() {
         return (
-            <div style={{width: '100%', marginTop: '1em'}}>
-                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
-                    <span style={{width: '40%'}}>Cate UI version:</span>
-                    <span style={{width: '60%'}}><code>{CATE_WEBUI_VERSION}</code></span>
+            <div style={ABOUT_DIV_STYLE}>
+                <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
+                    <span style={ABOUT_LABEL_STYLE}>Cate UI version:</span>
+                    <span style={ABOUT_ITEM_STYLE}><code>{CATE_WEBUI_VERSION}</code></span>
                 </ControlGroup>
-                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
-                    <span style={{width: '40%'}}>Cate service URL:</span>
-                    <span style={{width: '60%'}}><code>{this.props.serviceURL}</code></span>
+                <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
+                    <span style={ABOUT_LABEL_STYLE}>Cate service URL:</span>
+                    <span style={ABOUT_ITEM_STYLE}><code>{this.props.serviceURL}</code></span>
                 </ControlGroup>
-                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
-                    <span style={{width: '40%'}}>Cate service version:</span>
-                    <span style={{width: '60%'}}><code>{this.props.serviceInfo.version}</code></span>
+                <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
+                    <span style={ABOUT_LABEL_STYLE}>Cate service version:</span>
+                    <span style={ABOUT_ITEM_STYLE}><code>{this.props.serviceInfo.version}</code></span>
                 </ControlGroup>
-                <ControlGroup style={{width: '100%', marginBottom: '1em'}}>
-                    <span style={{width: '40%'}}>Cate service mode:</span>
-                    <span style={{width: '60%'}}>
+                <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
+                    <span style={ABOUT_LABEL_STYLE}>Cate service mode:</span>
+                    <span style={ABOUT_ITEM_STYLE}>
                         {this.props.serviceInfo.userRootMode ? 'user root' : 'without user root'}
                     </span>
                 </ControlGroup>
