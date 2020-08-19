@@ -1,11 +1,13 @@
-import * as React from 'react';
-import { ModalDialog } from '../components/ModalDialog';
-import { getJobFailureIconName, getJobFailureTitle, isDeveloperError, isUserError, JobFailure } from '../webapi';
 import { Button, Checkbox, Collapse, Icon, IconName, Intent } from '@blueprintjs/core';
-import * as selectors from '../selectors';
-import { State } from '../state';
+import * as React from 'react';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
+
+import { ModalDialog } from '../components/ModalDialog';
+import * as selectors from '../selectors';
+import { State } from '../state';
+import { getJobFailureIconName, getJobFailureTitle, isDeveloperError, isUserError, JobFailure } from '../webapi';
+
 
 interface IJobFailureDialogProps {
     isOpen: boolean;
@@ -26,6 +28,8 @@ function mapStateToProps(state: State): IJobFailureDialogProps {
         jobFailure: dialogState.jobFailure,
     };
 }
+
+const ERROR_MESSAGE_STYLE: React.CSSProperties = {wordBreak: 'break-all'};
 
 class JobFailureDialog extends React.Component<DispatchProp<State> & IJobFailureDialogProps, IJobFailureDialogState> {
 
@@ -104,7 +108,7 @@ class JobFailureDialog extends React.Component<DispatchProp<State> & IJobFailure
             messageText = `An unknown error occurred (code ${this.props.jobFailure.code}).`;
         }
         let messageDiv = (
-            <div>
+            <div style={ERROR_MESSAGE_STYLE}>
                 <p>Oops, Cate couldn't carry out the request</p>
                 <em><p className="user-selectable">{this.props.jobTitle}</p></em>
                 <div>Reason:</div>

@@ -3,7 +3,7 @@ import { connect, DispatchProp } from 'react-redux';
 import { State, TaskState } from '../state';
 import { JobStatusEnum } from '../webapi';
 import * as actions from '../actions';
-import { Card } from '../components/Card';
+import { Card } from '@blueprintjs/core';
 import { ScrollablePanelContent } from '../components/ScrollableContent';
 import TaskComponent from './TaskComponent';
 

@@ -14,7 +14,7 @@ import {
 import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
 import {LabelWithType} from '../components/LabelWithType';
 import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
-import {Card} from '../components/Card';
+import {Card} from '@blueprintjs/core';
 import OperationStepDialog from './OperationStepDialog';
 import {OperationInputState, OperationOutputState, OperationState, State, WorkspaceState} from '../state';
 import * as actions from '../actions';
