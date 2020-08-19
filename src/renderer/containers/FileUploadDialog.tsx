@@ -13,7 +13,6 @@ import { TextField } from "../components/field/TextField";
 
 
 const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
-
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
 
