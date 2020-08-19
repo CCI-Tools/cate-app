@@ -153,28 +153,28 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
     }
 
     private handleCopySelectedPlacemarkAsCsv() {
-        PlacemarksPanel.handleCopyGeometryAsCsv(this.props.selectedPlacemark);
+        this.handleCopyGeometryAsCsv(this.props.selectedPlacemark);
     }
 
     private handleCopySelectedPlacemarkAsWkt() {
-        PlacemarksPanel.handleCopyGeometryAsWkt(this.props.selectedPlacemark);
+        this.handleCopyGeometryAsWkt(this.props.selectedPlacemark);
     }
 
     private handleCopySelectedPlacemarkAsGeoJSON() {
-        PlacemarksPanel.handleCopyGeometryAsGeoJson(this.props.selectedPlacemark);
+        this.handleCopyGeometryAsGeoJson(this.props.selectedPlacemark);
     }
 
-    private static handleCopyGeometryAsCsv(placemark: Placemark) {
+    private handleCopyGeometryAsCsv = (placemark: Placemark)  => {
         actions.copyTextToClipboard(geometryGeoJsonToCsv(placemark.geometry));
-    }
+    };
 
-    private static handleCopyGeometryAsWkt(placemark: Placemark) {
+    private handleCopyGeometryAsWkt = (placemark: Placemark) => {
         actions.copyTextToClipboard(geometryGeoJsonToGeometryWkt(placemark.geometry));
-    }
+    };
 
-    private static handleCopyGeometryAsGeoJson(placemark: Placemark) {
+    private handleCopyGeometryAsGeoJson = (placemark: Placemark) => {
         actions.copyTextToClipboard(geoJsonToText(placemark));
-    }
+    };
 
     private static getPlacemarkItemKey(placemark: Placemark) {
         return placemark.id;
@@ -249,10 +249,10 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
                     icon="locate"
                     tooltipPosition={'top'}
                 />
-                <Popover position={Position.LEFT}>
+                <Popover disabled={!this.props.selectedPlacemark} position={Position.LEFT}>
                     <ToolButton
                         tooltipContent="Copy selected place"
-                        disabled={!this.props.selectedPlacemarkId}
+                        disabled={!this.props.selectedPlacemark}
                         icon="clipboard"
                         tooltipPosition={'top'}
                     />
@@ -289,9 +289,9 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
         return <PlacemarkItem placemark={placemark}
                               onDoubleClick={this.handlePlacemarkDoubleClick}
                               onVisibilityChange={this.handleChangedPlacemarkVisibility}
-                              onCopyPlacemarkCsv={PlacemarksPanel.handleCopyGeometryAsCsv}
-                              onCopyPlacemarkWkt={PlacemarksPanel.handleCopyGeometryAsWkt}
-                              onCopyPlacemarkGeoJSON={PlacemarksPanel.handleCopyGeometryAsGeoJson}
+                              onCopyPlacemarkCsv={this.handleCopyGeometryAsCsv}
+                              onCopyPlacemarkWkt={this.handleCopyGeometryAsWkt}
+                              onCopyPlacemarkGeoJSON={this.handleCopyGeometryAsGeoJson}
         />;
     }
 
