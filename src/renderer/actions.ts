@@ -2412,72 +2412,6 @@ export const OPEN_MESSAGE_BOX = 'OPEN_MESSAGE_BOX';
 export const CLOSE_MESSAGE_BOX = 'CLOSE_MESSAGE_BOX';
 
 
-/**
- * Bring up File upload/download dialogs
- */
-
-export function fileUploadInteractive() {
-    return showDialog('fileUploadDialog');
-}
-
-
-export function fileDownloadInteractive() {
-    return showDialog('fileDownloadDialog');
-}
-
-
-export function uploadFiles(dir: string, file: File): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const state = getState();
-        const webAPIServiceURL = state.communication.webAPIServiceURL;
-
-        selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
-            .then((res) => {
-                dispatch(updateFileNode(dir + '/' + file.name, true));
-                showToast({type: res.status, text: 'Upload finished: ' + res.message});
-            })
-            .catch((error) => {
-                showToast({type: 'error', text: error.toString()});
-                console.error(error);
-            });
-    }
-}
-
-
-export function monitorProcess(processId: string): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        function call(onProgress) {
-            return selectors.fileAPISelector(getState()).monitorProcess(processId, onProgress);
-        }
-
-        function action() {
-            console.info('testing');
-        }
-
-        callAPI({title: 'Monitoring Progress', dispatch, call, action});
-    }
-}
-
-
-export function downloadFiles(filePaths: string[]): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        const state = getState();
-        const webAPIServiceURL = state.communication.webAPIServiceURL;
-        const api = selectors.fileAPISelector(state);
-
-        api.downloadFiles(filePaths, 'ignore', webAPIServiceURL)
-           .then(() => {
-               showToast({type: 'success', text: 'Zip ready for download.'});
-           })
-           .catch((error) => {
-               showToast({type: 'error', text: error.toString()});
-               console.error(error);
-           });
-
-    }
-}
-
-
 function openMessageBox(options: MessageBoxOptions,
                         onClose: (result: MessageBoxResult | null) => void): Action {
     return {type: OPEN_MESSAGE_BOX, payload: {options, onClose}};
@@ -2501,17 +2435,30 @@ export function showMessageBox(messageBoxOptions: MessageBoxOptions,
     };
 }
 
+export const OPEN_FILE_BROWSE_DIALOG = 'OPEN_FILE_BROWSE_DIALOG';
+export const CLOSE_FILE_BROWSE_DIALOG = 'CLOSE_FILE_BROWSE_DIALOG';
 
-//noinspection JSUnusedGlobalSymbols
+function openFileBrowseDialog(filePath: string,
+                              onClose: () => any): Action {
+    return {type: OPEN_FILE_BROWSE_DIALOG, payload: {options: {defaultPath: filePath}, onClose}};
+}
+
+function closeFileBrowseDialog(): Action {
+    return {type: CLOSE_FILE_BROWSE_DIALOG};
+}
+
 /**
  * Show the given file in a file manager. If possible, select the file.
  * @param fullPath
  */
-export function showItemInFolder(fullPath: string): boolean {
-    if (hasElectron('showItemInFolder')) {
-        return electron.shell.showItemInFolder(fullPath);
-    }
-    return false;
+export function showItemInFolder(fullPath: string): ThunkAction {
+    return (dispatch: Dispatch) => {
+        const handleClose = () => {
+            dispatch(closeFileBrowseDialog());
+        };
+        dispatch(openFileBrowseDialog(fullPath, handleClose));
+        desktopActions.showItemInFolder(fullPath);
+    };
 }
 
 /**
@@ -2551,6 +2498,67 @@ export function copyTextToClipboard(text: string) {
         copyToClipboard(text);
     }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+// File upload/dowenalod
+
+export function fileUploadInteractive() {
+    return showDialog('fileUploadDialog');
+}
+
+export function fileDownloadInteractive() {
+    return showDialog('fileDownloadDialog');
+}
+
+export function uploadFiles(dir: string, file: File): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        const state = getState();
+        const webAPIServiceURL = state.communication.webAPIServiceURL;
+
+        selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
+                 .then((res) => {
+                     dispatch(updateFileNode(dir + '/' + file.name, true));
+                     showToast({type: res.status, text: 'Upload finished: ' + res.message});
+                 })
+                 .catch((error) => {
+                     showToast({type: 'error', text: error.toString()});
+                     console.error(error);
+                 });
+    }
+}
+
+export function monitorProcess(processId: string): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        function call(onProgress) {
+            return selectors.fileAPISelector(getState()).monitorProcess(processId, onProgress);
+        }
+
+        function action() {
+            console.info('testing');
+        }
+
+        callAPI({title: 'Monitoring Progress', dispatch, call, action});
+    }
+}
+
+export function downloadFiles(filePaths: string[]): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        const state = getState();
+        const webAPIServiceURL = state.communication.webAPIServiceURL;
+        const api = selectors.fileAPISelector(state);
+
+        api.downloadFiles(filePaths, 'ignore', webAPIServiceURL)
+           .then(() => {
+               showToast({type: 'success', text: 'Zip ready for download.'});
+           })
+           .catch((error) => {
+               showToast({type: 'error', text: error.toString()});
+               console.error(error);
+           });
+
+    }
+}
+
 
 /**
  * Update frontend preferences (but not backend configuration).

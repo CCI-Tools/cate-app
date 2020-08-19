@@ -14,6 +14,7 @@ import {
     Tooltip
 } from '@blueprintjs/core';
 import {Cell, Column, Table, TruncatedFormat, TruncatedPopoverMode} from '@blueprintjs/table';
+import { showItemInFolder } from '../actions';
 import {ListBox} from '../components/ListBox';
 import {LabelWithType} from '../components/LabelWithType';
 import WorkflowStepPropertiesDialog from './WorkflowStepPropertiesDialog';
@@ -168,7 +169,7 @@ class WorkspacePanel extends React.PureComponent<IWorkspacePanelProps & Dispatch
     }
 
     private handleOpenWorkspaceDirectoryClicked() {
-        actions.openItem(this.props.workspace.baseDir);
+        actions.showItemInFolder(this.props.workspace.baseDir);
     }
 
     private handleCopyWorkflowAsPythonScript() {

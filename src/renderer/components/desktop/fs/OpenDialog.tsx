@@ -18,7 +18,8 @@ const OpenDialog: React.FC<IOpenDialogProps> = (props) => {
         <FileDialog
             {...props}
             saveFile={false}
-            openFile={properties.has('openFile') || !properties.has('openDirectory')}
+            // openFile={properties.has('openFile') || !properties.has('openDirectory')}
+            openFile={properties.has('openFile')}
             openDirectory={properties.has('openDirectory')}
             multiSelections={properties.has('multiSelections')}
             showHiddenFiles={properties.has('showHiddenFiles')}

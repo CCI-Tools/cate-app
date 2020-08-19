@@ -466,6 +466,11 @@ const FileDialog: React.FC<IFileDialogProps> = (
         });
     };
 
+    let renderActions;
+    if (!openFile && !openDirectory) {
+        renderActions = () => null;
+    }
+
     return (
         <ModalDialog
             isOpen={isOpen}
@@ -475,6 +480,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
             onCancel={handleCancel}
             canConfirm={canConfirm}
             style={FILE_DIALOG_STYLE}
+            renderActions={renderActions}
         >
             <div style={FILE_CONTAINER_STYLE}>
                 <div style={FILE_NAV_ROW_STYLE}>

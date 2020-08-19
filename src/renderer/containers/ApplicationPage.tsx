@@ -28,6 +28,7 @@ import PreferencesDialog from './PreferencesDialog';
 import DirectorySelectDialog from './DirectorySelectDialog';
 import FileOpenDialog from './FileOpenDialog';
 import FileSaveDialog from "./FileSaveDialog";
+import FileBrowseDialog from "./FileBrowseDialog";
 import MessageBox from './MessageBox';
 import { PanelContainer, PanelContainerLayout } from '../components/PanelContainer';
 import { Panel } from '../components/Panel';
@@ -163,6 +164,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             {!desktopActions.isNativeUI && fileSystemAPI !== null && (<DirectorySelectDialog/>)}
             {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileOpenDialog/>)}
             {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileSaveDialog/>)}
+            {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileBrowseDialog/>)}
             {!desktopActions.isNativeUI && <MessageBox/>}
         </div>
     );

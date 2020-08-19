@@ -3,7 +3,7 @@ import { connect, Dispatch } from 'react-redux';
 import { Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
 
 import { State } from '../state';
-import { fileDownloadInteractive, fileUploadInteractive, showMultiFileOpenDialog } from "../actions";
+import { fileDownloadInteractive, fileUploadInteractive, showItemInFolder } from "../actions";
 
 
 interface IDispatch {
@@ -28,7 +28,7 @@ const _FilesMenu: React.FC<IFilesMenuProps & IDispatch> = (props) => {
     };
 
     const handleBrowseFiles = () => {
-        props.dispatch(showMultiFileOpenDialog({title: 'Browse'},  () => {}) as any);
+        props.dispatch(showItemInFolder('') as any);
     };
 
     return (
