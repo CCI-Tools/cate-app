@@ -169,7 +169,7 @@ class WorkspacePanel extends React.PureComponent<IWorkspacePanelProps & Dispatch
     }
 
     private handleOpenWorkspaceDirectoryClicked() {
-        actions.showItemInFolder(this.props.workspace.baseDir);
+        this.props.dispatch(actions.showItemInFolder(this.props.workspace.baseDir) as any);
     }
 
     private handleCopyWorkflowAsPythonScript() {
