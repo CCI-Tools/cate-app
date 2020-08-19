@@ -70,7 +70,7 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
         height: '100%'
     };
     static readonly LAYER_LABEL_ELEMENT_STYLE = {marginLeft: '0.5em'};
-    static readonly LAYER_CHECKBOX_STYLE = {marginTop: '4px', marginBottom: '4px'};
+    static readonly LAYER_CHECKBOX_STYLE = {flexGrow: 0, margin: 0};
 
     constructor(props: ILayersPanelProps & DispatchProp<State>) {
         super(props);
@@ -167,6 +167,7 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
     private renderLayerItem(layer: LayerState) {
         return (
             <div style={LayersPanel.LAYER_DIV_STYLE}>
+                <Icon style={{marginRight: '4px'}} icon={layer.visible ? 'eye-open': 'eye-off'} />
                 <Checkbox
                     style={LayersPanel.LAYER_CHECKBOX_STYLE}
                     checked={layer.visible}
