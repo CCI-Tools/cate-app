@@ -251,7 +251,8 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
                 />
                 <Popover disabled={!this.props.selectedPlacemark} position={Position.LEFT}>
                     <ToolButton
-                        tooltipContent="Copy selected place"
+                        tooltipContent={!this.props.selectedPlacemark ?
+                                        "Copy selected place: Please select a place first." : "Copy selected place."}
                         disabled={!this.props.selectedPlacemark}
                         icon="clipboard"
                         tooltipPosition={'top'}
