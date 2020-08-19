@@ -192,7 +192,7 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
             return {...state, dialogs};
         }
         case actions.ADD_WORLD_VIEW: {
-            const view = newWorldView();
+            const view = newWorldView(action.payload.baseMapId);
             return addView(state, view, action.payload.placeAfterViewId);
         }
         case actions.SHOW_FIGURE_VIEW: {
@@ -477,6 +477,15 @@ const viewReducer = (state: ViewState<any>, action: Action, activeViewId: string
             }
             break;
         }
+        case actions.SET_BASE_MAP_ID: {
+            const viewId = action.payload.viewId;
+            if (viewId === state.id) {
+                assert.ok(state.type === 'world');
+                const baseMapId = action.payload.baseMapId;
+                return {...state, data: {...state.data, baseMapId}};
+            }
+            break;
+        }
         case actions.SET_PROJECTION_CODE: {
             const viewId = action.payload.viewId;
             if (viewId === state.id) {
@@ -731,6 +740,8 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
             return {...state, ...action.payload};
         case actions.SET_SHOW_SELECTED_VARIABLE_LAYER:
             return {...state, ...action.payload};
+        case actions.SET_BASE_MAP_ID:
+            return {...state, lastBaseMapId: action.payload.baseMapId};
         case actions.SAVE_LAYER: {
             const {key, layer} = action.payload;
             const savedLayers = updateObject(state.savedLayers, {[key]: layer});

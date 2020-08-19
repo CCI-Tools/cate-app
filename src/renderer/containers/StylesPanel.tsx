@@ -1,3 +1,7 @@
+import * as React from 'react';
+import { connect, DispatchProp } from 'react-redux';
+import { ColorState } from 'react-color';
+import SketchPicker from 'react-color/lib/components/sketch/Sketch';
 import {
     AnchorButton,
     Button,
@@ -18,10 +22,7 @@ import {
     Tooltip
 } from '@blueprintjs/core';
 import * as Cesium from 'cesium';
-import * as React from 'react';
-import { ColorState } from 'react-color';
-import SketchPicker from 'react-color/lib/components/sketch/Sketch';
-import { connect, DispatchProp } from 'react-redux';
+
 import { SimpleStyle } from '../../common/geojson-simple-style';
 import * as actions from '../actions';
 import { FieldValue } from '../components/field/Field';
@@ -50,6 +51,7 @@ import {
     VectorLayerState
 } from '../state';
 import { getLayerDisplayName } from '../state-util';
+
 
 function getDisplayFractionDigits(min: number, max: number) {
     const n = Math.round(Math.log10(max - min));
@@ -164,7 +166,6 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
     }
 
     private renderLayerDetails() {
-
         let detailsPanel;
         if (this.props.styleContext === STYLE_CONTEXT_ENTITY) {
             if (this.props.selectedEntity) {
@@ -261,7 +262,7 @@ class StylesPanel extends React.Component<IStylesPanelProps & DispatchProp<State
             return null;
         }
 
-        let colorBarButton = null;
+        let colorBarButton;
         if (this.props.colorMapCategories) {
             const popoverContent = this.renderColorBarBox(layer);
             colorBarButton = (
