@@ -1,12 +1,15 @@
 import * as React from 'react';
 import { Checkbox, Collapse, InputGroup, Label, Tooltip } from '@blueprintjs/core';
-import { DataSourceState, ResourceState, VariableState } from '../state';
-import { formatDateAsISODateString } from '../../common/format';
+
 import * as types from '../../common/cate-types';
-import { GLOBAL, Region, RegionValue } from '../components/Region';
-import { VarNameValueEditor } from './editor/VarNameValueEditor';
-import { TextFieldValue } from '../components/field/TextField';
+import { formatDateAsISODateString } from '../../common/format';
 import { DateRangeField, DateRangeFieldValue, validateDateRange } from '../components/field/DateRangeField';
+import { TextFieldValue } from '../components/field/TextField';
+import LongIdLabel from '../components/LongIdLabel';
+import { GLOBAL, Region, RegionValue } from '../components/Region';
+import { DataSourceState, ResourceState, VariableState } from '../state';
+import { VarNameValueEditor } from './editor/VarNameValueEditor';
+
 
 type TimeRangeValue = [string, string];
 
@@ -155,11 +158,10 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         //         </Label>
         //     </div>
         // );
-        const dataSourceNameElement = <strong>{this.props.dataSource.title}</strong>;
         if (isLocalDataSource) {
-            headerText = (<p>File data source:<br/>{dataSourceNameElement}</p>);
+            headerText = (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>);
         } else {
-            headerText = (<p>Remote data source:<br/>{dataSourceNameElement}</p>);
+            headerText = (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>);
             localDataSourceCheck = (
                 <Tooltip
                     content="If unchecked, remote data will be accessed using an available protocol, e.g. OPeNDAP.">
