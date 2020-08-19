@@ -2,7 +2,7 @@ import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
 
 import {
-    AnimationViewDataState,
+    AnimationViewDataState, BaseMapState,
     DimSizes,
     FigureViewDataState,
     LayerState,
@@ -276,11 +276,49 @@ export function getNonSpatialIndexers(resource: ResourceState, ref: VariableData
     return dimIndexers;
 }
 
+const newCfSBaseMap = (id: string): BaseMapState => {
+    return {
+        id,
+        title: id[0].toUpperCase() + id.substring(1),
+        options: {
+            url: `https://storage.googleapis.com/esa-cfs-tiles/0.7.0/basemaps/${id}/{z}/{x}/{reverseY}.png`,
+            tilingScheme: 'Geographic',
+        }
+    };
+};
+
+export const BASE_MAPS: BaseMapState[] = [
+    // Note, the first entry will be used as default: "natural" in this case.
+    {
+        id: 'natural',
+        title: 'Natural',
+        options: null,
+    },
+    {
+        id: 'natural_offline',
+        title: 'Natural (offline)',
+        options: {
+            url: './Cesium/Assets/Textures/NaturalEarthII/{z}/{x}/{reverseY}.jpg',
+            credit: '© Analytical Graphics, Inc.',
+            tilingScheme: 'Geographic',
+            maximumLevel: 5
+        }
+    },
+    newCfSBaseMap('atmosphere'),
+    newCfSBaseMap('blue'),
+    newCfSBaseMap('dark'),
+    newCfSBaseMap('land'),
+    newCfSBaseMap('ocean'),
+];
+
+export const DEFAULT_BASE_MAP_ID = 'atmosphere';
+export const DEFAULT_BASE_MAP = BASE_MAPS.find(bm => bm.id === 'atmosphere');
+
 function newInitialWorldViewData(baseMapId?: string): WorldViewDataState {
     return {
         viewMode: '3D',
         projectionCode: 'EPSG:4326',
-        baseMapId: baseMapId || 'natural',
+        baseMapId: baseMapId || DEFAULT_BASE_MAP_ID,
         layers: [
             {...AUTO_LAYER} as LayerState,
             {...COUNTRIES_LAYER} as LayerState,

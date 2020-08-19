@@ -3,7 +3,8 @@
 * Added feature to browse the remote file system (#84) 
   Cate now shares base maps with CCI Climate-From-Space App (#87)
 * Added feature to change the base maps in the world view. 
-  Cate now shares base maps with CCI Climate-From-Space App (#87)
+  Cate now shares base maps with CCI Climate-From-Space App.
+   Default map is now "Atmosphere". (#87, #101)
 * Turned Cate Web UI into a Desktop Progressive Web Application (PWA) "Cate App".
   Users can now install Cate from browsers to their desktops. (#22, #62)
 * The UI uses now web versions of native (electron) file and directory choosers. (#64)   

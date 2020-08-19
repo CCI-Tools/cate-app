@@ -1,4 +1,8 @@
+import { createSelector, Selector } from 'reselect';
+import * as Cesium from 'cesium';
+
 import { requireElectron } from './electron';
+import { DEFAULT_BASE_MAP, DEFAULT_BASE_MAP_ID } from './state-util';
 import {
     BaseMapState,
     ColorMapCategoryState,
@@ -28,7 +32,6 @@ import {
     WorkspaceState,
     WorldViewDataState
 } from './state';
-import { createSelector, Selector } from 'reselect';
 import { JobStatusEnum, WebAPIClient } from './webapi';
 import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi/apis';
 import { PanelContainerLayout } from './components/PanelContainer';
@@ -47,13 +50,13 @@ import {
 } from './state-util';
 import { ViewLayoutState, ViewState } from './components/ViewState';
 import { isNumber } from '../common/types';
-import * as Cesium from 'cesium';
 import { GeometryWKTGetter } from './containers/editor/ValueEditor';
 import { BaseMapOptions, entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { RemoteStorageAPI } from "./remoteStorageAPI";
 import { FilesAPI } from "./webapi/apis/FilesApi";
+
 
 const electron = requireElectron();
 
@@ -76,10 +79,10 @@ export const isLocalFSAccessAllowedSelector = (state: State): boolean => {
     // Note that once we have ChooseWorkspaceDialog and SelectWorkspaceDialog with directory choosers,
     // we can get rid of the electron requirement here.
     return !!electron
-        && !!electron.ipcRenderer
-        && state.communication.webAPIProvision === 'CustomURL'
-        && !!state.communication.webAPIServiceInfo
-        && !state.communication.webAPIServiceInfo.userRootMode;
+           && !!electron.ipcRenderer
+           && state.communication.webAPIProvision === 'CustomURL'
+           && !!state.communication.webAPIServiceInfo
+           && !state.communication.webAPIServiceInfo.userRootMode;
 };
 
 export const webAPIRestUrlSelector = createSelector(
@@ -775,7 +778,8 @@ export const baseMapIdSelector = createSelector<State, string, BaseMapState[], V
     baseMapsSelector,
     activeViewSelector,
     (baseMaps: BaseMapState[], view: ViewState<any> | null) => {
-        return (view && view.data.baseMapId) || baseMaps[0].id;
+        return (view
+                && view.data.baseMapId) || DEFAULT_BASE_MAP_ID;
     }
 );
 
@@ -783,7 +787,9 @@ export const baseMapSelector = createSelector<State, BaseMapState, BaseMapState[
     baseMapsSelector,
     activeViewSelector,
     (baseMaps: BaseMapState[], view: ViewState<any> | null) => {
-        return (view && view.data.baseMapId && baseMaps.find(bm => bm.id === view.data.baseMapId)) || baseMaps[0];
+        return (view
+                && view.data.baseMapId
+                && baseMaps.find(bm => bm.id === view.data.baseMapId)) || DEFAULT_BASE_MAP;
     }
 );
 
@@ -894,8 +900,8 @@ export const vectorStyleSelector = createSelector<State, SimpleStyle, ViewState<
                 const entityVectorLayer = getWorldViewVectorLayerForEntity(view, selectedEntity);
                 const entityVectorLayerStyle = entityVectorLayer && entityVectorLayer.style;
                 const savedEntityStyle = entityVectorLayer
-                    && entityVectorLayer.entityStyles
-                    && entityVectorLayer.entityStyles[selectedEntity.id];
+                                         && entityVectorLayer.entityStyles
+                                         && entityVectorLayer.entityStyles[selectedEntity.id];
                 style = {...selectedLayerStyle, ...entityVectorLayerStyle, ...entityStyle, ...savedEntityStyle};
             }
         }
@@ -946,8 +952,8 @@ export const isComputingVariableStatistics = createSelector<State, boolean,
             return false;
         }
         const requestLock = getLockForGetWorkspaceVariableStatistics(selectedResource.name,
-            selectedVariable.name,
-            imageLayer.varIndex);
+                                                                     selectedVariable.name,
+                                                                     imageLayer.varIndex);
         return activeRequestLocks.has(requestLock);
     }
 );
