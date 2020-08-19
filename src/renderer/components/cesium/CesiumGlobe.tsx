@@ -3,6 +3,7 @@ import * as Cesium from 'cesium';
 import { diff } from 'deep-object-diff'
 import { Feature, FeatureCollection, Point } from 'geojson';
 import { ContextMenu } from '@blueprintjs/core';
+
 import { ExternalObjectComponent, IExternalObjectComponentProps } from '../ExternalObjectComponent'
 import { isBoolean, isNumber, isString } from '../../../common/types';
 import { arrayDiff } from '../../../common/array-diff';
@@ -11,10 +12,11 @@ import { SplitSlider } from './SplitSlider';
 import {
     applyStyleToEntity,
     applyStyleToEntityCollection,
+    BaseMapOptions,
     canvasToCartographic,
     clientToCanvas,
     getEntityByEntityId,
-    pickEntity,
+    pickEntity, setViewerBaseMap,
     simpleStyleToCesium
 } from './cesium-util';
 import {
@@ -86,6 +88,7 @@ Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOi
 
 interface CesiumGlobeStateBase {
     selectedPlacemarkId?: string;
+    baseMapOptions: BaseMapOptions | null;
     imageLayerDescriptors?: ImageLayerDescriptor[];
     vectorLayerDescriptors?: VectorLayerDescriptor[];
     overlayHtml?: HTMLElement | null;
@@ -166,9 +169,6 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         let baseLayerImageryProvider;
         if (this.props.offlineMode) {
             baseLayerImageryProvider = CesiumGlobe.getStaticNaturalEarthImageryProvider();
-        } else {
-            //baseLayerImageryProvider = new Cesium.BingMapsImageryProvider({url: 'https://dev.virtualearth.net', key: BING_MAPS_API_DEFAULT_KEY});
-            //baseLayerImageryProvider.errorEvent.addEventListener(this.handleRemoteBaseLayerError);
         }
 
         const cesiumViewerOptions: Cesium.Viewer.ConstructorOptions = {
@@ -202,6 +202,10 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         if (this.props.debug) {
             // Show a little overlay panel with FPS. Useful for optimisations.
             viewer.scene.debugShowFramesPerSecond = true;
+        }
+
+        if (!this.props.offlineMode) {
+            setViewerBaseMap(viewer, this.props.baseMapOptions);
         }
 
         // knockout is used by Cesium to update the style attributes of the selectionIndicator
@@ -274,6 +278,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
 
     propsToExternalObjectState(props: ICesiumGlobeProps & CesiumGlobeState, prevState?: CesiumGlobeState): CesiumGlobeState {
         const selectedPlacemarkId = props.selectedPlacemarkId;
+        const baseMapOptions = props.baseMapOptions;
         const imageLayerDescriptors = props.imageLayerDescriptors || EMPTY_ARRAY;
         const vectorLayerDescriptors = props.vectorLayerDescriptors || EMPTY_ARRAY;
         const overlayHtml = props.overlayHtml || null;
@@ -282,6 +287,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         const dataSourceMap = (prevState && prevState.dataSourceMap) || {};
         return {
             selectedPlacemarkId,
+            baseMapOptions,
             imageLayerDescriptors,
             vectorLayerDescriptors,
             overlayHtml,
@@ -293,6 +299,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
 
     updateExternalObject(viewer: Cesium.Viewer, prevState: CesiumGlobeState, nextState: CesiumGlobeState): void {
 
+        const prevBaseMapOptions = (prevState && prevState.baseMapOptions) || null;
         const prevSelectedPlacemarkId = (prevState && prevState.selectedPlacemarkId) || null;
         const prevImageLayerDescriptors = (prevState && prevState.imageLayerDescriptors) || EMPTY_ARRAY;
         const prevVectorLayerDescriptors = (prevState && prevState.vectorLayerDescriptors) || EMPTY_ARRAY;
@@ -300,6 +307,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         const prevSplitLayerPosition = (prevState && prevState.splitLayerPosition);
         const prevGeometryToolType = (prevState && prevState.geometryToolType) || 'NoTool';
 
+        const nextBaseMapOptions = nextState.baseMapOptions;
         const nextSelectedPlacemarkId = nextState.selectedPlacemarkId || null;
         const nextImageLayerDescriptors = nextState.imageLayerDescriptors || EMPTY_ARRAY;
         const nextVectorLayerDescriptors = nextState.vectorLayerDescriptors || EMPTY_ARRAY;
@@ -308,6 +316,10 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
         const nextGeometryToolType = nextState.geometryToolType || 'NoTool';
 
         let shouldRequestRender = false;
+
+        if (prevBaseMapOptions !== nextBaseMapOptions && !this.props.offlineMode) {
+            setViewerBaseMap(viewer, nextBaseMapOptions);
+        }
 
         if (prevImageLayerDescriptors !== nextImageLayerDescriptors) {
             this.updateImageLayers(viewer,

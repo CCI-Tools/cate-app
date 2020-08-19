@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { State } from '../state';
 import { AnchorButton, Checkbox, ControlGroup, Icon, InputGroup, Label } from '@blueprintjs/core';
+
+import { State } from '../state';
 import * as selectors from '../selectors';
 import * as actions from '../actions';
 import { ViewState } from '../components/ViewState';
 import { NO_ACTIVE_VIEW } from '../messages';
+
 
 interface IViewPanelDispatch {
     dispatch: Dispatch<State>;
@@ -14,6 +16,7 @@ interface IViewPanelDispatch {
 interface IViewPanelProps {
     activeView: ViewState<any> | null;
     activeViewId: string | null;
+    lastBaseMapId: string;
     showLayerTextOverlay: boolean;
 }
 
@@ -21,6 +24,7 @@ function mapStateToProps(state: State): IViewPanelProps {
     return {
         activeView: selectors.activeViewSelector(state),
         activeViewId: selectors.activeViewIdSelector(state),
+        lastBaseMapId: state.session.lastBaseMapId,
         showLayerTextOverlay: state.session.showLayerTextOverlay,
     };
 }
@@ -54,7 +58,7 @@ class ViewPanel extends React.Component<IViewPanelProps & IViewPanelDispatch, nu
     }
 
     onAddWorldView() {
-        this.props.dispatch(actions.addWorldView(this.props.activeViewId));
+        this.props.dispatch(actions.addWorldView(this.props.activeViewId, this.props.lastBaseMapId));
     }
 
     render() {
@@ -83,7 +87,7 @@ class ViewPanel extends React.Component<IViewPanelProps & IViewPanelDispatch, nu
                     <Icon icon={activeView.icon}
                           style={ViewPanel.PROPERTY_ITEM_CONTROL_GROUP_MEMBER_STYLE}/>
                     <InputGroup
-                     style={ViewPanel.PROPERTY_ITEM_CONTROL_GROUP_MEMBER_STYLE}
+                        style={ViewPanel.PROPERTY_ITEM_CONTROL_GROUP_MEMBER_STYLE}
                         type="text"
                         value={activeView.title}
                         dir="auto"

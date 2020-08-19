@@ -29,7 +29,7 @@ import { ViewState } from '../components/ViewState';
 import { convertLayersToLayerDescriptors } from './globe-view-layers';
 import * as Cesium from 'cesium';
 import { GeometryToolType } from '../components/cesium/geometry-tool';
-import { entityToGeoJson, entityToGeometryWkt } from '../components/cesium/cesium-util';
+import { BaseMapOptions, entityToGeoJson, entityToGeometryWkt } from '../components/cesium/cesium-util';
 import { featurePropertiesFromSimpleStyle, SimpleStyle } from '../../common/geojson-simple-style';
 import { Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
 import { GEOMETRY_LIKE_TYPE, POINT_LIKE_TYPE, POLYGON_LIKE_TYPE } from '../../common/cate-types';
@@ -48,6 +48,7 @@ interface IGlobeViewProps extends IGlobeViewOwnProps {
     selectedLayer: LayerState | null;
     selectedLayerId: string | null;
     selectedPlacemarkId: string | null;
+    baseMapOptions: BaseMapOptions | null,
     isDialogOpen: boolean;
     showLayerTextOverlay: boolean;
     debugWorldView: boolean;
@@ -68,6 +69,7 @@ function mapStateToProps(state: State, ownProps: IGlobeViewOwnProps): IGlobeView
         selectedLayer: selectors.selectedLayerSelector(state),
         selectedLayerId: selectors.selectedLayerIdSelector(state),
         selectedPlacemarkId: selectors.selectedPlacemarkIdSelector(state),
+        baseMapOptions: selectors.baseMapOptionsSelector(state),
         isDialogOpen: selectors.isDialogOpenSelector(state),
         showLayerTextOverlay: state.session.showLayerTextOverlay,
         debugWorldView: state.session.debugWorldView,
@@ -285,6 +287,7 @@ class GlobeView extends React.Component<IGlobeViewProps & IGlobeViewOwnProps & D
                          debug={this.props.debugWorldView}
                          externalObjectStore={this.props.externalObjectStore}
                          selectedPlacemarkId={selectedPlacemarkId}
+                         baseMapOptions={this.props.baseMapOptions}
                          imageLayerDescriptors={imageLayerDescriptors}
                          vectorLayerDescriptors={vectorLayerDescriptors}
                          splitLayerPosition={splitLayerPosition}

@@ -1,5 +1,7 @@
 ### Changes in v2.0.0-dev.5
 
+* Added feature to change the base maps in the world view. 
+  Cate now shares base maps with CCI Climate-From-Space App (#87)
 * Turned Cate Web UI into a Desktop Progressive Web Application (PWA) "Cate App".
   Users can now install Cate from browsers to their desktops. (#22, #62)
 * The UI uses now web versions of native (electron) file and directory choosers. (#64)   
@@ -16,17 +18,19 @@
   - Alignment of Display Value Range within the styles setting
   - Wrapping of dataset labels so they stay in dialog boxes
   - Data Access Error text message alignment, so they stay in dialog boxes
-  - Wrapping of content in about box
+  - Data Access Error text message alignment so they stay in dialog boxes
+  - Wrapping of "About" contents, so it stays in preferences dialog
+* Drawing and selecting points and polygons now works again (#11, #10)
 
 ### Changes in v2.0.0-dev.4
 
 * Is now using the Cate Web API to handle user preferences
-* Replaced CCI icons by simple round icons using GCOS ECV groupings as background color
-* Adapted UI fonds to conform to ESA style guidelines
+* Replaced CCI icons by simple round icons using GCOS ECV groupings as background color (#39)
+* Adapted UI fonds to conform to ESA style guidelines (#39)
 
 ### Changes in v2.0.0-dev.3
 
-* Fixed copy-to-clipboard actions.
+* Fixed copy-to-clipboard actions. (#41)
 
 ### Changes in v2.0.0-dev.2
 

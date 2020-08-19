@@ -1,5 +1,6 @@
 import { requireElectron } from './electron';
 import {
+    BaseMapState,
     ColorMapCategoryState,
     ColorMapState,
     DataSourceState,
@@ -48,7 +49,7 @@ import { ViewLayoutState, ViewState } from './components/ViewState';
 import { isNumber } from '../common/types';
 import * as Cesium from 'cesium';
 import { GeometryWKTGetter } from './containers/editor/ValueEditor';
-import { entityToSimpleStyle } from './components/cesium/cesium-util';
+import { BaseMapOptions, entityToSimpleStyle } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle, simpleStyleFromFeatureProperties } from '../common/geojson-simple-style';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { RemoteStorageAPI } from "./remoteStorageAPI";
@@ -765,6 +766,31 @@ export const selectedLayerIdSelector = createSelector<State, string | null, View
     activeViewSelector,
     (view: ViewState<any> | null) => {
         return (view && view.data.selectedLayerId) || null;
+    }
+);
+
+export const baseMapsSelector = (state: State) => state.data.baseMaps;
+
+export const baseMapIdSelector = createSelector<State, string, BaseMapState[], ViewState<any> | null>(
+    baseMapsSelector,
+    activeViewSelector,
+    (baseMaps: BaseMapState[], view: ViewState<any> | null) => {
+        return (view && view.data.baseMapId) || baseMaps[0].id;
+    }
+);
+
+export const baseMapSelector = createSelector<State, BaseMapState, BaseMapState[], ViewState<any> | null>(
+    baseMapsSelector,
+    activeViewSelector,
+    (baseMaps: BaseMapState[], view: ViewState<any> | null) => {
+        return (view && view.data.baseMapId && baseMaps.find(bm => bm.id === view.data.baseMapId)) || baseMaps[0];
+    }
+);
+
+export const baseMapOptionsSelector = createSelector<State, BaseMapOptions | null, BaseMapState>(
+    baseMapSelector,
+    (baseMap: BaseMapState) => {
+        return baseMap.options;
     }
 );
 
