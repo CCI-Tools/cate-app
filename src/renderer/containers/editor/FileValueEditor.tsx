@@ -85,7 +85,12 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
         showFileDialogCallback = (input: OperationInputState,
                                   value: ValueEditorValue<string>,
                                   onChange: ValueEditorCallback<string>) => {
-            const properties = input.fileProps as string[];
+            let properties = input.fileProps as string[];
+            const propsSet = new Set(properties);
+            if (!propsSet.has('openFile') && !propsSet.has('openDirectory')) {
+                propsSet.add('openFile');
+                properties = Array.from(propsSet);
+            }
             const openDialogOptions = {
                 defaultPath: toAbsolutePath(toTextValue(value, undefined)),
                 filters: input.fileFilters,

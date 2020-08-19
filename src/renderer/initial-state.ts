@@ -81,6 +81,10 @@ export const INITIAL_CONTROL_STATE: ControlState = {
         onClose: () => {
         }
     },
+    fileBrowseDialog: {
+        onClose: () => {
+        }
+    },
     messageBox: {},
 
     selectedCtxOperationName: null,

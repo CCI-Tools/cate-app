@@ -1,5 +1,7 @@
 ### Changes in v2.0.0-dev.6
 
+* Added feature to browse the remote file system (#84) 
+  Cate now shares base maps with CCI Climate-From-Space App (#87)
 * Added feature to change the base maps in the world view. 
   Cate now shares base maps with CCI Climate-From-Space App (#87)
 * Turned Cate Web UI into a Desktop Progressive Web Application (PWA) "Cate App".

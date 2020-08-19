@@ -697,6 +697,8 @@ export interface ControlState {
     fileOpenDialog: OpenDialogState;
     // Save file dialog
     fileSaveDialog: SaveDialogState;
+    // Browse file dialog
+    fileBrowseDialog: BrowseDialogState;
     // Message box
     messageBox: MessageBoxState;
 
@@ -728,6 +730,11 @@ export interface SaveDialogState extends DialogState {
     onClose: (result: SaveDialogResult) => any;
     options?: SaveDialogOptions;
     result?: SaveDialogResult;
+}
+
+export interface BrowseDialogState extends DialogState {
+    onClose: (result: OpenDialogResult) => any;
+    options?: OpenDialogOptions;
 }
 
 export interface MessageBoxState extends DialogState {

@@ -202,7 +202,7 @@ export interface DesktopActions {
      * Show the given file in a file manager. If possible, select the file.
      * @param fullPath
      */
-    showItemInFolder?(fullPath: string): Promise<boolean>;
+    showItemInFolder?(fullPath: string): void;
 
     /**
      * Open the given file in the desktop's default manner.

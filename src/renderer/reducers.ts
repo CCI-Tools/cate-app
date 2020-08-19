@@ -352,6 +352,16 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
                 ...state, fileSaveDialog: {...state.fileSaveDialog, ...action.payload, isOpen: false}
             };
         }
+        case actions.OPEN_FILE_BROWSE_DIALOG: {
+            return {
+                ...state, fileBrowseDialog: {...state.fileBrowseDialog, ...action.payload, isOpen: true}
+            };
+        }
+        case actions.CLOSE_FILE_BROWSE_DIALOG: {
+            return {
+                ...state, fileBrowseDialog: {...state.fileBrowseDialog, ...action.payload, isOpen: false}
+            };
+        }
         default: {
             const newViews = viewsReducer(state.views, action, state.activeViewId);
             if (newViews !== state.views) {
