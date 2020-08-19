@@ -3,6 +3,7 @@ import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject } from 'geojson';
 import copyToClipboard from 'copy-to-clipboard';
+import { FILE_UPLOAD_DIALOG_ID } from './containers/FileUploadDialog';
 import { FileNode, getFileNode } from './components/desktop/fs/FileNode';
 
 import {
@@ -438,12 +439,14 @@ export function updateControlState(controlState: Partial<ControlState>): Action 
 export function loadPreferences(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
-            return selectors.remoteStorageAPISelector(getState()).getPreferences();
+            return selectors.remoteStorageAPISelector(getState()).loadPreferences();
         }
 
-        function action(session: SessionState) {
+        function action(session: Partial<SessionState>) {
             dispatch(updateSessionState(session));
-            dispatch(loadInitialWorkspace(session.reopenLastWorkspace, session.lastWorkspacePath));
+            dispatch(loadInitialWorkspace(
+                getState().session.reopenLastWorkspace,
+                getState().session.lastWorkspacePath));
         }
 
         function planB(jobFailure: JobFailure) {
@@ -466,7 +469,7 @@ export function loadPreferences(): ThunkAction {
 export function updatePreferences(session: Partial<SessionState>, sendToMain: boolean = true): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
-            return selectors.remoteStorageAPISelector(getState()).setPreferences(session);
+            return selectors.remoteStorageAPISelector(getState()).updatePreferences(session);
         }
 
         function action(session: Partial<SessionState>) {
@@ -491,25 +494,6 @@ export function updatePreferences(session: Partial<SessionState>, sendToMain: bo
                 });
     }
 }
-
-
-// export function updatePreferences(session: Partial<SessionState>, sendToMain: boolean = false): ThunkAction {
-//     return (dispatch: Dispatch) => {
-//         dispatch(updateSessionState(session));
-//         // dispatch(storePreferences());
-//         // ???
-//         // localStorage.setItem('preferences', session);
-//         if (sendToMain) {
-//             dispatch(sendPreferencesToMain());
-//         }
-//     };
-// }
-
-// export function storePreferences(): ThunkAction {
-//     return (dispatch: Dispatch, getState) => {
-//         localStorage.setItem('preferences', getState().session);
-//     };
-// }
 
 
 export function setSessionProperty(propertyName: keyof SessionState, value: any): Action {
@@ -1178,7 +1162,7 @@ export function updateWorkspaceNames(workspaceNames: string[]): Action {
  *
  * @returns a Redux thunk action
  */
-export function loadInitialWorkspace(reopenLastWorkspace: boolean, lastWorkspacePath: string): ThunkAction {
+export function loadInitialWorkspace(reopenLastWorkspace?: boolean, lastWorkspacePath?: string): ThunkAction {
     return (dispatch: Dispatch) => {
         if (reopenLastWorkspace && lastWorkspacePath) {
             dispatch(openWorkspace(lastWorkspacePath));
@@ -1705,6 +1689,35 @@ export function setSelectedWorkflowStepId(selectedWorkflowStepId: string): Thunk
 
 function setSelectedWorkflowStepIdImpl(selectedWorkflowStepId: string): Action {
     return updateControlState({selectedWorkflowStepId});
+}
+
+
+export function dropDatasource(opName: string,
+                               file: File,
+                               opArgs: OperationKWArgs,
+                               resName: string | null,
+                               overwrite: boolean,
+                               title: string,
+                               postSetAction?): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        const state = getState();
+        const dialogState = selectors.dialogStateSelector(FILE_UPLOAD_DIALOG_ID)(state);
+        const webAPIServiceURL = state.communication.webAPIServiceURL;
+        const baseDir = selectors.workspaceBaseDirSelector(getState());
+
+        // Do not fire action when the FileUploadDialog is open as the dialog also uses a drop like event.
+        if (!dialogState.isOpen) {
+            selectors.fileAPISelector(state).uploadFiles(baseDir, file, webAPIServiceURL)
+                     .then((res) => {
+                         showToast({type: res.status, text: 'Upload finished: ' + res.message});
+                         dispatch(setWorkspaceResource(opName, opArgs, resName, overwrite, title, postSetAction));
+                     })
+                     .catch((error) => {
+                         showToast({type: 'error', text: error.toString()});
+                         console.error(error);
+                     });
+        }
+    }
 }
 
 export function setWorkspaceResource(opName: string,
@@ -2399,6 +2412,72 @@ export const OPEN_MESSAGE_BOX = 'OPEN_MESSAGE_BOX';
 export const CLOSE_MESSAGE_BOX = 'CLOSE_MESSAGE_BOX';
 
 
+/**
+ * Bring up File upload/download dialogs
+ */
+
+export function fileUploadInteractive() {
+    return showDialog('fileUploadDialog');
+}
+
+
+export function fileDownloadInteractive() {
+    return showDialog('fileDownloadDialog');
+}
+
+
+export function uploadFiles(dir: string, file: File): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        const state = getState();
+        const webAPIServiceURL = state.communication.webAPIServiceURL;
+
+        selectors.fileAPISelector(state).uploadFiles(dir, file, webAPIServiceURL)
+            .then((res) => {
+                dispatch(updateFileNode(dir + '/' + file.name, true));
+                showToast({type: res.status, text: 'Upload finished: ' + res.message});
+            })
+            .catch((error) => {
+                showToast({type: 'error', text: error.toString()});
+                console.error(error);
+            });
+    }
+}
+
+
+export function monitorProcess(processId: string): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        function call(onProgress) {
+            return selectors.fileAPISelector(getState()).monitorProcess(processId, onProgress);
+        }
+
+        function action() {
+            console.info('testing');
+        }
+
+        callAPI({title: 'Monitoring Progress', dispatch, call, action});
+    }
+}
+
+
+export function downloadFiles(filePaths: string[]): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        const state = getState();
+        const webAPIServiceURL = state.communication.webAPIServiceURL;
+        const api = selectors.fileAPISelector(state);
+
+        api.downloadFiles(filePaths, 'ignore', webAPIServiceURL)
+           .then(() => {
+               showToast({type: 'success', text: 'Zip ready for download.'});
+           })
+           .catch((error) => {
+               showToast({type: 'error', text: error.toString()});
+               console.error(error);
+           });
+
+    }
+}
+
+
 function openMessageBox(options: MessageBoxOptions,
                         onClose: (result: MessageBoxResult | null) => void): Action {
     return {type: OPEN_MESSAGE_BOX, payload: {options, onClose}};
@@ -2564,7 +2643,7 @@ function invokeUntil(callback: () => Promise<any>,
             setTimeout(func, interval);
         }
     };
-    func = _func;
-    setTimeout(func, interval);
+
+    setTimeout(_func, interval);
 }
 
