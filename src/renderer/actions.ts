@@ -319,9 +319,9 @@ export function connectWebAPIClient(): ThunkAction {
             dispatch(setWebAPIStatus('open', webAPIClient));
             dispatch(loadBackendConfig());
             dispatch(loadColorMaps());
+            dispatch(loadPreferences());
             dispatch(loadDataStores());
             dispatch(loadOperations());
-            dispatch(loadPreferences());
         };
 
         const formatMessage = (message: string, event: any): string => {
