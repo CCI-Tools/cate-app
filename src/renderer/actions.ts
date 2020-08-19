@@ -122,7 +122,7 @@ export type GetState = () => State;
  * A thunk is piece of code that is executed later.
  * Basic call interface is prescribed by "redux-thunk" module.
  */
-export type ThunkAction = (dispatch: Dispatch, getState: GetState) => void;
+export type ThunkAction = (dispatch: Dispatch, getState: GetState) => any;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Application-level actions
@@ -1916,8 +1916,8 @@ export const CHANGE_VIEW_SPLIT_POS = 'CHANGE_VIEW_SPLIT_POS';
 export const MOVE_VIEW = 'MOVE_VIEW';
 
 
-export function addWorldView(placeAfterViewId: string | null): Action {
-    return {type: ADD_WORLD_VIEW, payload: {placeAfterViewId}};
+export function addWorldView(placeAfterViewId: string | null, baseMapId: string): Action {
+    return {type: ADD_WORLD_VIEW, payload: {placeAfterViewId, baseMapId}};
 }
 
 export function selectView(viewPath: ViewPath, viewId: string): Action {
@@ -2106,6 +2106,7 @@ export const UPDATE_LAYER_STYLE = 'UPDATE_LAYER_STYLE';
 export const MOVE_LAYER_UP = 'MOVE_LAYER_UP';
 export const MOVE_LAYER_DOWN = 'MOVE_LAYER_DOWN';
 export const SAVE_LAYER = 'SAVE_LAYER';
+export const SET_BASE_MAP_ID = 'SET_BASE_MAP_ID';
 
 export function setSelectedLayerId(viewId: string, selectedLayerId: string | null): Action {
     return {type: SET_SELECTED_LAYER_ID, payload: {viewId, selectedLayerId}};
@@ -2163,6 +2164,10 @@ export function saveLayer(key: string, layer: LayerState): Action {
 
 export function setStyleContext(styleContext: StyleContext) {
     return updateSessionState({styleContext});
+}
+
+export function setBaseMap(viewId: string, baseMapId: string): Action {
+    return {type: SET_BASE_MAP_ID, payload: {viewId, baseMapId}};
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2225,7 +2230,7 @@ function hidePwaInstallPromotion(): Action {
     return {type: HIDE_PWA_INSTALL_PROMOTION};
 }
 
-export const showPwaInstallPrompt = (): ThunkAction => (dispatch, getState) => {
+export const showPwaInstallPrompt = (): ThunkAction => (dispatch) => {
     // Hide the app provided install promotion
     dispatch(hidePwaInstallPromotion());
     // Show the install prompt

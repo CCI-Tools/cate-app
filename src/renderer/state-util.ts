@@ -1,4 +1,6 @@
+import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
+
 import {
     AnimationViewDataState,
     DimSizes,
@@ -24,10 +26,10 @@ import { ViewState } from './components/ViewState';
 import * as assert from '../common/assert';
 import { isNumber, isString } from '../common/types';
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './selectors';
-import * as Cesium from 'cesium';
 import { GeometryWKTGetter } from './containers/editor/ValueEditor';
 import { entityToGeometryWkt } from './components/cesium/cesium-util';
 import { SIMPLE_STYLE_DEFAULTS, SimpleStyle } from '../common/geojson-simple-style';
+
 
 export const AUTO_LAYER_ID = 'auto';
 export const COUNTRIES_LAYER_ID = 'countries';
@@ -274,18 +276,20 @@ export function getNonSpatialIndexers(resource: ResourceState, ref: VariableData
     return dimIndexers;
 }
 
-function newInitialWorldViewData(): WorldViewDataState {
+function newInitialWorldViewData(baseMapId?: string): WorldViewDataState {
     return {
         viewMode: '3D',
         projectionCode: 'EPSG:4326',
+        baseMapId: baseMapId || 'natural',
         layers: [
-            {...AUTO_LAYER},
-            {...COUNTRIES_LAYER},
-            {...MY_PLACES_LAYER},
+            {...AUTO_LAYER} as LayerState,
+            {...COUNTRIES_LAYER} as LayerState,
+            {...MY_PLACES_LAYER} as LayerState,
         ],
         selectedLayerId: AUTO_LAYER_ID,
+        selectedEntityId: null,
         layerSplitPosition: 0.5,
-    } as WorldViewDataState;
+    };
 }
 
 function newInitialFigureViewData(resourceId: number): FigureViewDataState {
@@ -308,17 +312,16 @@ function newInitialTableViewData(resName: string, varName: string): TableViewDat
 
 let WORLD_VIEW_COUNTER = 0;
 
-export function newWorldView(): ViewState<WorldViewDataState> {
+export function newWorldView(baseMapId?: string): ViewState<WorldViewDataState> {
     const viewNumber = ++WORLD_VIEW_COUNTER;
     return {
         title: `World (${viewNumber})`,
         id: genSimpleId('world-'),
         type: 'world',
         icon: 'globe',
-        data: newInitialWorldViewData(),
+        data: newInitialWorldViewData(baseMapId),
     };
 }
-
 
 export function newFigureView(resource: ResourceState): ViewState<FigureViewDataState> {
     return {

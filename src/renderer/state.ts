@@ -3,6 +3,7 @@ import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { HostOS } from '../common/paths';
+import { BaseMapOptions } from './components/cesium/cesium-util';
 import { GeometryToolType } from './components/cesium/geometry-tool';
 import { FileNode } from './components/desktop/fs/FileNode';
 import {
@@ -48,7 +49,7 @@ export interface DataState {
     workspace: WorkspaceState | null;
     fsRootNode: FileNode;
     colorMaps: ColorMapCategoryState[] | null;
-    backgroundMaps: BackgroundMapState[];
+    baseMaps: BaseMapState[];
     workspaceNames: string[] | null;
     hasWebGL: boolean;
 }
@@ -336,6 +337,11 @@ export interface WorldViewDataState {
     viewMode: WorldViewMode;
 
     /**
+     * ID of the base map, see state.data.baseMaps.
+     */
+    baseMapId: string;
+
+    /**
      * Code of the projection used by the 2D map.
      */
     projectionCode: string;
@@ -612,19 +618,10 @@ export class LayerVariableState {
     variable: VariableState;
 }
 
-/**
- * BackgroundMapState consists basically of properties to create an instance of Cesium.UrlTemplateImageryProvider.
- * See https://cesium.com/docs/cesiumjs-ref-doc/UrlTemplateImageryProvider.html.
- */
-export interface BackgroundMapState {
+export interface BaseMapState {
     id: string;
     title: string;
-    url: string;
-    tilingScheme?: 'Geographic' | 'WebMercator';
-    credit?: string;
-    minimumLevel?: number;
-    maximumLevel?: number;
-    ellipsoid?: {x?: number, y?: number, z?: number};
+    options: BaseMapOptions | null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -836,7 +833,7 @@ export interface SessionState {
     showSelectedVariableLayer: boolean;
     layerListHeight: number;
     showLayerDetails: boolean;
-    backgroundMapId: string | null;
+    lastBaseMapId: string;
     savedLayers: SavedLayers;
     styleContext: StyleContext;
 

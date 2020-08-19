@@ -1,7 +1,9 @@
-import { isBoolean, isDefined, isNumber, isString } from '../../../common/types';
-import { SIMPLE_STYLE_DEFAULTS, SimpleStyle } from '../../../common/geojson-simple-style';
 import * as Cesium from 'cesium';
 import { DirectGeometryObject, Feature } from 'geojson';
+
+import { isBoolean, isDefined, isNumber, isString } from '../../../common/types';
+import { SIMPLE_STYLE_DEFAULTS, SimpleStyle } from '../../../common/geojson-simple-style';
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SimpleStyle
@@ -511,6 +513,49 @@ export function pickEntity(viewer: Cesium.Viewer,
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Base maps
+
+/**
+ * BaseMapOptions consists basically of properties to create an instance of Cesium.UrlTemplateImageryProvider.
+ * See https://cesium.com/docs/cesiumjs-ref-doc/UrlTemplateImageryProvider.html.
+ */
+export interface BaseMapOptions {
+    url: string;
+    tilingScheme?: 'Geographic' | 'WebMercator';
+    credit?: string;
+    minimumLevel?: number;
+    maximumLevel?: number;
+    ellipsoid?: { x?: number, y?: number, z?: number };
+}
+
+export function setViewerBaseMap(viewer: Cesium.Viewer, baseMapOptions: BaseMapOptions | null) {
+    let bgMapImageryProvider;
+    if (baseMapOptions === null) {
+        bgMapImageryProvider = Cesium.createWorldImagery();
+    } else {
+        const tilingScheme = baseMapOptions.tilingScheme === 'Geographic'
+                             ? new Cesium.GeographicTilingScheme()
+                             : new Cesium.WebMercatorTilingScheme();
+        const ellipsoid = baseMapOptions.ellipsoid && new Cesium.Ellipsoid(baseMapOptions.ellipsoid.x,
+                                                                           baseMapOptions.ellipsoid.y,
+                                                                           baseMapOptions.ellipsoid.z);
+        bgMapImageryProvider = new Cesium.UrlTemplateImageryProvider(
+            {
+                url: baseMapOptions.url,
+                tilingScheme,
+                ellipsoid,
+                credit: baseMapOptions.credit,
+                minimumLevel: baseMapOptions.minimumLevel,
+                maximumLevel: baseMapOptions.maximumLevel,
+            });
+    }
+    if (viewer.imageryLayers.length > 0) {
+        const oldLayer = viewer.imageryLayers.get(0);
+        viewer.imageryLayers.remove(oldLayer);
+    }
+    viewer.imageryLayers.add(new Cesium.ImageryLayer(bgMapImageryProvider), 0);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
