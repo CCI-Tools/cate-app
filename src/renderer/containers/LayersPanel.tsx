@@ -70,7 +70,7 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
         height: '100%'
     };
     static readonly LAYER_LABEL_ELEMENT_STYLE = {marginLeft: '0.5em'};
-    static readonly LAYER_CHECKBOX_STYLE = {flexGrow: 0, margin: 0};
+    static readonly LAYER_CHECKBOX_STYLE = {marginBlock: '4px'};
 
     constructor(props: ILayersPanelProps & DispatchProp<State>) {
         super(props);
