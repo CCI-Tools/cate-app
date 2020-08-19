@@ -18,9 +18,19 @@
   - Alignment of Display Value Range within the styles setting
   - Wrapping of dataset labels so they stay in dialog boxes
   - Data Access Error text message alignment, so they stay in dialog boxes
-  - Data Access Error text message alignment so they stay in dialog boxes
+  - Data Access Error text message alignment, so they stay in dialog boxes
   - Wrapping of "About" contents, so it stays in preferences dialog
+  - Fix misalignment of checkboxes with labels in Layers panel
+  - Increase width of data store selector in Data Sources panel
+  - Align "Add tag" button with tags in Operations panel
+  - Fix horizontal positioning in "Add file data source" dialog
+  - Align icon and label in "Active view" control of View panel
+  - Fix excessive cell heights in Layers panel items
+  - Improve vertical positioning of checkboxes in Places list
+  - Improve horizontal alignment of text field in "New workspace" dialog
+  - Improve layout of operation step dialogs
 * Drawing and selecting points and polygons now works again (#11, #10)
+* Added Help menu.
 
 ### Changes in v2.0.0-dev.4
 
