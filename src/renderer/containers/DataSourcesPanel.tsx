@@ -23,7 +23,7 @@ import {
     Tag
 } from '@blueprintjs/core';
 import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
-import {Card} from '../components/Card';
+import {Card} from '@blueprintjs/core';
 import {ScrollablePanelContent} from '../components/ScrollableContent';
 import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
 import {ToolButton} from '../components/ToolButton';
@@ -126,6 +126,10 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
 
     private static readonly FLEX_ROW_STYLE: CSSProperties = {display: 'flex', alignItems: 'center', marginBottom: 1};
     private static readonly SPACER_STYLE: CSSProperties = {flex: 1};
+    private static readonly LABEL_STYLE: CSSProperties = {margin: '0 0.5em 0 0', display: 'flex', flexGrow: 1};
+    private static readonly LABEL_TEXT_STYLE: CSSProperties =
+            {minWidth: '5em', overflow: 'hidden', whiteSpace: 'nowrap'};
+    private static readonly SELECT_STYLE: CSSProperties = {flexGrow: 1};
 
     constructor(props: IDataSourcesPanelProps & IDataSourcesPanelDispatch) {
         super(props);
@@ -363,17 +367,18 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         return (
             <React.Fragment>
                 <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
-                    <Label className="bp3-inline" style={{margin: '0 0 0 0'}}>
-                        Data store:
+                    <Label className="bp3-inline"
+                           style={DataSourcesPanel.LABEL_STYLE}>
+                        <span style={DataSourcesPanel.LABEL_TEXT_STYLE}>Data store:</span>
                         <HTMLSelect
-                            style={{padding: '0.2em'}}
+                            fill={true}
+                            style={DataSourcesPanel.SELECT_STYLE}
                             value={selectedDataStore ? selectedDataStore.id : ''}
                             onChange={this.handleDataStoreSelected}
                         >
                             {dataStoreOptions}
                         </HTMLSelect>
                     </Label>
-                    <span style={DataSourcesPanel.SPACER_STYLE}/>
                     <ButtonGroup>
                         <ToolButton
                             tooltipContent="Show/hide data store description"

@@ -14,7 +14,8 @@
   - Vertical misalignment of widgets in operation step dialogs
   - Selectable Colormaps Popup not being scrollable
   - Alignment of Display Value Range within the styles setting
-  - Wrapping of dataset labels within dialog boxes
+  - Wrapping of dataset labels so they stay in dialog boxes
+  - Data Access Error text message alignment so they stay in dialog boxes
 
 ### Changes in v2.0.0-dev.4
 

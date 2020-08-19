@@ -6,7 +6,7 @@ import * as actions from '../actions';
 import * as selectors from '../selectors';
 import { MplFigurePanel } from '../components/matplotlib/MplFigurePanel';
 import { getMPLDownloadUrl, getMPLWebSocketUrl } from '../state-util';
-import { Card } from '../components/Card';
+import { Card } from '@blueprintjs/core';
 
 
 interface IFigureViewOwnProps {

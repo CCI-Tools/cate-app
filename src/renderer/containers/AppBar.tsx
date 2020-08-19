@@ -13,6 +13,7 @@ import { State } from '../state';
 
 import cateIcon from '../resources/cate-icon-128.png';
 import WorkspacesMenu from './WorkspacesMenu';
+import FilesMenu from "./FilesMenu";
 
 
 const TITLE_STYLE = {marginLeft: 10};
@@ -69,13 +70,11 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (props) => {
                         <NavbarDivider/>
                     </React.Fragment>
                 )}
-                <Popover
-                    content={<WorkspacesMenu/>}
-                    position={PopoverPosition.BOTTOM}
-                >
-                    <Button className="bp3-minimal" rightIcon={'caret-down'}>
-                        Workspaces
-                    </Button>
+                <Popover content={<WorkspacesMenu/>} position={PopoverPosition.BOTTOM}>
+                    <Button className="bp3-minimal" rightIcon={'caret-down'}>Workspaces</Button>
+                </Popover>
+                <Popover content={<FilesMenu/>} position={PopoverPosition.BOTTOM}>
+                    <Button className="bp3-minimal" rightIcon={'caret-down'}>Files</Button>
                 </Popover>
                 <NavbarDivider/>
                 <Button
