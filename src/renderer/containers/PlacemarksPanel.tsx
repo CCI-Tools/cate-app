@@ -153,28 +153,28 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
     }
 
     private handleCopySelectedPlacemarkAsCsv() {
-        PlacemarksPanel.handleCopyGeometryAsCsv(this.props.selectedPlacemark);
+        this.handleCopyGeometryAsCsv(this.props.selectedPlacemark);
     }
 
     private handleCopySelectedPlacemarkAsWkt() {
-        PlacemarksPanel.handleCopyGeometryAsWkt(this.props.selectedPlacemark);
+        this.handleCopyGeometryAsWkt(this.props.selectedPlacemark);
     }
 
     private handleCopySelectedPlacemarkAsGeoJSON() {
-        PlacemarksPanel.handleCopyGeometryAsGeoJson(this.props.selectedPlacemark);
+        this.handleCopyGeometryAsGeoJson(this.props.selectedPlacemark);
     }
 
-    private static handleCopyGeometryAsCsv(placemark: Placemark) {
+    private handleCopyGeometryAsCsv = (placemark: Placemark)  => {
         actions.copyTextToClipboard(geometryGeoJsonToCsv(placemark.geometry));
-    }
+    };
 
-    private static handleCopyGeometryAsWkt(placemark: Placemark) {
+    private handleCopyGeometryAsWkt = (placemark: Placemark) => {
         actions.copyTextToClipboard(geometryGeoJsonToGeometryWkt(placemark.geometry));
-    }
+    };
 
-    private static handleCopyGeometryAsGeoJson(placemark: Placemark) {
+    private handleCopyGeometryAsGeoJson = (placemark: Placemark) => {
         actions.copyTextToClipboard(geoJsonToText(placemark));
-    }
+    };
 
     private static getPlacemarkItemKey(placemark: Placemark) {
         return placemark.id;
@@ -249,10 +249,11 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
                     icon="locate"
                     tooltipPosition={'top'}
                 />
-                <Popover position={Position.LEFT}>
+                <Popover disabled={!this.props.selectedPlacemark} position={Position.LEFT}>
                     <ToolButton
-                        tooltipContent="Copy selected place"
-                        disabled={!this.props.selectedPlacemarkId}
+                        tooltipContent={!this.props.selectedPlacemark ?
+                                        "Copy selected place: Please select a place first." : "Copy selected place."}
+                        disabled={!this.props.selectedPlacemark}
                         icon="clipboard"
                         tooltipPosition={'top'}
                     />
@@ -289,9 +290,9 @@ class PlacemarksPanel extends React.Component<IPlacemarksPanelProps & IPlacemark
         return <PlacemarkItem placemark={placemark}
                               onDoubleClick={this.handlePlacemarkDoubleClick}
                               onVisibilityChange={this.handleChangedPlacemarkVisibility}
-                              onCopyPlacemarkCsv={PlacemarksPanel.handleCopyGeometryAsCsv}
-                              onCopyPlacemarkWkt={PlacemarksPanel.handleCopyGeometryAsWkt}
-                              onCopyPlacemarkGeoJSON={PlacemarksPanel.handleCopyGeometryAsGeoJson}
+                              onCopyPlacemarkCsv={this.handleCopyGeometryAsCsv}
+                              onCopyPlacemarkWkt={this.handleCopyGeometryAsWkt}
+                              onCopyPlacemarkGeoJSON={this.handleCopyGeometryAsGeoJson}
         />;
     }
 
@@ -470,13 +471,14 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
             icon = isBox(geometry) ? 'widget' : 'polygon-filter';
         }
 
+
         return (
             <div ref={this.placemarkItemRef} style={PlacemarkItem.DIV_STYLE}>
                 <Checkbox
                     style={PlacemarkItem.CHECK_STYLE}
                     checked={isBoolean(visible) ? visible : true}
-                    onChange={this.handleVisibilityChanged}
-                />
+                    onChange={this.handleVisibilityChanged}>
+                </Checkbox>
                 <div onDoubleClick={this.handleDoubleClick} style={PlacemarkItem.LABEL_STYLE}>
                     <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
                     <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
