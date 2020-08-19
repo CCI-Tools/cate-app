@@ -12,7 +12,7 @@ import { showDirectorySelectDialog } from "../actions";
 import { TextField } from "../components/field/TextField";
 
 
-const DIV_STYLE = {width: '100%', marginBottom: '2em', marginTop: '4px', display: 'flex', flexGrow: 1};
+const DIV_STYLE = {width: '100%', marginBottom: '2em', display: 'flex', flexGrow: 1};
 
 const TEXT_FIELD_STYLE = {flexGrow: 1};
 const BUTTON_STYLE = {flex: 'none'};
@@ -27,7 +27,7 @@ const baseStyle: CSSProperties = {
     border: '2px dashed #137cbd',
     borderRadius: '5px',
     background: 'rgba(16, 22, 26, 0.3)',
-    color: '#5c7080',
+    color: '#f5f8fa',
     transition: 'border .24s ease-in-out'
 };
 
