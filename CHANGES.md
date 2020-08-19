@@ -1,5 +1,7 @@
 ### Changes in v2.0.0-dev.5
 
+* Added feature to change the base maps in the world view. 
+  Cate now shares base maps with CCI Climate-From-Space App (#87)
 * Turned Cate Web UI into a Desktop Progressive Web Application (PWA) "Cate App".
   Users can now install Cate from browsers to their desktops. (#22, #62)
 * The UI uses now web versions of native (electron) file and directory choosers. (#64)   
