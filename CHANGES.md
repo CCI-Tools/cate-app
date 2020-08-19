@@ -1,4 +1,4 @@
-### Changes in v2.0.0-dev.5
+### Changes in v2.0.0-dev.6
 
 * Added feature to change the base maps in the world view. 
   Cate now shares base maps with CCI Climate-From-Space App (#87)
