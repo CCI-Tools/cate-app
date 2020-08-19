@@ -18,16 +18,17 @@
   - Alignment of Display Value Range within the styles setting
   - Wrapping of dataset labels so they stay in dialog boxes
   - Data Access Error text message alignment so they stay in dialog boxes
+* Drawing and selecting points and polygons now works again (#11, #10)
 
 ### Changes in v2.0.0-dev.4
 
 * Is now using the Cate Web API to handle user preferences
-* Replaced CCI icons by simple round icons using GCOS ECV groupings as background color
-* Adapted UI fonds to conform to ESA style guidelines
+* Replaced CCI icons by simple round icons using GCOS ECV groupings as background color (#39)
+* Adapted UI fonds to conform to ESA style guidelines (#39)
 
 ### Changes in v2.0.0-dev.3
 
-* Fixed copy-to-clipboard actions.
+* Fixed copy-to-clipboard actions. (#41)
 
 ### Changes in v2.0.0-dev.2
 
