@@ -474,7 +474,6 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
 
         return (
             <div ref={this.placemarkItemRef} style={PlacemarkItem.DIV_STYLE}>
-                <Icon style={{marginRight: '4px'}} icon={visible ? 'eye-open': 'eye-off'} />
                 <Checkbox
                     style={PlacemarkItem.CHECK_STYLE}
                     checked={isBoolean(visible) ? visible : true}

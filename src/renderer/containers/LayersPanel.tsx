@@ -167,7 +167,6 @@ class LayersPanel extends React.Component<ILayersPanelProps & DispatchProp<State
     private renderLayerItem(layer: LayerState) {
         return (
             <div style={LayersPanel.LAYER_DIV_STYLE}>
-                <Icon style={{marginRight: '4px'}} icon={layer.visible ? 'eye-open': 'eye-off'} />
                 <Checkbox
                     style={LayersPanel.LAYER_CHECKBOX_STYLE}
                     checked={layer.visible}
