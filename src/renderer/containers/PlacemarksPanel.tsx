@@ -478,8 +478,7 @@ class PlacemarkItem extends React.PureComponent<IPlacemarkItemProps, {}> {
                 <Checkbox
                     style={PlacemarkItem.CHECK_STYLE}
                     checked={isBoolean(visible) ? visible : true}
-                    onChange={this.handleVisibilityChanged}>
-                </Checkbox>
+                    onChange={this.handleVisibilityChanged} />
                 <div onDoubleClick={this.handleDoubleClick} style={PlacemarkItem.LABEL_STYLE}>
                     <span style={PlacemarkItem.ICON_STYLE}><Icon icon={icon}/></span>
                     <span style={PlacemarkItem.NAME_STYLE}>{title}</span>
