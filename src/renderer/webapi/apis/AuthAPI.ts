@@ -1,6 +1,6 @@
 import { HttpError } from '../HttpError';
 
-const DEFAULT_CATE_HUB_SERVER_BASE = 'http://localhost:9090'
+const DEFAULT_CATE_HUB_SERVER_BASE = 'http://localhost:9092'
 const CATE_HUB_SERVER_BASE = process.env.REACT_APP_HUB_SERVER_BASE || DEFAULT_CATE_HUB_SERVER_BASE;
 const CATE_HUB_USER_WEBAPI_URL = CATE_HUB_SERVER_BASE + '/user/{username}';
 const CATE_HUB_TOKEN_URL = CATE_HUB_SERVER_BASE + '/hub/api/authorizations/token';
