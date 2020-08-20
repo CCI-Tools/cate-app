@@ -200,6 +200,7 @@ export function login(): ThunkAction {
             }
 
             const getUserAsync = async () => {
+                console.debug('getuser');
                 try {
                     return await authAPI.getUser(username, token);
                 } catch (error) {
@@ -2651,7 +2652,7 @@ function invokeUntil(callback: () => Promise<any>,
             setTimeout(func, interval);
         }
     };
-
+    func = _func;
     setTimeout(_func, interval);
 }
 
