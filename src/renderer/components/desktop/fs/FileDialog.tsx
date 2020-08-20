@@ -467,7 +467,7 @@ const FileDialog: React.FC<IFileDialogProps> = (
     };
 
     let renderActions;
-    if (!openFile && !openDirectory) {
+    if (!openFile && !openDirectory && !saveFile) {
         renderActions = () => null;
     }
 
