@@ -14,7 +14,7 @@ import {
     Tooltip
 } from '@blueprintjs/core';
 import {Cell, Column, Table, TruncatedFormat, TruncatedPopoverMode} from '@blueprintjs/table';
-import { showItemInFolder } from '../actions';
+
 import {ListBox} from '../components/ListBox';
 import {LabelWithType} from '../components/LabelWithType';
 import WorkflowStepPropertiesDialog from './WorkflowStepPropertiesDialog';
@@ -40,6 +40,7 @@ import {findOperation, isDataFrameResource, isFigureResource} from '../state-uti
 import {isBoolean, isDefined, isString, isUndefined, isUndefinedOrNull} from '../../common/types';
 import {ToolButton} from '../components/ToolButton';
 import {EDIT_OPERATION_STEP_DIALOG_ID} from './operation-step-dialog-ids';
+
 
 interface IWorkspacePanelProps {
     workspace: WorkspaceState;
