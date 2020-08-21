@@ -1,4 +1,4 @@
-### Changes in v2.1.0
+### Changes from Cate Desktop 2.0 to 2.1 Cate App
 
 * Changed some confusing terminology used in the UI,
   e.g. "download" into "open", "local" into "cached" (#110) 
@@ -40,4 +40,3 @@
 * Replaced CCI icons by simple round icons using GCOS ECV groupings as background color (#39)
 * Adapted UI fonds to conform to ESA style guidelines (#39)
 * Fixed copy-to-clipboard actions. (#41)
-
