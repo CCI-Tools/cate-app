@@ -1292,6 +1292,7 @@ export function saveWorkspace(): ThunkAction {
         }
 
         function action(workspace: WorkspaceState) {
+            dispatch(updatePreferences(getState().session))
             dispatch(setCurrentWorkspace(workspace));
         }
 
@@ -1643,9 +1644,6 @@ function maybeSaveCurrentWorkspace(dispatch, getState: GetState, title: string, 
 export function setCurrentWorkspace(workspace: WorkspaceState): ThunkAction {
     return (dispatch: Dispatch) => {
         dispatch(setCurrentWorkspaceImpl(workspace));
-        if (!workspace.isScratch) {
-            dispatch(updatePreferences({lastWorkspacePath: workspace.baseDir} as any, true));
-        }
     }
 }
 
