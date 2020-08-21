@@ -1,4 +1,4 @@
-### Changes in v2.0.0-dev.6
+### Changes in v2.0.0
 
 * Added feature to browse the remote file system (#84) 
   Cate now shares base maps with CCI Climate-From-Space App (#87)
@@ -34,17 +34,8 @@
   - Improve layout of operation step dialogs
 * Drawing and selecting points and polygons now works again (#11, #10)
 * Added Help menu.
-
-### Changes in v2.0.0-dev.4
-
 * Is now using the Cate Web API to handle user preferences
 * Replaced CCI icons by simple round icons using GCOS ECV groupings as background color (#39)
 * Adapted UI fonds to conform to ESA style guidelines (#39)
-
-### Changes in v2.0.0-dev.3
-
 * Fixed copy-to-clipboard actions. (#41)
 
-### Changes in v2.0.0-dev.2
-
-* Demo version for ESA
