@@ -13,7 +13,7 @@
 // The app cache is only updated, if this file changes (i.e. the compiled
 // "./service-worker.js" file changes). Therefore we use a version number here,
 // so we can force updates.
-const PWA_VERSION = "2.1.0-dev.8";
+const PWA_VERSION = "2.1.0";
 console.debug(`This is PWA version ${PWA_VERSION}`);
 
 const isLocalhost = Boolean(
