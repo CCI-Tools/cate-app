@@ -1,6 +1,6 @@
+import { Menu, MenuItem } from '@blueprintjs/core';
 import * as React from 'react';
 import { connect, Dispatch } from "react-redux";
-import { Menu, MenuItem } from '@blueprintjs/core';
 
 import { State } from '../state';
 
@@ -24,25 +24,29 @@ const _HelpMenu: React.FC<IHelpMenuProps & IDispatch> = (props) => {
     return (
         <div>
             <Menu>
-                <MenuItem 
-                    text="Website"
-                    onClick={() => openUrl("https://climatetoolbox.io/")}
+                {/*<MenuItem */}
+                {/*    text="Website"*/}
+                {/*    onClick={() => openUrl("https://climatetoolbox.io/")}*/}
+                {/*/>*/}
+                <MenuItem
+                    text="Cate Documentation"
+                    onClick={() => openUrl("http://cate.readthedocs.io/")}
                 />
-                <MenuItem 
-                    text="Documentation"
-                    onClick={() => openUrl("http://cate.readthedocs.io/en/latest/")}
+                {/*<MenuItem */}
+                {/*    text="Downloads"*/}
+                {/*    onClick={() => openUrl("https://github.com/CCI-Tools/cate/releases")}*/}
+                {/*/>*/}
+                <MenuItem
+                    text="Cate Issue Tracker"
+                    onClick={() => openUrl("https://github.com/CCI-Tools/cate-webui/issues")}
                 />
-                <MenuItem 
-                    text="Downloads"
-                    onClick={() => openUrl("https://github.com/CCI-Tools/cate/releases")}
-                />
-                <MenuItem 
-                    text="Issue Tracker"
-                    onClick={() => openUrl("https://github.com/CCI-Tools/cate/issues")}
-                />
-                <MenuItem 
-                    text="ESA Climate Change Initiative"
-                    onClick={() => openUrl("http://cci.esa.int/")}
+                {/*<MenuItem*/}
+                {/*    text="User Survey"*/}
+                {/*    onClick={() => openUrl("https://github.com/CCI-Tools/cate-webui/issues")}*/}
+                {/*/>*/}
+                <MenuItem
+                    text="ESA Climate Office"
+                    onClick={() => openUrl("https://climate.esa.int/")}
                 />
             </Menu>
         </div>
