@@ -1,4 +1,4 @@
-### Changes in v2.0.0
+### Changes in v2.1.0
 
 * Added feature to browse the remote file system (#84) 
   Cate now shares base maps with CCI Climate-From-Space App (#87)
