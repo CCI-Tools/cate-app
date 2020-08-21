@@ -222,7 +222,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             } else {
                 primaryAction = (
                     <ToolButton
-                        tooltipContent="Download and/or open remote data source"
+                        tooltipContent="Open remote data source"
                         intent={Intent.PRIMARY}
                         onClick={this.handleShowDownloadDataSourceDialog}
                         disabled={!canDownload}

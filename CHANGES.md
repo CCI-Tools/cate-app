@@ -1,5 +1,7 @@
 ### Changes in v2.1.0
 
+* Changed some confusing terminology used in the UI,
+  e.g. "download" into "open", "local" into "cached" (#110) 
 * Added feature to browse the remote file system (#84) 
   Cate now shares base maps with CCI Climate-From-Space App (#87)
 * Added feature to change the base maps in the world view. 

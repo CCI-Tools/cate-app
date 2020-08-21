@@ -104,9 +104,9 @@ class DownloadDataSourceDialog extends React.Component<IDownloadDataSourceDialog
         const makeLocalSelected = this.state.options.isMakeLocalSelected;
         let confirmTitle;
         if (makeLocalSelected && true) {
-            confirmTitle = 'Download & Open Local';
+            confirmTitle = 'Open and Cache';
         } else {
-            confirmTitle = 'Open Remote';
+            confirmTitle = 'Open On-the-fly';
         }
         const inputErrors = DataAccessComponent.optionsToErrors(this.state.options);
         const confirmTooltip = renderInputErrors(inputErrors);
@@ -114,7 +114,7 @@ class DownloadDataSourceDialog extends React.Component<IDownloadDataSourceDialog
         return (
             <ModalDialog
                 isOpen={isOpen}
-                title="Download Data Source"
+                title="Open Data Source"
                 icon="cloud-download"
                 confirmTitle={confirmTitle}
                 confirmIconName="cloud-download"
