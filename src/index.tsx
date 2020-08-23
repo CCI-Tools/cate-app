@@ -19,7 +19,7 @@ declare global {
 }
 
 window.CESIUM_BASE_URL = './cesium';
-console.log('CESIUM_BASE_URL =', window.CESIUM_BASE_URL);
+// console.debug('CESIUM_BASE_URL =', window.CESIUM_BASE_URL);
 
 main();
 
