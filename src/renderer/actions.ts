@@ -164,7 +164,7 @@ export function login(): ThunkAction {
             authInfo = await authAPI.auth(username,
                                           password);
         } catch (error) {
-            console.info('error: ', error);
+            console.error('error: ', error);
             if (error instanceof HttpError && (error.status === 401)) {
                 showToast({type: 'error', text: 'Access unauthorized.'});
             } else if (error instanceof HttpError && (error.status === 403)) {
@@ -286,7 +286,7 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
 function updateWebAPIInfoInMain(webAPIProvision: WebAPIProvision, webAPIServiceURL: string, user: User | null) {
     if (hasElectron('updateWebAPIInfoInMain')) {
         const webAPIInfo = {webAPIProvision, webAPIServiceURL, user};
-        console.info('webAPIInfo:', webAPIInfo);
+        // console.debug('webAPIInfo:', webAPIInfo);
         electron.ipcRenderer.send('update-webapi-info', webAPIInfo);
     }
 }
@@ -791,8 +791,6 @@ function updateSubPathFileNode(subPaths: string[], force: boolean): ThunkAction 
         if (subNode.status && !force) {
             return;
         }
-
-        console.log(`will update:`, subPaths)
 
         dispatch(updateFsRootNode(subPath, {...subNode, status: 'updating'}));
 
@@ -2250,9 +2248,9 @@ export const showPwaInstallPrompt = (): ThunkAction => (dispatch) => {
     // Wait for the user to respond to the prompt
     _deferredPwaInstallPrompt.userChoice.then((choiceResult: any) => {
         if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
+            console.debug('User accepted the install prompt');
         } else {
-            console.log('User dismissed the install prompt');
+            console.debug('User dismissed the install prompt');
         }
     });
 }
