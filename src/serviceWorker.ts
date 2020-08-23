@@ -14,7 +14,7 @@
 // "./service-worker.js" file changes). Therefore we use a version number here,
 // so we can force updates.
 const PWA_VERSION = "2.1.1.dev-1";
-console.debug(`This is PWA version ${PWA_VERSION}`);
+console.debug(`Cate PWA version ${PWA_VERSION}`);
 
 const isLocalhost = Boolean(
     window.location.hostname === 'localhost' ||
