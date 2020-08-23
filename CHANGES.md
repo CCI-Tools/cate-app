@@ -1,6 +1,8 @@
 ### Changes in Cate App 2.1.1 (in development)
 
 * Fixed display of vector data from GeoJSON, Shapefiles, etc. (#113)
+* Limited maximum z-levels of new base map layers, so error messages no longer
+  appear in JS console. 
 
 ### Changes from Cate Desktop 2.0 to 2.1 Cate App
 
