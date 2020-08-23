@@ -45,19 +45,14 @@ const _FileValueEditor: React.FC<IFileValueEditorProps & DispatchProp<State>> = 
 
     value = (value as any) || '';
 
-    console.log('_FileValueEditor: hostOS =', hostOS);
-    console.log('_FileValueEditor: workspaceDir =', workspaceDir);
-
     const toRelativePath = (path: string) => {
         if (workspaceDir !== null) {
-            console.log('_FileValueEditor.toRelativePath: path =', path);
             return makeRelativePath(path, workspaceDir, hostOS);
         }
         return path
     };
 
     const toAbsolutePath = (path: string) => {
-        console.log('_FileValueEditor.toAbsolutePath: path =', path);
         if (workspaceDir !== null) {
             return makeAbsolutePath(workspaceDir, path, hostOS);
         }
