@@ -1,5 +1,7 @@
 ### Changes in Cate App 2.1.1 (in development)
 
+* Fixed display of vector data from GeoJSON, Shapefiles, etc. (#113)
+
 ### Changes from Cate Desktop 2.0 to 2.1 Cate App
 
 * Changed some confusing terminology used in the UI,

@@ -26,6 +26,7 @@ yarn-error.log*
 .idea/
 
 
-# Cesium
+# Stuff copied into ./public during build
 
 public/cesium/
+public/oboe-browser.js
