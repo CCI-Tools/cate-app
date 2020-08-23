@@ -283,7 +283,7 @@ class VariablesListPanel extends React.PureComponent<VariablesListPanelProps> {
         return (
             <div>
                 {label}
-                <span style={VariablesPanel.VALUE_STYLE}>{value}</span>
+                <span style={VariablesPanel.VALUE_STYLE}>{`${value}`}</span>
             </div>
         );
     };
