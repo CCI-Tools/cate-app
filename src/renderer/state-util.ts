@@ -283,6 +283,7 @@ const newCfSBaseMap = (id: string): BaseMapState => {
         options: {
             url: `https://storage.googleapis.com/esa-cfs-tiles/0.7.0/basemaps/${id}/{z}/{x}/{reverseY}.png`,
             tilingScheme: 'Geographic',
+            maximumLevel: 4,
         }
     };
 };
@@ -301,7 +302,7 @@ export const BASE_MAPS: BaseMapState[] = [
             url: './Cesium/Assets/Textures/NaturalEarthII/{z}/{x}/{reverseY}.jpg',
             credit: '© Analytical Graphics, Inc.',
             tilingScheme: 'Geographic',
-            maximumLevel: 5
+            maximumLevel: 2
         }
     },
     newCfSBaseMap('atmosphere'),
@@ -672,7 +673,7 @@ export function hasWebGL(): boolean {
             _hasWebGL = true;
             context = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
             extensions = context.getSupportedExtensions();
-            console.log('WebGL supported extensions:', extensions);
+            console.debug('WebGL supported extensions:', extensions);
         } catch (e) {
             _hasWebGL = false;
             console.warn('WebGL not supported but required by world view');
