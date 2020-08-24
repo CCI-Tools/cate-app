@@ -447,7 +447,6 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
                              currentPlacemarks: PlacemarkCollection,
                              nextPlacemarks: PlacemarkCollection,
                              style: SimpleStyle): Promise<Cesium.GeoJsonDataSource[]> {
-        console.log('CesiumGlobe: updating placemarks');
         if (this.props.debug) {
             console.log('CesiumGlobe: updating placemarks');
         }
@@ -464,9 +463,7 @@ export class CesiumGlobe extends ExternalObjectComponent<Cesium.Viewer, CesiumGl
                     const visible = placemark.properties['visible'];
                     const dataSourcePromise = Cesium.GeoJsonDataSource.load(placemark, simpleStyleToCesium(style));
                     promises.push(dataSourcePromise.then(dataSource => {
-                        console.log(`will add ${dataSource.entities.values.length} placemark(s)`);
                         CesiumGlobe.moveEntities(dataSource.entities, entities, isBoolean(visible) ? visible : true);
-                        console.log(`we have now ${entities.values.length} placemark(s)`);
                         return dataSource;
                     }));
                     break;
