@@ -1,10 +1,12 @@
 ### Changes in Cate App 2.1.1 (in development)
 
+* Spatial points are now parsed from CSV files when using the `read_csv()` operation.
+  This is an option which can be disabled. (#115)
 * Fixed display of vector data from GeoJSON, Shapefiles, etc. (#113)
 * Limited maximum z-levels of new base map layers, so error messages no longer
   appear in JS console. 
 
-### Changes from Cate Desktop 2.0 to 2.1 Cate App
+### Changes from Cate Desktop 2.0 to Cate App 2.1
 
 * Changed some confusing terminology used in the UI,
   e.g. "download" into "open", "local" into "cached" (#110) 
