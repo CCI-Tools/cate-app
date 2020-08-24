@@ -23,6 +23,9 @@ import * as Cesium from 'cesium';
 import { isNumber } from '../../common/types';
 import { SimpleStyle } from '../../common/geojson-simple-style';
 import { simpleStyleToCesium } from '../components/cesium/cesium-util';
+// eslint-disable-next-line
+import Worker from 'worker-loader!../../common/stream-geojson';
+
 
 export function convertLayersToLayerDescriptors(layers: LayerState[],
                                                 resources: ResourceState[],
@@ -194,7 +197,7 @@ const createResourceGeoJSONDataSourceImpl: ResourceGeoJSONDataSourceFactory =
         const customDataSource: Cesium.DataSource = new Cesium.CustomDataSource('Cate Resource #' + resId);
         const cStyle = simpleStyleToCesium(style);
         // let numFeatures = 0;
-        const worker = new Worker('common/stream-geojson.js');
+        const worker = new Worker();
         worker.postMessage(url);
         worker.onmessage = function (event: MessageEvent) {
 
@@ -234,7 +237,7 @@ const createResourceGeoJSONDataSourceImpl: ResourceGeoJSONDataSourceFactory =
                       for (let entity of geoJsonDataSource.entities.values) {
                           // console.log("entity: ", entity);
                           // TODO #477 (nf): Use of the following featureMap is probably wrong
-                          // as there is no unconditional 1:1 mapping between GeoJSON features and generated entities.
+                          //   as there is no unconditional 1:1 mapping between GeoJSON features and generated entities.
                           const feature = featureMap.get(entity.id);
                           // console.log("feature: ", feature);
                           if (feature
@@ -244,7 +247,7 @@ const createResourceGeoJSONDataSourceImpl: ResourceGeoJSONDataSourceFactory =
                               && !!(entity.point || entity.billboard || entity.label)) {
 
                               // TODO #477 (nf): Generalize this code. This is for Glaciers CCI.
-                              // See #491: use a special style for feature geometries that are expandable/collapsible.
+                              //   See #491: use a special style for feature geometries that are expandable/collapsible.
                               let ratio = defaultRatio;
 
                               if (feature.properties) {
@@ -295,6 +298,7 @@ const createResourceGeoJSONDataSourceImpl: ResourceGeoJSONDataSourceFactory =
 
                       geoJsonDataSource.entities.removeAll();
                       customDataSource.entities.resumeEvents();
+                      customDataSource.changedEvent.raiseEvent();
                       // console.log(`Added another ${features.length} feature(s) to Cesium custom data source`);
                   });
         };

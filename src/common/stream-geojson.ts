@@ -6,16 +6,18 @@
  * @author Norman Fomferra
  */
 
-importScripts('../node_modules/oboe/dist/oboe-browser.js');
+importScripts('../../oboe-browser.js');
+const ctx: Worker = self as any;
+
 const oboe = (self as any).oboe;
 
-onmessage = function (event: MessageEvent) {
+ctx.onmessage = function (event: MessageEvent) {
     // console.log('Message received from main script:', event);
     streamFeatures(event.data);
 };
 
 function sendData(data) {
-    (postMessage as any)(data);
+    ctx.postMessage(data);
 }
 
 function streamFeatures(url) {
