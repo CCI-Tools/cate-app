@@ -301,13 +301,13 @@ function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics): Simpl
     const now = Cesium.JulianDate.now();
     const width = polyline.width && polyline.width.getValue(now);
     const material = polyline.material && polyline.material.getValue(now);
-    const color = material && material.color && material.color.getValue(now);
+    const color = material && material.color;
     let stroke: string;
     let strokeOpacity: number;
     let strokeWidth: number;
 
     if (isDefined(width)) {
-        strokeWidth = width.getValue(now);
+        strokeWidth = width;
     }
     if (isDefined(color)) {
         stroke = rgbToCssColor(color.red, color.green, color.blue);
@@ -323,8 +323,8 @@ function polylineGraphicsToSimpleStyle(polyline: Cesium.PolylineGraphics): Simpl
 function polygonGraphicsToSimpleStyle(polygon: Cesium.PolygonGraphics): SimpleStyle {
     const now = Cesium.JulianDate.now();
     const isFilled = polygon.fill && polygon.fill.getValue(now);
-    const material = polygon.material;
-    const color = material && (material as any).color && (material as Cesium.ColorMaterialProperty).color.getValue(now);
+    const material = polygon.material && polygon.material.getValue(now);
+    const color = material && material.color;
     const isOutlined = polygon.outline && polygon.outline.getValue(now);
     const outlineColor = polygon.outlineColor && polygon.outlineColor.getValue(now);
     const outlineWidth = polygon.outlineWidth && polygon.outlineWidth.getValue(now);
