@@ -6,6 +6,7 @@
 * Fixed display of vector data from GeoJSON, Shapefiles, etc. (#113)
 * Limited maximum z-levels of new base map layers, so error messages no longer
   appear in JS console. 
+* Changed terminology used on the front page to be more consistent with the website.
 
 ### Changes from Cate Desktop 2.0 to Cate App 2.1
 

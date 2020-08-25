@@ -27,6 +27,11 @@ const BOX_STYLE: CSSProperties = {
     alignItems: 'stretch',
 };
 
+const SA_MODE_LINK_STYLE: CSSProperties = {
+    marginTop: 4,
+    textAlign: 'center',
+};
+
 interface IDispatch {
     dispatch: Dispatch<State>;
 }
@@ -78,18 +83,18 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 </div>
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
-                        style={{marginTop: 16}}
+                        style={{marginTop: 18}}
                         onClick={setCateHubMode}>
-                    <Tooltip content="Obtain a new Cate service instance from CateHub service provider">
-                        CateHub Service Provider
+                    <Tooltip content="Obtain a new Cate service instance in the cloud (CateHub)">
+                        Cate Software-as-a-Service
                     </Tooltip>
                 </Button>
                 <Button className={'bp3-large'}
-                        style={{marginTop: 16}}
+                        style={{marginTop: 18}}
                         disabled={!isValidURL(webAPIServiceURL)}
                         onClick={setCustomURLMode}>
                     <Tooltip content="Use a Cate service instance at a known URL">
-                        Service at given URL
+                        Cate Stand-Alone Mode
                     </Tooltip>
                 </Button>
                 <div style={{marginTop: 6}}>
@@ -105,6 +110,11 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                                     onClick={resetURL}/>
                         }
                     />
+                    <div style={SA_MODE_LINK_STYLE}>
+                        <a href="https://github.com/CCI-Tools/cate#running-cate-app-in-stand-alone-mode" target="_blank">
+                            How do I run the stand-alone mode?
+                        </a>
+                    </div>
                 </div>
             </div>
             {testFileChoosers && <OpenDialog

@@ -61,7 +61,7 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
     return (
         <div style={CENTER_DIV_STYLE}>
             <div style={BOX_STYLE}>
-                <h1 style={{textAlign: 'center'}}>CateHub Login</h1>
+                <h1 style={{textAlign: 'center'}}>Cate Software-as-a-Service Login</h1>
 
                 <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center'}}>
                     <img src={cateIcon} width={128} height={128} alt={'Cate icon'}/>
@@ -76,7 +76,7 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
                 {/*<h4 style={{marginTop: 24}}>or</h4>*/}
                 {/*<p style={{marginTop: 24, alignSelf: 'center'}}>Using your CateHub Account</p>*/}
 
-                <div style={{marginTop: 12, alignSelf: 'stretch', width: '20em'}}>
+                <div style={{marginTop: 12, alignSelf: 'stretch'}}>
                     <InputGroup
                         className={'bp3-large'}
                         placeholder="Enter your username..."
@@ -86,7 +86,7 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
                         onChange={(event) => setUsername(event.target.value)}
                     />
                 </div>
-                <div style={{marginTop: 6, alignSelf: 'stretch', width: '20em'}}>
+                <div style={{marginTop: 6, alignSelf: 'stretch'}}>
                     <InputGroup
                         className={'bp3-large'}
                         placeholder="Enter your password..."
