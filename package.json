@@ -1,6 +1,6 @@
 {
   "name": "cate-webui",
-  "version": "2.1.1-dev.1",
+  "version": "2.1.1",
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^3.30.1",

@@ -1,4 +1,4 @@
-### Changes in Cate App 2.1.1 (in development)
+### Changes in Cate App 2.1.1
 
 * Fixed app crash after changing polyline styles (#116) 
 * Spatial points are now parsed from CSV files when using the `read_csv()` operation.
