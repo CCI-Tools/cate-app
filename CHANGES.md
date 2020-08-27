@@ -1,3 +1,5 @@
+### Changes in Cate App 2.1.3 (in dev)
+
 ### Changes in Cate App 2.1.2
 
 * Fixed broken build process (due to a broken webpack loader). 
