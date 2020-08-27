@@ -1,3 +1,8 @@
+### Changes in Cate App 2.1.2
+
+* Fixed broken build process (due to a broken webpack loader). 
+  No change in functionality.
+
 ### Changes in Cate App 2.1.1
 
 * Fixed app crash after changing polyline styles (#116) 

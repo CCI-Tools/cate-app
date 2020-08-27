@@ -111,7 +111,11 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                         }
                     />
                     <div style={SA_MODE_LINK_STYLE}>
-                        <a href="https://github.com/CCI-Tools/cate#running-cate-app-in-stand-alone-mode" target="_blank">
+                        <a
+                            href="https://github.com/CCI-Tools/cate#running-cate-app-in-stand-alone-mode"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             How do I run the stand-alone mode?
                         </a>
                     </div>

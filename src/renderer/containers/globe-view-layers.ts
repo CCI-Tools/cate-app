@@ -23,8 +23,6 @@ import * as Cesium from 'cesium';
 import { isNumber } from '../../common/types';
 import { SimpleStyle } from '../../common/geojson-simple-style';
 import { simpleStyleToCesium } from '../components/cesium/cesium-util';
-// eslint-disable-next-line
-import Worker from 'worker-loader!../../common/stream-geojson';
 
 
 export function convertLayersToLayerDescriptors(layers: LayerState[],
@@ -197,7 +195,8 @@ const createResourceGeoJSONDataSourceImpl: ResourceGeoJSONDataSourceFactory =
         const customDataSource: Cesium.DataSource = new Cesium.CustomDataSource('Cate Resource #' + resId);
         const cStyle = simpleStyleToCesium(style);
         // let numFeatures = 0;
-        const worker = new Worker();
+        // const worker = new Worker();
+        const worker = new Worker(`${process.env.PUBLIC_URL}/stream-geojson.js`);
         worker.postMessage(url);
         worker.onmessage = function (event: MessageEvent) {
 

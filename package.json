@@ -70,8 +70,7 @@
     "rimraf": "^3.0.2",
     "spectron": "^3.8.0",
     "ts-node": "^8.6.2",
-    "typescript": "~3.7.2",
-    "worker-loader": "^3.0.2"
+    "typescript": "~3.7.2"
   },
   "scripts": {
     "start": "yarn run cp_oboe && yarn run cp_cesium && react-scripts start",
