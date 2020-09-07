@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, DispatchProp } from 'react-redux';
+import { TermsAndConditions } from '../components/TermsAndConditions';
 import { GeographicPosition, State, TaskState, WebAPIProvision, WebAPIStatus } from '../state';
 import * as selectors from '../selectors';
 import * as actions from '../actions';
@@ -49,8 +50,6 @@ const mapDispatchToProps = {
 /**
  * The TasksPanel is used display all tasks originating from cate desktop,
  * this includes progress and error messages.
- *
- * @author Marco Zuehlke
  */
 class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & DispatchProp<State>, null> {
 
@@ -63,6 +62,12 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
         backgroundColor: '#2B95D6',
         overflow: 'hidden',
     };
+
+    static readonly DIV_MESSAGE_STYLE: CSSProperties = {flex: '60 1 auto', padding: 2};
+    static readonly DIV_TAC_STYLE: CSSProperties = {flex: '0 1 auto', padding: 2};
+    static readonly DIV_TASKS_STYLE: CSSProperties = {flex: '20 1 auto', padding: 2};
+    static readonly DIV_CURSOR_STYLE: CSSProperties = {flex: '20 1 auto', padding: 2};
+    static readonly DIV_STATUS_STYLE: CSSProperties = {flex: '0 1 auto', padding: 2};
 
     render() {
         // TODO dummy
@@ -78,13 +83,11 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
 
         return (
             <div style={StatusBar.DIV_STYLE}>
-                <div style={{flex: '60 1 auto', padding: 2}}>{message}</div>
-                <div style={{flex: '20 1 auto', padding: 2}}>{this.renderTasks()}</div>
-                <div style={{flex: '20 1 auto', padding: 1}}>{cursor}</div>
-                <div style={{
-                    flex: '0 1 auto',
-                    padding: 2
-                }}>{this.renderBackendStatus()}</div>
+                <div style={StatusBar.DIV_MESSAGE_STYLE}>{message}</div>
+                <div style={StatusBar.DIV_TASKS_STYLE}>{this.renderTasks()}</div>
+                <div style={StatusBar.DIV_CURSOR_STYLE}>{cursor}</div>
+                <div style={StatusBar.DIV_TAC_STYLE}>{<TermsAndConditions/>}</div>
+                <div style={StatusBar.DIV_STATUS_STYLE}>{this.renderBackendStatus()}</div>
             </div>
         );
     }

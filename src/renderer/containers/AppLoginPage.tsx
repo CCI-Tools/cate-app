@@ -3,6 +3,7 @@ import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
 import * as actions from '../actions';
 import { Button, InputGroup, Intent } from '@blueprintjs/core';
+import { TermsAndConditions } from '../components/TermsAndConditions';
 import cateIcon from '../resources/cate-icon-512.png';
 import { State } from '../state';
 
@@ -61,7 +62,7 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
     return (
         <div style={CENTER_DIV_STYLE}>
             <div style={BOX_STYLE}>
-                <h1 style={{textAlign: 'center'}}>Cate Software-as-a-Service Login</h1>
+                <h1 style={{textAlign: 'center'}}>Cate Cloud Service Login</h1>
 
                 <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center'}}>
                     <img src={cateIcon} width={128} height={128} alt={'Cate icon'}/>
@@ -119,6 +120,9 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
                 <div style={{marginTop: 18, alignSelf: 'center'}}>
                     <span>Don't have an account yet?&nbsp;</span><a
                     href={'mailto:climate.office@esa.int?subject=Apply%20for%20ESA%20CCI%20Toolbox'}>Apply!</a>
+                </div>
+                <div style={{marginTop: 18, alignSelf: 'center'}}>
+                    <span>By logging in you accept the &nbsp;</span><TermsAndConditions/>
                 </div>
             </div>
         </div>

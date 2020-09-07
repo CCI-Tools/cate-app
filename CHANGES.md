@@ -1,5 +1,7 @@
 ### Changes in Cate App 2.1.3 (in dev)
 
+* Added the app's terms & conditions to all pages (#109)
+
 ### Changes in Cate App 2.1.2
 
 * Fixed broken build process (due to a broken webpack loader). 

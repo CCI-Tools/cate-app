@@ -3,6 +3,7 @@ import { CSSProperties, useEffect, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
 import * as actions from '../actions';
+import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
 import OpenDialog from '../components/desktop/fs/OpenDialog';
@@ -85,16 +86,19 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                         intent={Intent.PRIMARY}
                         style={{marginTop: 18}}
                         onClick={setCateHubMode}>
-                    <Tooltip content="Obtain a new Cate service instance in the cloud (CateHub)">
-                        Cate Software-as-a-Service
+                    <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub Software-as-a-Service).</div>}>
+                        Cate Cloud Service
                     </Tooltip>
                 </Button>
+                <div style={SA_MODE_LINK_STYLE}>
+                    <TermsAndConditions/>
+                </div>
                 <Button className={'bp3-large'}
                         style={{marginTop: 18}}
                         disabled={!isValidURL(webAPIServiceURL)}
                         onClick={setCustomURLMode}>
-                    <Tooltip content="Use a Cate service instance at a known URL">
-                        Cate Stand-Alone Mode
+                    <Tooltip content={<div>Use a Cate service instance on your<br/>own machine or at another known URL.</div>}>
+                        Cate Local Service
                     </Tooltip>
                 </Button>
                 <div style={{marginTop: 6}}>
