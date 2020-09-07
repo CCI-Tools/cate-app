@@ -120,7 +120,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            How do I run the stand-alone mode?
+                            How do I run a Cate local service?
                         </a>
                     </div>
                 </div>

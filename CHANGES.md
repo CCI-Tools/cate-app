@@ -1,13 +1,13 @@
-### Changes in Cate App 2.1.3 (in dev)
+### Changes 2.1.3 (in dev)
 
 * Added the app's terms & conditions to all pages (#109)
 
-### Changes in Cate App 2.1.2
+### Changes 2.1.2
 
 * Fixed broken build process (due to a broken webpack loader). 
   No change in functionality.
 
-### Changes in Cate App 2.1.1
+### Changes 2.1.1
 
 * Fixed app crash after changing polyline styles (#116) 
 * Spatial points are now parsed from CSV files when using the `read_csv()` operation.
