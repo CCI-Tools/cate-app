@@ -4,13 +4,26 @@ import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, Dispatch, Middleware, Store } from 'redux';
 import { createLogger } from 'redux-logger';
 import thunkMiddleware from 'redux-thunk';
+import Keycloak, { KeycloakInitOptions } from 'keycloak-js'
+import { KeycloakProvider } from '@react-keycloak/web'
+
 import * as actions from './actions'
 import ApplicationPage from './containers/ApplicationPage'
 import { requireElectron } from './electron';
 import { showPwaInstallPromotion } from './actions';
-import { DEFAULT_SERVICE_URL } from './initial-state';
 import { stateReducer } from './reducers';
 import { State } from './state';
+
+const keycloak = Keycloak({
+                              realm: process.env.REACT_APP_KEYCLOAK_REALM,
+                              url: process.env.REACT_APP_KEYCLOAK_URL,
+                              clientId: process.env.REACT_APP_KEYCLOAK_CLIENT_ID,
+                          });
+console.log(keycloak);
+
+const keycloakProviderInitConfig: KeycloakInitOptions = {
+    onLoad: 'check-sso',
+};
 
 
 const electron = requireElectron();
@@ -40,18 +53,31 @@ export function main() {
     const middleware = applyMiddleware(...middlewares);
     const store = createStore(stateReducer, middleware) as Store<State>;
 
+    const onKeycloakEvent = (event, error) => {
+        console.log('onKeycloakEvent', event, error)
+    }
+
+    const onKeycloakTokens = (tokens) => {
+        console.log('onKeycloakTokens', tokens)
+    }
+
     ReactDOM.render(
-        <Provider store={store}>
-            <ApplicationPage/>
-        </Provider>,
+        <KeycloakProvider
+            keycloak={keycloak}
+            initConfig={keycloakProviderInitConfig}
+            onEvent={onKeycloakEvent}
+            onTokens={onKeycloakTokens}
+        >
+            <Provider store={store}>
+                <ApplicationPage/>
+            </Provider>
+        </KeycloakProvider>,
         document.getElementById('root')
     );
 
-    const webAPIProvision = process.env.REACT_APP_WEB_API_PROVISION;
-    if (webAPIProvision === 'CustomURL' || webAPIProvision === 'CateHub') {
-        // If REACT_APP_WEB_API_PROVISION is valid, skip AppModePage:
-        const webAPIServiceURL = process.env.REACT_APP_WEB_API_SERVICE_URL || DEFAULT_SERVICE_URL;
-        store.dispatch(actions.setWebAPIProvision(webAPIProvision, webAPIServiceURL) as any);
+    const webAPIServiceURL = process.env.REACT_APP_WEB_API_SERVICE_URL;
+    if (webAPIServiceURL) {
+        store.dispatch(actions.setWebAPIProvisionCustomURL(webAPIServiceURL) as any);
     }
 
     if (electron && electron.ipcRenderer) {

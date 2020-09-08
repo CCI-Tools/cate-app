@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { CSSProperties, useEffect, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
+import { useKeycloak } from '@react-keycloak/web'
+import { Button, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
+
 import * as actions from '../actions';
 import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
@@ -11,6 +13,7 @@ import SaveDialog from '../components/desktop/fs/SaveDialog';
 import { testData } from '../components/desktop/fs/testData';
 
 import cateIcon from '../resources/cate-icon-512.png';
+
 
 const testFileChoosers = false;
 
@@ -50,6 +53,7 @@ function mapStateToProps(state: State): IAppModePageProps {
 
 const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
 
+    const [keycloak, keycloakInitialized] = useKeycloak();
     const [webAPIServiceURL, setWebAPIServiceURL] = useState(props.webAPIServiceURL);
     const [openDialogOpen, setOpenDialogOpen] = useState(true);
     const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -59,11 +63,11 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
     }, [props.webAPIServiceURL]);
 
     const setCustomURLMode = () => {
-        props.dispatch(actions.setWebAPIProvision('CustomURL', webAPIServiceURL) as any);
+        props.dispatch(actions.setWebAPIProvisionCustomURL(webAPIServiceURL) as any);
     };
 
     const setCateHubMode = () => {
-        props.dispatch(actions.setWebAPIProvision('CateHub') as any);
+        props.dispatch(actions.setWebAPIProvisionCateHub(keycloak) as any);
     };
 
     const resetURL = () => {
@@ -85,8 +89,12 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
                         style={{marginTop: 18}}
-                        onClick={setCateHubMode}>
-                    <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub Software-as-a-Service).</div>}>
+                        onClick={setCateHubMode}
+                        disabled={!keycloakInitialized}
+                        rightIcon={!keycloakInitialized && <Spinner size={16}/>}
+                >
+                    <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub
+                        Software-as-a-Service).</div>}>
                         Cate Cloud Service
                     </Tooltip>
                 </Button>
@@ -97,7 +105,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                         style={{marginTop: 18}}
                         disabled={!isValidURL(webAPIServiceURL)}
                         onClick={setCustomURLMode}>
-                    <Tooltip content={<div>Use a Cate service instance on your<br/>own machine or at another known URL.</div>}>
+                    <Tooltip content={<div>Use a Cate service instance on your<br/>own machine or at another known URL.
+                    </div>}>
                         Cate Local Service
                     </Tooltip>
                 </Button>

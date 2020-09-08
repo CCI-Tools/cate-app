@@ -1,3 +1,4 @@
+import { KeycloakInstance } from 'keycloak-js';
 import * as redux from 'redux';
 import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
@@ -255,10 +256,33 @@ function _logout(): Action {
 export function setWebAPIProvision(webAPIProvision: WebAPIProvision, webAPIServiceCustomURL: string = DEFAULT_SERVICE_URL): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         dispatch(_setWebAPIProvision(webAPIProvision));
-        if (getState().communication.webAPIProvision === 'CustomURL') {
+        if (getState().communication.webAPIProvision === 'CateHub') {
+
+        } else if (getState().communication.webAPIProvision === 'CustomURL') {
             dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL));
             dispatch(connectWebAPIClient());
         }
+    };
+}
+
+export function clearWebAPIProvision(): Action {
+    return _setWebAPIProvision(null);
+}
+
+export function setWebAPIProvisionCateHub(keycloak: KeycloakInstance<'native'>): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        dispatch(_setWebAPIProvision('CateHub'));
+        if (!keycloak.authenticated) {
+            keycloak.login();
+        }
+    };
+}
+
+export function setWebAPIProvisionCustomURL(webAPIServiceCustomURL: string = DEFAULT_SERVICE_URL): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        dispatch(_setWebAPIProvision('CustomURL'));
+        dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL));
+        dispatch(connectWebAPIClient());
     };
 }
 
@@ -303,7 +327,7 @@ export function connectWebAPIClient(): ThunkAction {
         try {
             serviceInfo = await new ServiceInfoAPI().getServiceInfo(webAPIServiceURL);
         } catch (error) {
-            dispatch(setWebAPIProvision(null));
+            dispatch(clearWebAPIProvision());
             dispatch(setWebAPIStatus(null));
             handleFetchError(error, 'Failed to retrieve service information');
             return;

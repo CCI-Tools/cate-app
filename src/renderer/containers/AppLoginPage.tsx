@@ -46,7 +46,7 @@ const _AppLoginPage: React.FC<IAppLoginPageProps & IDispatch> = (props) => {
     };
 
     const back = () => {
-        props.dispatch(actions.setWebAPIProvision(null) as any);
+        props.dispatch(actions.clearWebAPIProvision() as any);
     };
 
     const setUsername = (username: string) => {

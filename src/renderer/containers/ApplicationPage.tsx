@@ -1,3 +1,4 @@
+import { useKeycloak } from '@react-keycloak/web';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
@@ -5,7 +6,6 @@ import { connect, Dispatch } from 'react-redux';
 import { isElectron } from '../electron';
 import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
-import AppLoginPage from './AppLoginPage';
 import AppModePage from './AppModePage';
 import ChooseWorkspaceDialog, { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './ChooseWorkspaceDialog';
 import GlobeView from './GlobeView'
@@ -129,12 +129,11 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
         fileSystemAPI,
     }) => {
 
-    if (webAPIProvision === null) {
-        return (<AppModePage/>);
-    }
+    const [keycloak, keycloakInitialized] = useKeycloak();
 
-    if (webAPIProvision === 'CateHub' && !isSignedIn) {
-        return (<AppLoginPage/>);
+    if (webAPIProvision === null
+        || (webAPIProvision === 'CateHub' && !(keycloakInitialized && keycloak.authenticated))) {
+        return (<AppModePage/>);
     }
 
     let appBar;
