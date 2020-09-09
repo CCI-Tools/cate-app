@@ -1,3 +1,4 @@
+import { KeycloakProfile } from 'keycloak-js';
 import { combineReducers, Reducer } from 'redux';
 import { updateFileNode } from './components/desktop/fs/FileNode';
 import {
@@ -845,17 +846,20 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             delete tasks[action.payload.jobId];
             return updateObject(state, {tasks: tasks});
         }
-        case actions.SET_USER_CREDENTIALS: {
-            const username = action.payload.username;
-            const password = action.payload.password;
-            return {...state, username, password};
-        }
-        case actions.SET_AUTH_INFO: {
-            const {token, user} = action.payload;
-            return {...state, token, user};
+        case actions.LOGIN: {
+            return {
+                ...state,
+                userProfile: action.payload as KeycloakProfile,
+            };
         }
         case actions.LOGOUT: {
-            return {...state, token: null, user: null, webAPIStatus: null, webAPIProvision: null};
+            return {
+                ...state,
+                webAPIStatus: null,
+                webAPIProvision: null,
+                webAPIServiceURL: null,
+                userProfile: null,
+            };
         }
     }
     return state;

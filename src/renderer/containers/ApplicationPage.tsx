@@ -85,7 +85,6 @@ interface IDispatch {
 
 interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
-    isSignedIn: boolean | null;
     forceAppBar?: boolean;
     fileSystemAPI: FileSystemAPI | null,
 }
@@ -96,7 +95,6 @@ interface IApplicationPageDispatch {
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
     return {
         webAPIProvision: state.communication.webAPIProvision,
-        isSignedIn: state.communication.token != null,
         forceAppBar: state.session.forceAppBar,
         fileSystemAPI: selectors.fileSystemAPISelector(state),
     };
@@ -124,7 +122,6 @@ const MAIN_DIV_STYLE: CSSProperties = {
 const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatch> = (
     {
         webAPIProvision,
-        isSignedIn,
         forceAppBar,
         fileSystemAPI,
     }) => {
@@ -360,18 +357,19 @@ class _CenterPanel extends React.PureComponent<IViewManagerPanelProps & IDispatc
     render() {
         return (
             <div style={_CenterPanel.DIV_STYLE}>
-                <ViewManager viewRenderMap={VIEW_TYPE_RENDERERS}
-                             viewLayout={this.props.viewLayout}
-                             views={this.props.views}
-                             activeView={this.props.activeView}
-                             noViewsDescription="You can create new views from the VIEW panel."
-                             noViewsVisual="eye-open"
-                             onSelectView={this.onSelectView}
-                             onCloseView={this.onCloseView}
-                             onCloseAllViews={this.onCloseAllViews}
-                             onMoveView={this.onMoveView}
-                             onChangeViewSplitPos={this.onChangeViewSplitPos}
-                             onSplitViewPanel={this.onSplitViewPanel}
+                <ViewManager
+                    viewRenderMap={VIEW_TYPE_RENDERERS}
+                    viewLayout={this.props.viewLayout}
+                    views={this.props.views}
+                    activeView={this.props.activeView}
+                    noViewsDescription="You can create new views from the VIEW panel."
+                    noViewsVisual="eye-open"
+                    onSelectView={this.onSelectView}
+                    onCloseView={this.onCloseView}
+                    onCloseAllViews={this.onCloseAllViews}
+                    onMoveView={this.onMoveView}
+                    onChangeViewSplitPos={this.onChangeViewSplitPos}
+                    onSplitViewPanel={this.onSplitViewPanel}
                 />
             </div>
         );

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { Classes, Button, Dialog, IconName, Intent, ProgressBar, Icon } from '@blueprintjs/core';
+
 import { State, WebAPIStatus } from '../state';
 import * as actions from '../actions';
 
@@ -21,6 +22,8 @@ function mapStateToProps(state: State): IWebAPIStatusBoxProps {
 
 const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) => {
     switch (props.webAPIStatus) {
+        case 'open':
+            return null;
         case 'login':
             return (<StatusBox
                 message={'Logging in...'}
@@ -55,7 +58,13 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
                 onCancel={() => props.dispatch(actions.setWebAPIStatus(null))}
             />);
         default:
-            return null;
+            return (<StatusBox
+                message={`Argh! That should not have happened. Service status is [${props.webAPIStatus}]`}
+                icon="error"
+                isWaiting={false}
+                onRetry={() => props.dispatch(actions.connectWebAPIClient() as any)}
+                onCancel={() => props.dispatch(actions.setWebAPIStatus(null))}
+            />);
     }
 };
 

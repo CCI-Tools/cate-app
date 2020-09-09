@@ -1,4 +1,4 @@
-import { KeycloakInstance } from 'keycloak-js';
+import { KeycloakInstance, KeycloakProfile } from 'keycloak-js';
 import * as redux from 'redux';
 import * as d3 from 'd3-fetch';
 import * as Cesium from 'cesium';
@@ -47,7 +47,6 @@ import {
 import * as selectors from './selectors';
 import * as assert from '../common/assert';
 import { PanelContainerLayout } from './components/PanelContainer';
-import { DEFAULT_SERVICE_URL } from './initial-state';
 import {
     AUTO_LAYER_ID,
     findResourceByName,
@@ -81,8 +80,8 @@ import {
     isInputAssigned
 } from './containers/editor/value-editor-assign';
 import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
-import { AuthAPI, AuthInfo, User } from './webapi/apis/AuthAPI'
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
+import { ServiceStatus, WebAPIServiceAPI } from './webapi/apis/WebAPIServiceAPI';
 import { HttpError } from './webapi/HttpError';
 import { requireElectron } from './electron';
 import {
@@ -141,69 +140,50 @@ export const REMOVE_TASK_STATE = 'REMOVE_TASK_STATE';
 export const UPDATE_CONTROL_STATE = 'UPDATE_CONTROL_STATE';
 export const UPDATE_SESSION_STATE = 'UPDATE_SESSION_STATE';
 export const INVOKE_CTX_OPERATION = 'INVOKE_CTX_OPERATION';
-export const SET_USER_CREDENTIALS = 'SET_USER_CREDENTIALS';
-export const SET_AUTH_INFO = 'SET_AUTH_INFO';
+export const LOGIN = 'LOGIN';
 export const LOGOUT = 'LOGOUT';
 
-export function login(): ThunkAction {
-    return async (dispatch: Dispatch, getState: GetState) => {
-
-        const username = getState().communication.username;
-        const password = getState().communication.password;
-        if (username === null || password === null) {
-            return;
-        }
-
-        const authAPI = new AuthAPI();
-        const webAPIConfig = authAPI.getWebAPIServiceURL(username);
-        dispatch(setWebAPIServiceURL(webAPIConfig));
-
+function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
+    return async (dispatch: Dispatch) => {
         dispatch(setWebAPIStatus('login'));
 
-        let authInfo;
-        try {
-            authInfo = await authAPI.auth(username,
-                                          password);
-        } catch (error) {
-            console.error('error: ', error);
-            if (error instanceof HttpError && (error.status === 401)) {
-                showToast({type: 'error', text: 'Access unauthorized.'});
-            } else if (error instanceof HttpError && (error.status === 403)) {
-                showToast({type: 'error', text: 'Wrong username or password.'});
-            } else {
-                handleFetchError(error, 'Login failed');
-            }
+        if (!keycloak.authenticated) {
+            await keycloak.login();
+        }
+
+        const userProfile = await keycloak.loadUserProfile();
+        dispatch(_login(userProfile));
+
+        console.log("Token: ", keycloak.token);
+        console.log("Token: ", keycloak.token);
+
+        const serviceAPI = new WebAPIServiceAPI(keycloak);
+        const serviceCount = await serviceAPI.getServiceCount();
+        if (serviceCount > 3) {
+            showToast({type: 'error', text: 'Too many concurrent user. Please try later...'});
             return;
         }
 
-        dispatch(setAuthInfo(authInfo));
+        dispatch(setWebAPIStatus('launching'));
+        const serviceURL = await serviceAPI.startService();
+        dispatch(setWebAPIServiceURL(serviceURL));
 
-        const token = getState().communication.token!;
-        const user = getState().communication.user;
-
-        function hasServer(user: User | null) {
-            return user !== null && user.server !== null && user.server.length > 0 && user.pending === null;
+        function isServiceRunning(serviceStatus: ServiceStatus | null) {
+            return serviceStatus && serviceStatus.phase === 'Running';
         }
 
-        if (!hasServer(user)) {
-            const handleLaunchError = (error: any) => {
+        const serviceStatus = await serviceAPI.getServiceStatus();
+        if (isServiceRunning(serviceStatus)) {
+            dispatch(connectWebAPIClient());
+        } else {
+            const handleServiceError = (error: any) => {
                 handleFetchError(error, 'Launching of Cate service failed.');
                 dispatch(setWebAPIStatus(null));
             };
 
-            dispatch(setWebAPIStatus('launching'));
-
-            try {
-                await authAPI.startWebAPI(username, token);
-            } catch (error) {
-                handleLaunchError(error);
-                return;
-            }
-
-            const getUserAsync = async () => {
-                console.debug('getuser');
+            const getServiceStatus = async () => {
                 try {
-                    return await authAPI.getUser(username, token);
+                    return await serviceAPI.getServiceStatus();
                 } catch (error) {
                     return null;
                 }
@@ -212,57 +192,42 @@ export function login(): ThunkAction {
             const SECOND = 1000;
             const MINUTE = 60 * SECOND;
 
-            invokeUntil(getUserAsync,
-                        hasServer,
+            invokeUntil(getServiceStatus,
+                        isServiceRunning,
                         () => dispatch(connectWebAPIClient()),
-                        handleLaunchError,
-                        SECOND,
+                        handleServiceError,
+                        2 * SECOND,
                         15 * MINUTE);
-        } else {
-            dispatch(connectWebAPIClient());
         }
-    };
+    }
 }
 
-export function logout(): ThunkAction {
-    return async (dispatch: Dispatch, getState: GetState) => {
-        const username = getState().communication.username;
-        const token = getState().communication.token;
+function _login(userProfile: KeycloakProfile): Action {
+    return {type: LOGIN, payload: userProfile}
+}
 
-        if (username === null || token === null) {
-            return;
-        }
-
+export function logout(keycloak: KeycloakInstance<'native'>): ThunkAction {
+    return async (dispatch: Dispatch) => {
         dispatch(setWebAPIStatus('logoff'));
         dispatch(disconnectWebAPIClient());
-        const authAPI = new AuthAPI();
-        try {
-            await authAPI.stopWebAPI(username, token);
-        } catch (error) {
-            handleFetchError(error, 'Logout failed.')
+        if (keycloak.authenticated) {
+            const serviceAPI = new WebAPIServiceAPI(keycloak);
+            await serviceAPI.stopServiceInstance();
+            await keycloak.logout();
         }
         dispatch(_logout());
-    };
-}
-
-function setAuthInfo(authInfo: AuthInfo): Action {
-    return {type: SET_AUTH_INFO, payload: {...authInfo}}
+    }
 }
 
 function _logout(): Action {
     return {type: LOGOUT}
 }
 
-export function setWebAPIProvision(webAPIProvision: WebAPIProvision, webAPIServiceCustomURL: string = DEFAULT_SERVICE_URL): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        dispatch(_setWebAPIProvision(webAPIProvision));
-        if (getState().communication.webAPIProvision === 'CateHub') {
-
-        } else if (getState().communication.webAPIProvision === 'CustomURL') {
-            dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL));
-            dispatch(connectWebAPIClient());
-        }
-    };
+export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction {
+    return async (dispatch: Dispatch) => {
+        dispatch(savePreferences());
+        await keycloak.accountManagement();
+    }
 }
 
 export function clearWebAPIProvision(): Action {
@@ -270,16 +235,14 @@ export function clearWebAPIProvision(): Action {
 }
 
 export function setWebAPIProvisionCateHub(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
+    return (dispatch: Dispatch) => {
         dispatch(_setWebAPIProvision('CateHub'));
-        if (!keycloak.authenticated) {
-            keycloak.login();
-        }
+        dispatch(login(keycloak));
     };
 }
 
-export function setWebAPIProvisionCustomURL(webAPIServiceCustomURL: string = DEFAULT_SERVICE_URL): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
+export function setWebAPIProvisionCustomURL(webAPIServiceCustomURL: string): ThunkAction {
+    return (dispatch: Dispatch) => {
         dispatch(_setWebAPIProvision('CustomURL'));
         dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL));
         dispatch(connectWebAPIClient());
@@ -307,23 +270,12 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
     return {type: SET_WEBAPI_SERVICE_INFO, payload: {webAPIServiceInfo}};
 }
 
-function updateWebAPIInfoInMain(webAPIProvision: WebAPIProvision, webAPIServiceURL: string, user: User | null) {
-    if (hasElectron('updateWebAPIInfoInMain')) {
-        const webAPIInfo = {webAPIProvision, webAPIServiceURL, user};
-        // console.debug('webAPIInfo:', webAPIInfo);
-        electron.ipcRenderer.send('update-webapi-info', webAPIInfo);
-    }
-}
-
 export function connectWebAPIClient(): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
         const webAPIServiceURL = getState().communication.webAPIServiceURL;
-        const webAPIProvision = getState().communication.webAPIProvision;
-        const user = getState().communication.user;
-        updateWebAPIInfoInMain(webAPIProvision, webAPIServiceURL, user);
         dispatch(setWebAPIStatus('connecting'));
 
-        let serviceInfo;
+        let serviceInfo: WebAPIServiceInfo;
         try {
             serviceInfo = await new ServiceInfoAPI().getServiceInfo(webAPIServiceURL);
         } catch (error) {
@@ -333,10 +285,10 @@ export function connectWebAPIClient(): ThunkAction {
             return;
         }
 
-        // TODO: check if serverInfo.version is in expected version range (#30), otherwise error
+        // TODO: check if serviceInfo.version is in expected version range (#30), otherwise error
+        console.log(`Cate WebAPI server version ${serviceInfo.version}`);
 
         dispatch(setWebAPIServiceInfo(serviceInfo));
-
 
         const webAPIClient = newWebAPIClient(selectors.apiWebSocketsUrlSelector(getState()));
 
@@ -383,21 +335,15 @@ export function connectWebAPIClient(): ThunkAction {
 function disconnectWebAPIClient(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const webAPIClient = getState().communication.webAPIClient;
-        const session = getState().session;
-        updatePreferences(session);
+        dispatch(savePreferences());
         if (webAPIClient !== null) {
             webAPIClient.close();
         }
-        updateWebAPIInfoInMain(null, null, null);
     };
 }
 
 export function updateInitialState(initialState: Object): Action {
     return {type: UPDATE_INITIAL_STATE, payload: initialState};
-}
-
-export function setUserCredentials(username: string, password: string) {
-    return {type: SET_USER_CREDENTIALS, payload: {username, password}};
 }
 
 export function updateDialogState(dialogId: string, ...dialogState: any): Action {
@@ -491,7 +437,13 @@ export function loadPreferences(): ThunkAction {
 }
 
 
-export function updatePreferences(session: Partial<SessionState>, sendToMain: boolean = true): ThunkAction {
+export function savePreferences(): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        dispatch(updatePreferences(getState().session))
+    }
+}
+
+export function updatePreferences(session: Partial<SessionState>): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
             return selectors.remoteStorageAPISelector(getState()).updatePreferences(session);
@@ -499,22 +451,19 @@ export function updatePreferences(session: Partial<SessionState>, sendToMain: bo
 
         function action(session: Partial<SessionState>) {
             dispatch(updateSessionState(session));
-            if (sendToMain) {
-                dispatch(sendPreferencesToMain());
-            }
         }
 
         function planB(jobFailure: JobFailure) {
             dispatch(showMessageBox({
                                         type: 'error',
-                                        title: 'Save Preferences',
-                                        message: 'Failed to save workspace.',
+                                        title: 'Update Preferences',
+                                        message: 'Failed to update preferences.',
                                         detail: jobFailure.message
                                     }));
         }
 
         callAPI({
-                    title: `Save Preferences`,
+                    title: `Update Preferences`,
                     dispatch, call, action, planB, requireDoneNotification: true
                 });
     }
@@ -893,7 +842,7 @@ export function updatePlacemarkStyle(placemarkId: string, style: SimpleStyle): A
 }
 
 export function locatePlacemark(placemarkId: string): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
+    return async (dispatch: Dispatch, getState: GetState) => {
         let viewer = selectors.selectedWorldViewViewerSelector(getState());
         if (viewer) {
             let selectedEntity = getEntityByEntityId(viewer, placemarkId);
@@ -903,7 +852,7 @@ export function locatePlacemark(placemarkId: string): ThunkAction {
                     let heading = 0, pitch = -3.14159 / 2, range = 2500000;
                     headingPitchRange = new Cesium.HeadingPitchRange(heading, pitch, range);
                 }
-                viewer.zoomTo(selectedEntity, headingPitchRange);
+                await viewer.zoomTo(selectedEntity, headingPitchRange);
             }
         }
     };
@@ -1314,7 +1263,7 @@ export function saveWorkspace(): ThunkAction {
         }
 
         function action(workspace: WorkspaceState) {
-            dispatch(updatePreferences(getState().session))
+            dispatch(savePreferences());
             dispatch(setCurrentWorkspace(workspace));
         }
 
@@ -2483,17 +2432,6 @@ export function showItemInFolder(fullPath: string): ThunkAction {
 }
 
 /**
- * Open the given file in the desktop's default manner.
- * @param fullPath
- */
-export function openItem(fullPath: string): boolean {
-    if (hasElectron('openItem')) {
-        return electron.shell.openItem(fullPath);
-    }
-    return false;
-}
-
-/**
  * Open the given URL in the desktop's default manner.
  *
  * @param url The URL.
@@ -2521,7 +2459,7 @@ export function copyTextToClipboard(text: string) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-// File upload/dowenalod
+// File upload/download
 
 export function fileUploadInteractive() {
     return showDialog('fileUploadDialog');
@@ -2580,41 +2518,6 @@ export function downloadFiles(filePaths: string[]): ThunkAction {
     }
 }
 
-
-/**
- * Update frontend preferences (but not backend configuration).
- *
- * @param callback an optional function which is called with the selected button index
- * @returns the selected button index or null, if no button was selected or the callback function is defined
- */
-export function sendPreferencesToMain(callback?: (error: any) => void): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        if (!hasElectron('sendPreferencesToMain')) {
-            return;
-        }
-        const session = getState().session;
-        const preferences = Object.assign({}, session);
-        const excludedPreferenceNames = [
-            'backendConfig',           // treated differently, see storeBackendConfig
-            'mainWindowBounds',        // use current value from main process
-            'devToolsOpened',          // use current value from main process
-            'suppressQuitConfirm',     // use current value from main process
-        ];
-        excludedPreferenceNames.forEach(propertyName => {
-            if (preferences.hasOwnProperty(propertyName)) {
-                delete preferences[propertyName];
-            }
-        });
-        const actionName = 'set-preferences';
-        electron.ipcRenderer.send(actionName, preferences);
-        if (callback) {
-            electron.ipcRenderer.once(actionName + '-reply', (event, error: any) => {
-                callback(error);
-            });
-        }
-    };
-}
-
 function hasElectron(functionName: string): boolean {
     if (!electron) {
         console.warn(`${functionName}() cannot be executed, module electron not available`);
@@ -2626,7 +2529,6 @@ function hasElectron(functionName: string): boolean {
     return true;
 }
 
-
 function handleFetchError(error: any, message: string) {
     console.info('fetch error: ', message, error);
     let suffix = '';
@@ -2634,7 +2536,7 @@ function handleFetchError(error: any, message: string) {
         if (error.statusText) {
             suffix = ` (HTTP status ${error.status}: ${error.statusText})`;
         } else {
-            suffix = `(HTTP status ${error.status})`;
+            suffix = ` (HTTP status ${error.status})`;
         }
     } else if (error instanceof TypeError) {
         suffix = ' (wrong URL or no internet)';

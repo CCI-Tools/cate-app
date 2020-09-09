@@ -1,5 +1,6 @@
 import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
+import { KeycloakProfile } from 'keycloak-js';
 
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { HostOS } from '../common/paths';
@@ -17,7 +18,6 @@ import {
 import { PanelContainerLayout } from './components/PanelContainer';
 import { ViewLayoutState, ViewState } from './components/ViewState';
 import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
-import { User } from './webapi/apis/AuthAPI';
 
 
 /**
@@ -653,10 +653,7 @@ export interface CommunicationState {
     webAPIServiceInfo: WebAPIServiceInfo | null;
     webAPIStatus: WebAPIStatus;
     webAPIClient: WebAPIClient | null;
-    username: string | null;
-    password: string | null;
-    token: string | null;
-    user: User | null;
+    userProfile: KeycloakProfile | null;
     // A map that stores the current state of any tasks (e.g. data fetch jobs from remote API) given a jobId
     tasks: { [jobId: number]: TaskState; };
 }

@@ -10,7 +10,6 @@ import { KeycloakProvider } from '@react-keycloak/web'
 import * as actions from './actions'
 import ApplicationPage from './containers/ApplicationPage'
 import { requireElectron } from './electron';
-import { showPwaInstallPromotion } from './actions';
 import { stateReducer } from './reducers';
 import { State } from './state';
 
@@ -39,7 +38,6 @@ export function main() {
                                                  actions.SET_GLOBE_VIEW_POSITION,
                                                  actions.UPDATE_MOUSE_IDLE_STATE,
                                                  actions.UPDATE_SESSION_STATE,
-                                                 actions.SET_USER_CREDENTIALS,
                                              ]);
         const loggerOptions = {
             level: 'info',
@@ -115,19 +113,15 @@ export function main() {
             store.dispatch(actions.showPreferencesDialog());
         });
 
-        ipcRenderer.on('get-preferences', () => {
-            store.dispatch(actions.sendPreferencesToMain() as any);
-        });
-
         ipcRenderer.on('logout', () => {
-            store.dispatch(actions.logout() as any);
+            // store.dispatch(actions.logout() as any);
         });
     } else {
         // Dektop-PWA app install, see https://web.dev/customize-install/
 
         window.addEventListener('beforeinstallprompt', (event: Event) => {
             // Update UI notify the user they can install the PWA
-            store.dispatch(showPwaInstallPromotion(event));
+            store.dispatch(actions.showPwaInstallPromotion(event));
             console.log('BEFORE INSTALL PROMPT:', event);
         });
 
@@ -169,7 +163,7 @@ export function main() {
         event.preventDefault();
         const state = store.getState();
         if (state.communication.webAPIClient) {
-            store.dispatch(actions.updatePreferences(state.session) as any);
+            store.dispatch(actions.savePreferences() as any);
         }
     });
 }
