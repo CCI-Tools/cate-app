@@ -160,7 +160,6 @@ function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
         dispatch(_login(userProfile));
 
         console.log("Token: ", keycloak.token);
-        console.log("Token: ", keycloak.token);
 
         const serviceAPI = new WebAPIServiceAPI(keycloak);
         const serviceCount = await serviceAPI.getServiceCount();
