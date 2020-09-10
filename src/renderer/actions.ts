@@ -135,6 +135,7 @@ export type ThunkAction = (dispatch: Dispatch, getState: GetState) => any;
 export const UPDATE_INITIAL_STATE = 'UPDATE_INITIAL_STATE';
 export const SET_WEBAPI_PROVISION = 'SET_WEBAPI_PROVISION';
 export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
+export const SET_WEBAPI_CLIENT = 'SET_WEBAPI_CLIENT';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
 export const SET_WEBAPI_SERVICE_CUSTOM_URL = 'SET_WEBAPI_SERVICE_CUSTOM_URL';
 export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
@@ -211,15 +212,17 @@ function _login(userProfile: KeycloakProfile): Action {
 }
 
 export function logout(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return async (dispatch: Dispatch) => {
-        dispatch(setWebAPIStatus('logoff'));
-        dispatch(disconnectWebAPIClient());
-        if (keycloak.authenticated) {
-            const serviceAPI = new WebAPIServiceAPI(keycloak);
-            await serviceAPI.stopServiceInstance();
-            await keycloak.logout();
-        }
-        dispatch(_logout());
+    return (dispatch: Dispatch) => {
+        dispatch(savePreferences(async () => {
+            if (keycloak.authenticated) {
+                const serviceAPI = new WebAPIServiceAPI(keycloak);
+                dispatch(setWebAPIStatus('shuttingDown'));
+                await serviceAPI.stopServiceInstance();
+                dispatch(setWebAPIStatus('loggingOut'));
+                await keycloak.logout();
+            }
+            dispatch(_logout());
+        }));
     }
 }
 
@@ -260,9 +263,12 @@ export function _setWebAPIProvision(webAPIProvision: WebAPIProvision): Action {
     return {type: SET_WEBAPI_PROVISION, payload: {webAPIProvision}}
 }
 
-export function setWebAPIStatus(webAPIStatus: WebAPIStatus,
-                                webAPIClient: WebAPIClient | null = null): Action {
-    return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus, webAPIClient}};
+export function setWebAPIStatus(webAPIStatus: WebAPIStatus): Action {
+    return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus}};
+}
+
+export function setWebAPIClient(webAPIClient: WebAPIClient): Action {
+    return {type: SET_WEBAPI_CLIENT, payload: {webAPIClient}};
 }
 
 export function setWebAPIServiceURL(webAPIServiceURL: string): Action {
@@ -300,7 +306,7 @@ export function connectWebAPIClient(): ThunkAction {
         const webAPIClient = newWebAPIClient(selectors.apiWebSocketsUrlSelector(getState()));
 
         webAPIClient.onOpen = () => {
-            dispatch(setWebAPIStatus('open', webAPIClient));
+            dispatch(setWebAPIClient(webAPIClient));
             dispatch(loadBackendConfig());
             dispatch(loadColorMaps());
             dispatch(loadPreferences());
@@ -318,7 +324,7 @@ export function connectWebAPIClient(): ThunkAction {
 
         webAPIClient.onClose = (event) => {
             console.error('webAPIClient.onClose:', event);
-            if (getState().communication.webAPIStatus === 'logoff') {
+            if (getState().communication.webAPIStatus === 'shuttingDown') {
                 // When we are logging off, the webAPIClient is expected to close.
                 return;
             }
@@ -336,17 +342,6 @@ export function connectWebAPIClient(): ThunkAction {
             console.warn('webAPIClient.onWarning:', event);
             showToast({type: 'warning', text: formatMessage('Warning from Cate service', event)});
         };
-    };
-}
-
-function disconnectWebAPIClient(): ThunkAction {
-    return (dispatch: Dispatch, getState: GetState) => {
-        dispatch(savePreferences(() => {
-            const webAPIClient = getState().communication.webAPIClient;
-            if (webAPIClient !== null) {
-                webAPIClient.close();
-            }
-        }));
     };
 }
 

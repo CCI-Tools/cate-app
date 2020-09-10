@@ -1,34 +1,14 @@
-import { KeycloakProfile } from 'keycloak-js';
 import { combineReducers, Reducer } from 'redux';
-import { updateFileNode } from './components/desktop/fs/FileNode';
-import {
-    CommunicationState,
-    ControlState,
-    DataState,
-    DataStoreState,
-    LayerState,
-    LocationState,
-    SessionState,
-    State,
-    VectorLayerBase
-} from './state';
+import { KeycloakProfile } from 'keycloak-js';
+import deepEqual from 'deep-equal';
+
+import * as assert from '../common/assert';
+import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style';
+import { updateObject, updatePropertyObject } from '../common/objutil';
+import { isString } from '../common/types';
 import * as actions from './actions';
 import { Action, UPDATE_FS_ROOT_NODE } from './actions';
-import * as assert from '../common/assert';
-import { updateObject, updatePropertyObject } from '../common/objutil';
-import {
-    AUTO_LAYER_ID,
-    getFigureViewTitle,
-    getPlacemarkTitleAndIndex,
-    isImageLayer,
-    isVectorLayer,
-    newAnimationView,
-    newFigureView,
-    newTableView,
-    newWorldView,
-    PLACEMARK_ID_PREFIX,
-    updateAutoLayer,
-} from './state-util';
+import { updateFileNode } from './components/desktop/fs/FileNode';
 import {
     addViewToLayout,
     addViewToPanel,
@@ -44,8 +24,7 @@ import {
     splitViewPanel,
     ViewState
 } from './components/ViewState';
-import { isString } from '../common/types';
-import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style';
+import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './containers/operation-step-dialog-ids';
 import {
     DEFAULT_SERVICE_URL,
     INITIAL_COMMUNICATION_STATE,
@@ -54,8 +33,31 @@ import {
     INITIAL_LOCATION_STATE,
     INITIAL_SESSION_STATE
 } from './initial-state';
-import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './containers/operation-step-dialog-ids';
-import deepEqual from 'deep-equal';
+import {
+    CommunicationState,
+    ControlState,
+    DataState,
+    DataStoreState,
+    LayerState,
+    LocationState,
+    SessionState,
+    State,
+    VectorLayerBase
+} from './state';
+import {
+    AUTO_LAYER_ID,
+    getFigureViewTitle,
+    getPlacemarkTitleAndIndex,
+    isImageLayer,
+    isVectorLayer,
+    newAnimationView,
+    newFigureView,
+    newTableView,
+    newWorldView,
+    PLACEMARK_ID_PREFIX,
+    updateAutoLayer,
+} from './state-util';
+
 
 // Note: reducers are unit-tested through actions.spec.ts
 
@@ -829,9 +831,12 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             return {...state, webAPIServiceURL: webAPIServiceCustomURL, webAPIServiceCustomURL};
         }
         case actions.SET_WEBAPI_STATUS: {
-            const webAPIClient = action.payload.webAPIClient;
             const webAPIStatus = action.payload.webAPIStatus;
-            return {...state, webAPIClient, webAPIStatus};
+            return {...state, webAPIStatus};
+        }
+        case actions.SET_WEBAPI_CLIENT: {
+            const webAPIClient = action.payload.webAPIClient;
+            return {...state, webAPIClient, webAPIStatus: 'open'};
         }
         case actions.SET_WEBAPI_SERVICE_INFO: {
             const webAPIServiceInfo = action.payload.webAPIServiceInfo;
@@ -855,6 +860,7 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
         case actions.LOGOUT: {
             return {
                 ...state,
+                webAPIClient: null,
                 webAPIStatus: null,
                 webAPIProvision: null,
                 webAPIServiceURL: null,

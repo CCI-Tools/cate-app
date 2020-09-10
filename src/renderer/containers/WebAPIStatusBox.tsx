@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { Classes, Button, Dialog, IconName, Intent, ProgressBar, Icon } from '@blueprintjs/core';
+import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar } from '@blueprintjs/core';
 
-import { State, WebAPIStatus } from '../state';
 import * as actions from '../actions';
+import { State, WebAPIStatus } from '../state';
 
 
 interface IDispatch {
@@ -42,9 +42,15 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
                 icon="log-in"
                 isWaiting={true}
             />);
-        case 'logoff':
+        case 'shuttingDown':
             return (<StatusBox
                 message={'Shutting down Cate service instance...'}
+                icon="log-out"
+                isWaiting={true}
+            />);
+        case 'loggingOut':
+            return (<StatusBox
+                message={'Logging out...'}
                 icon="log-out"
                 isWaiting={true}
             />);
@@ -53,14 +59,6 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
             return (<StatusBox
                 message={'Oops! The connection to the Cate service has been closed unexpectedly.'}
                 icon="offline"
-                isWaiting={false}
-                onRetry={() => props.dispatch(actions.connectWebAPIClient() as any)}
-                onCancel={() => props.dispatch(actions.setWebAPIStatus(null))}
-            />);
-        default:
-            return (<StatusBox
-                message={`Argh! That should not have happened. Service status is [${props.webAPIStatus}]`}
-                icon="error"
                 isWaiting={false}
                 onRetry={() => props.dispatch(actions.connectWebAPIClient() as any)}
                 onCancel={() => props.dispatch(actions.setWebAPIStatus(null))}

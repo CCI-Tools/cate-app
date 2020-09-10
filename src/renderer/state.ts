@@ -55,7 +55,8 @@ export interface DataState {
 }
 
 export type WebAPIProvision = 'CustomURL' | 'CateHub' | null;
-export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' | 'error' | 'closed' | 'logoff' | null;
+export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' |
+    'error' | 'closed' | 'shuttingDown' | 'loggingOut' | null;
 
 export interface WebAPIServiceInfo {
     name: string;
