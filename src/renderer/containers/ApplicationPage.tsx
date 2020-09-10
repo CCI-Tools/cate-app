@@ -1,4 +1,4 @@
-import { useKeycloak } from '@react-keycloak/web';
+import { KeycloakProfile } from 'keycloak-js';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
@@ -85,6 +85,7 @@ interface IDispatch {
 
 interface IApplicationPageProps {
     webAPIProvision: WebAPIProvision;
+    userProfile: KeycloakProfile | null;
     forceAppBar?: boolean;
     fileSystemAPI: FileSystemAPI | null,
 }
@@ -95,6 +96,7 @@ interface IApplicationPageDispatch {
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
     return {
         webAPIProvision: state.communication.webAPIProvision,
+        userProfile: state.communication.userProfile,
         forceAppBar: state.session.forceAppBar,
         fileSystemAPI: selectors.fileSystemAPISelector(state),
     };
@@ -122,14 +124,14 @@ const MAIN_DIV_STYLE: CSSProperties = {
 const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatch> = (
     {
         webAPIProvision,
+        userProfile,
         forceAppBar,
         fileSystemAPI,
     }) => {
 
-    const [keycloak, keycloakInitialized] = useKeycloak();
-
-    if (webAPIProvision === null
-        || (webAPIProvision === 'CateHub' && !(keycloakInitialized && keycloak.authenticated))) {
+    const isLoggedIn = webAPIProvision === 'CateHub' && userProfile !== null;
+    console.log("_ApplicationPage:", webAPIProvision, userProfile);
+    if (webAPIProvision === null || !isLoggedIn) {
         return (<AppModePage/>);
     }
 

@@ -1,15 +1,46 @@
+import * as Cesium from 'cesium';
+import copyToClipboard from 'copy-to-clipboard';
+import * as d3 from 'd3-fetch';
+import { DirectGeometryObject } from 'geojson';
 import { KeycloakInstance, KeycloakProfile } from 'keycloak-js';
 import * as redux from 'redux';
-import * as d3 from 'd3-fetch';
-import * as Cesium from 'cesium';
-import { DirectGeometryObject } from 'geojson';
-import copyToClipboard from 'copy-to-clipboard';
-import { FILE_UPLOAD_DIALOG_ID } from './containers/FileUploadDialog';
+import * as assert from '../common/assert';
+import { isAssignableFrom, VAR_NAME_LIKE_TYPE, VAR_NAMES_LIKE_TYPE } from '../common/cate-types';
+import { SimpleStyle } from '../common/geojson-simple-style';
+import { updateObject } from '../common/objutil';
+import { isDefined, isNumber } from '../common/types';
+import { getEntityByEntityId } from './components/cesium/cesium-util';
+import { GeometryToolType } from './components/cesium/geometry-tool';
+
+import desktopActions from './components/desktop/actions';
 import { FileNode, getFileNode } from './components/desktop/fs/FileNode';
+import {
+    MessageBoxOptions,
+    MessageBoxResult,
+    OpenDialogOptions,
+    OpenDialogResult,
+    SaveDialogOptions,
+    SaveDialogResult
+} from './components/desktop/types';
+import { PanelContainerLayout } from './components/PanelContainer';
+import { SplitDir } from './components/Splitter';
+import { ViewPath, ViewState } from './components/ViewState';
+import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
+import {
+    assignConstantValueInput,
+    assignResourceNameInput,
+    InputAssignments,
+    isInputAssigned
+} from './containers/editor/value-editor-assign';
+import { FILE_UPLOAD_DIALOG_ID } from './containers/FileUploadDialog';
+import { reloadEntityWithOriginalGeometry } from './containers/globe-view-layers';
+import { requireElectron } from './electron';
+import * as selectors from './selectors';
 
 import {
     BackendConfigState,
-    ColorMapCategoryState, ControlState,
+    ColorMapCategoryState,
+    ControlState,
     DataSourceState,
     DataStoreState,
     GeographicPosition,
@@ -20,9 +51,11 @@ import {
     OperationState,
     Placemark,
     ResourceState,
-    SavedLayers, SessionState,
+    SavedLayers,
+    SessionState,
     SplitMode,
-    State, StyleContext,
+    State,
+    StyleContext,
     TaskState,
     VariableLayerBase,
     VariableState,
@@ -32,21 +65,6 @@ import {
     WorkspaceState,
     WorldViewMode
 } from './state';
-import { ViewPath, ViewState } from './components/ViewState';
-import {
-    ERROR_CODE_CANCELLED,
-    ERROR_CODE_INVALID_PARAMS,
-    JobFailure,
-    JobProgress,
-    JobProgressHandler,
-    JobPromise,
-    JobStatusEnum,
-    newWebAPIClient,
-    WebAPIClient
-} from './webapi';
-import * as selectors from './selectors';
-import * as assert from '../common/assert';
-import { PanelContainerLayout } from './components/PanelContainer';
 import {
     AUTO_LAYER_ID,
     findResourceByName,
@@ -64,35 +82,21 @@ import {
     newVariableLayer,
     PLACEMARK_ID_PREFIX
 } from './state-util';
-import { SplitDir } from './components/Splitter';
-import { updateObject } from '../common/objutil';
 import { showToast } from './toast';
-import { isDefined, isNumber } from '../common/types';
-import { reloadEntityWithOriginalGeometry } from './containers/globe-view-layers';
-import { SimpleStyle } from '../common/geojson-simple-style';
-import { GeometryToolType } from './components/cesium/geometry-tool';
-import { getEntityByEntityId } from './components/cesium/cesium-util';
-import { isAssignableFrom, VAR_NAME_LIKE_TYPE, VAR_NAMES_LIKE_TYPE } from '../common/cate-types';
 import {
-    assignConstantValueInput,
-    assignResourceNameInput,
-    InputAssignments,
-    isInputAssigned
-} from './containers/editor/value-editor-assign';
-import { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './containers/ChooseWorkspaceDialog';
+    ERROR_CODE_CANCELLED,
+    ERROR_CODE_INVALID_PARAMS,
+    JobFailure,
+    JobProgress,
+    JobProgressHandler,
+    JobPromise,
+    JobStatusEnum,
+    newWebAPIClient,
+    WebAPIClient
+} from './webapi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { ServiceStatus, WebAPIServiceAPI } from './webapi/apis/WebAPIServiceAPI';
 import { HttpError } from './webapi/HttpError';
-import { requireElectron } from './electron';
-import {
-    MessageBoxOptions,
-    MessageBoxResult,
-    OpenDialogOptions, OpenDialogResult,
-    SaveDialogOptions,
-    SaveDialogResult
-} from './components/desktop/types';
-
-import desktopActions from './components/desktop/actions';
 
 const electron = requireElectron();
 
@@ -225,8 +229,11 @@ function _logout(): Action {
 
 export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction {
     return async (dispatch: Dispatch) => {
-        dispatch(savePreferences());
-        await keycloak.accountManagement();
+        dispatch(savePreferences(() => {
+            const accountUrl = keycloak.createAccountUrl();
+            const accountWindow = window.open(accountUrl, '_blank');
+            accountWindow.focus();
+        }));
     }
 }
 
@@ -334,11 +341,12 @@ export function connectWebAPIClient(): ThunkAction {
 
 function disconnectWebAPIClient(): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
-        const webAPIClient = getState().communication.webAPIClient;
-        dispatch(savePreferences());
-        if (webAPIClient !== null) {
-            webAPIClient.close();
-        }
+        dispatch(savePreferences(() => {
+            const webAPIClient = getState().communication.webAPIClient;
+            if (webAPIClient !== null) {
+                webAPIClient.close();
+            }
+        }));
     };
 }
 
@@ -437,13 +445,14 @@ export function loadPreferences(): ThunkAction {
 }
 
 
-export function savePreferences(): ThunkAction {
+export function savePreferences(postAction?: Action | ThunkAction): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
-        dispatch(updatePreferences(getState().session))
+        dispatch(updatePreferences(getState().session, postAction))
     }
 }
 
-export function updatePreferences(session: Partial<SessionState>): ThunkAction {
+export function updatePreferences(session: Partial<SessionState>,
+                                  postAction?: Action | ThunkAction): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         function call() {
             return selectors.remoteStorageAPISelector(getState()).updatePreferences(session);
@@ -451,6 +460,9 @@ export function updatePreferences(session: Partial<SessionState>): ThunkAction {
 
         function action(session: Partial<SessionState>) {
             dispatch(updateSessionState(session));
+            if (postAction) {
+                dispatch(postAction);
+            }
         }
 
         function planB(jobFailure: JobFailure) {
@@ -460,6 +472,9 @@ export function updatePreferences(session: Partial<SessionState>): ThunkAction {
                                         message: 'Failed to update preferences.',
                                         detail: jobFailure.message
                                     }));
+            if (postAction) {
+                dispatch(postAction);
+            }
         }
 
         callAPI({
@@ -1015,9 +1030,9 @@ export function openDataset(dataSourceId: string, args: any, updateLocalDataSour
         Object.keys(opArgs).forEach(name => {
             wrappedOpArgs[name] = {value: opArgs[name]};
         });
-        let postSetAction;
+        let postAction;
         if (updateLocalDataSources) {
-            postSetAction = (dispatch: Dispatch) => {
+            postAction = (dispatch: Dispatch) => {
                 dispatch(loadDataSources('local', false));
             }
         }
@@ -1026,7 +1041,7 @@ export function openDataset(dataSourceId: string, args: any, updateLocalDataSour
                                       wrappedOpArgs,
                                       null,
                                       false,
-                                      `Opening data source "${dataSourceId}"`, postSetAction));
+                                      `Opening data source "${dataSourceId}"`, postAction));
     }
 }
 
@@ -1668,7 +1683,7 @@ export function dropDatasource(opName: string,
                                resName: string | null,
                                overwrite: boolean,
                                title: string,
-                               postSetAction?): ThunkAction {
+                               postAction?: Action | ThunkAction): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const dialogState = selectors.dialogStateSelector(FILE_UPLOAD_DIALOG_ID)(state);
@@ -1680,7 +1695,7 @@ export function dropDatasource(opName: string,
             selectors.fileAPISelector(state).uploadFiles(baseDir, file, webAPIServiceURL)
                      .then((res) => {
                          showToast({type: res.status, text: 'Upload finished: ' + res.message});
-                         dispatch(setWorkspaceResource(opName, opArgs, resName, overwrite, title, postSetAction));
+                         dispatch(setWorkspaceResource(opName, opArgs, resName, overwrite, title, postAction));
                      })
                      .catch((error) => {
                          showToast({type: 'error', text: error.toString()});
@@ -1695,7 +1710,7 @@ export function setWorkspaceResource(opName: string,
                                      resName: string | null,
                                      overwrite: boolean,
                                      title: string,
-                                     postSetAction?): ThunkAction {
+                                     postAction?: Action | ThunkAction): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const baseDir = selectors.workspaceBaseDirSelector(getState());
         assert.ok(baseDir);
@@ -1727,8 +1742,8 @@ export function setWorkspaceResource(opName: string,
                     dispatch(showAnimationView(resource, selectors.activeViewIdSelector(getState())))
                 }
             }
-            if (postSetAction) {
-                dispatch(postSetAction);
+            if (postAction) {
+                dispatch(postAction);
             }
         }
 
