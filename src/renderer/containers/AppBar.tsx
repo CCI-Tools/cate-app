@@ -123,7 +123,7 @@ const AVATAR_STYLE: CSSProperties = {
     textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1D7324',
+    backgroundColor: '#29A634',
 };
 
 interface AvatarProps {
@@ -144,7 +144,7 @@ interface UserInfoProps {
 function UserInfo({userProfile}: UserInfoProps) {
     const text: React.ReactNode[] = [];
     if (userProfile.username) {
-        text.push(<b>userProfile.username</b>);
+        text.push(<b>{userProfile.username}</b>);
     }
     if (userProfile.firstName) {
         if (userProfile.lastName) {
@@ -162,5 +162,5 @@ function UserInfo({userProfile}: UserInfoProps) {
             text.push(`${userProfile.email} (not verified)`);
         }
     }
-    return (<div>{text.map(t => <div>{t}</div>)}</div>);
+    return (<div>{text.map((t, i) => <div key={i}>{t}</div>)}</div>);
 }

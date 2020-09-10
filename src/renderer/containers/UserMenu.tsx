@@ -1,10 +1,10 @@
+import { Menu, MenuItem } from '@blueprintjs/core';
+import { useKeycloak } from '@react-keycloak/web';
 import * as React from 'react';
 import { connect, Dispatch } from "react-redux";
-import { useKeycloak } from '@react-keycloak/web';
-import { Menu, MenuItem } from '@blueprintjs/core';
+import * as actions from '../actions';
 
 import { State } from '../state';
-import * as actions from '../actions';
 
 interface IDispatch {
     dispatch: Dispatch<State>;
@@ -19,15 +19,15 @@ function mapStateToProps(state: State): IUserMenuProps {
 }
 
 // noinspection JSUnusedLocalSymbols
-const _UserMenu: React.FC<IUserMenuProps & IDispatch> = (props) => {
+const _UserMenu: React.FC<IUserMenuProps & IDispatch> = ({dispatch}) => {
     const [keycloak, keycloakInitialized] = useKeycloak();
 
     const handleAccount = () => {
-        actions.manageAccount(keycloak);
+        dispatch(actions.manageAccount(keycloak) as any);
     };
 
     const handleLogout = () => {
-        actions.logout(keycloak);
+        dispatch(actions.logout(keycloak) as any);
     };
 
     const disabled = !(keycloakInitialized && keycloak.authenticated);
