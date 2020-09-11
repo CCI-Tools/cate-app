@@ -85,18 +85,17 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                 <Popover content={<HelpMenu/>} position={PopoverPosition.BOTTOM}>
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Help</Button>
                 </Popover>
+                <NavbarDivider/>
                 {userProfile !== null && (
                     <Popover content={<UserMenu/>} position={PopoverPosition.BOTTOM}>
                         <Tooltip content={<UserInfo userProfile={userProfile}/>}>
                             <Button
                                 className="bp3-minimal"
                                 icon={<Avatar userProfile={userProfile}/>}
-                                rightIcon={'caret-down'}
                             />
                         </Tooltip>
                     </Popover>
                 )}
-                <NavbarDivider/>
                 <Button
                     className="bp3-minimal"
                     icon='cog'
