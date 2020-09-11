@@ -55,7 +55,10 @@ export class WebAPIServiceAPI {
     }
 
     async getServiceCount(): Promise<number> {
-        const response: Response = await fetch(WEBAPI_COUNT_API_URL);
+        const response: Response = await fetch(WEBAPI_COUNT_API_URL, {
+            method: 'GET',
+            mode: 'cors'
+        });
         if (!response.ok) {
             throw HttpError.fromResponse(response);
         }
@@ -79,6 +82,7 @@ export class WebAPIServiceAPI {
         const url = this.getServiceUrl(username);
         const response: Response = await fetch(url, {
             method,
+            mode: 'cors',
             headers: this.getServiceHeaders(token),
         });
         if (!response.ok) {
