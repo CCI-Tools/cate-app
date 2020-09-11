@@ -2,6 +2,7 @@ import * as Cesium from 'cesium';
 import copyToClipboard from 'copy-to-clipboard';
 import * as d3 from 'd3-fetch';
 import { DirectGeometryObject } from 'geojson';
+import { History } from 'history';
 import { KeycloakInstance, KeycloakProfile } from 'keycloak-js';
 import * as redux from 'redux';
 import * as assert from '../common/assert';
@@ -59,7 +60,6 @@ import {
     TaskState,
     VariableLayerBase,
     VariableState,
-    WebAPIProvision,
     WebAPIServiceInfo,
     WebAPIStatus,
     WorkspaceState,
@@ -133,11 +133,9 @@ export type ThunkAction = (dispatch: Dispatch, getState: GetState) => any;
 // Application-level actions
 
 export const UPDATE_INITIAL_STATE = 'UPDATE_INITIAL_STATE';
-export const SET_WEBAPI_PROVISION = 'SET_WEBAPI_PROVISION';
 export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
 export const SET_WEBAPI_CLIENT = 'SET_WEBAPI_CLIENT';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
-export const SET_WEBAPI_SERVICE_CUSTOM_URL = 'SET_WEBAPI_SERVICE_CUSTOM_URL';
 export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
 export const UPDATE_DIALOG_STATE = 'UPDATE_DIALOG_STATE';
 export const UPDATE_TASK_STATE = 'UPDATE_TASK_STATE';
@@ -145,19 +143,18 @@ export const REMOVE_TASK_STATE = 'REMOVE_TASK_STATE';
 export const UPDATE_CONTROL_STATE = 'UPDATE_CONTROL_STATE';
 export const UPDATE_SESSION_STATE = 'UPDATE_SESSION_STATE';
 export const INVOKE_CTX_OPERATION = 'INVOKE_CTX_OPERATION';
-export const LOGIN = 'LOGIN';
-export const LOGOUT = 'LOGOUT';
+export const SET_USER_PROFILE = 'SET_USER_PROFILE';
 
-function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
+export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): ThunkAction {
     return async (dispatch: Dispatch) => {
         dispatch(setWebAPIStatus('login'));
 
         if (!keycloak.authenticated) {
-            await keycloak.login();
+            await keycloak.login({redirectUri: window.location.origin + '/hub'});
         }
 
         const userProfile = await keycloak.loadUserProfile();
-        dispatch(_login(userProfile));
+        dispatch(_setUserProfile(userProfile));
 
         console.log("Token: ", keycloak.token);
 
@@ -170,7 +167,6 @@ function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
 
         dispatch(setWebAPIStatus('launching'));
         const serviceURL = await serviceAPI.startService();
-        dispatch(setWebAPIServiceURL(serviceURL));
 
         function isServiceRunning(serviceStatus: ServiceStatus | null) {
             return serviceStatus && serviceStatus.phase === 'Running';
@@ -178,7 +174,7 @@ function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
 
         const serviceStatus = await serviceAPI.getServiceStatus();
         if (isServiceRunning(serviceStatus)) {
-            dispatch(connectWebAPIClient());
+            dispatch(connectWebAPIService(serviceURL));
         } else {
             const handleServiceError = (error: any) => {
                 handleFetchError(error, 'Launching of Cate service failed.');
@@ -198,7 +194,7 @@ function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
 
             invokeUntil(getServiceStatus,
                         isServiceRunning,
-                        () => dispatch(connectWebAPIClient()),
+                        () => dispatch(connectWebAPIService(serviceURL)),
                         handleServiceError,
                         2 * SECOND,
                         15 * MINUTE);
@@ -206,11 +202,11 @@ function login(keycloak: KeycloakInstance<'native'>): ThunkAction {
     }
 }
 
-function _login(userProfile: KeycloakProfile): Action {
-    return {type: LOGIN, payload: userProfile}
+function _setUserProfile(userProfile: KeycloakProfile): Action {
+    return {type: SET_USER_PROFILE, payload: userProfile}
 }
 
-export function logout(keycloak: KeycloakInstance<'native'>): ThunkAction {
+export function logout(keycloak: KeycloakInstance<'native'>, history: History): ThunkAction {
     return (dispatch: Dispatch) => {
         dispatch(savePreferences(async () => {
             if (keycloak.authenticated) {
@@ -218,15 +214,12 @@ export function logout(keycloak: KeycloakInstance<'native'>): ThunkAction {
                 dispatch(setWebAPIStatus('shuttingDown'));
                 await serviceAPI.stopServiceInstance();
                 dispatch(setWebAPIStatus('loggingOut'));
-                await keycloak.logout();
+                await keycloak.logout({redirectUri: window.location.origin});
+            } else {
+                history.replace('/');
             }
-            dispatch(_logout());
         }));
     }
-}
-
-function _logout(): Action {
-    return {type: LOGOUT}
 }
 
 export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction {
@@ -239,27 +232,10 @@ export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction
     }
 }
 
-export function clearWebAPIProvision(): Action {
-    return _setWebAPIProvision(null);
-}
-
 export function setWebAPIProvisionCateHub(keycloak: KeycloakInstance<'native'>): ThunkAction {
     return (dispatch: Dispatch) => {
-        dispatch(_setWebAPIProvision('CateHub'));
-        dispatch(login(keycloak));
+        dispatch(launchWebAPIService(keycloak));
     };
-}
-
-export function setWebAPIProvisionCustomURL(webAPIServiceCustomURL: string): ThunkAction {
-    return (dispatch: Dispatch) => {
-        dispatch(_setWebAPIProvision('CustomURL'));
-        dispatch(setWebAPIServiceCustomURL(webAPIServiceCustomURL));
-        dispatch(connectWebAPIClient());
-    };
-}
-
-export function _setWebAPIProvision(webAPIProvision: WebAPIProvision): Action {
-    return {type: SET_WEBAPI_PROVISION, payload: {webAPIProvision}}
 }
 
 export function setWebAPIStatus(webAPIStatus: WebAPIStatus): Action {
@@ -270,30 +246,25 @@ export function setWebAPIClient(webAPIClient: WebAPIClient): Action {
     return {type: SET_WEBAPI_CLIENT, payload: {webAPIClient}};
 }
 
-export function setWebAPIServiceURL(webAPIServiceURL: string): Action {
+function setWebAPIServiceURL(webAPIServiceURL: string): Action {
     return {type: SET_WEBAPI_SERVICE_URL, payload: {webAPIServiceURL}};
-}
-
-export function setWebAPIServiceCustomURL(webAPIServiceCustomURL: string): Action {
-    return {type: SET_WEBAPI_SERVICE_CUSTOM_URL, payload: {webAPIServiceCustomURL}};
 }
 
 export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Action {
     return {type: SET_WEBAPI_SERVICE_INFO, payload: {webAPIServiceInfo}};
 }
 
-export function connectWebAPIClient(): ThunkAction {
+export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
-        const webAPIServiceURL = getState().communication.webAPIServiceURL;
+        dispatch(setWebAPIServiceURL(webAPIServiceURL));
         dispatch(setWebAPIStatus('connecting'));
 
         let serviceInfo: WebAPIServiceInfo;
         try {
             serviceInfo = await new ServiceInfoAPI().getServiceInfo(webAPIServiceURL);
         } catch (error) {
-            dispatch(clearWebAPIProvision());
-            dispatch(setWebAPIStatus(null));
             handleFetchError(error, 'Failed to retrieve service information');
+            dispatch(setWebAPIStatus('error'));
             return;
         }
 
@@ -1671,13 +1642,13 @@ function setSelectedWorkflowStepIdImpl(selectedWorkflowStepId: string): Action {
 }
 
 
-export function dropDatasource(opName: string,
-                               file: File,
-                               opArgs: OperationKWArgs,
-                               resName: string | null,
-                               overwrite: boolean,
-                               title: string,
-                               postAction?: Action | ThunkAction): ThunkAction {
+export function dropWorkspaceResource(opName: string,
+                                      file: File,
+                                      opArgs: OperationKWArgs,
+                                      resName: string | null,
+                                      overwrite: boolean,
+                                      title: string,
+                                      postAction?: Action | ThunkAction): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const state = getState();
         const dialogState = selectors.dialogStateSelector(FILE_UPLOAD_DIALOG_ID)(state);
@@ -1869,7 +1840,7 @@ export function addVariableLayer(viewId: string,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ApplicationPage actions
+// AppMainPage actions
 
 export function setLeftPanelContainerLayout(leftPanelContainerLayout: PanelContainerLayout) {
     return updateSessionState({leftPanelContainerLayout});
@@ -2212,7 +2183,7 @@ export const UPDATE_PWA_DISPLAY_MODE = 'UPDATE_PWA_DISPLAY_MODE';
 let _deferredPwaInstallPrompt: any = null;
 
 export function showPwaInstallPromotion(deferredPrompt: any): Action {
-    // Prevent the mini-infobar from appearing on mobile
+    // Prevent the mini info bar from appearing on mobile
     _deferredPwaInstallPrompt = deferredPrompt;
     _deferredPwaInstallPrompt.preventDefault();
     return {type: SHOW_PWA_INSTALL_PROMOTION};
@@ -2538,7 +2509,7 @@ function hasElectron(functionName: string): boolean {
     return true;
 }
 
-function handleFetchError(error: any, message: string) {
+export function handleFetchError(error: any, message: string) {
     console.info('fetch error: ', message, error);
     let suffix = '';
     if (error instanceof HttpError) {
@@ -2587,3 +2558,104 @@ function invokeUntil(callback: () => Promise<any>,
     setTimeout(_func, interval);
 }
 
+let _handlersInstalled: boolean = false;
+
+export function installGlobalHandlers(): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        if (_handlersInstalled) {
+            return;
+        }
+
+        if (electron && electron.ipcRenderer) {
+            const ipcRenderer = electron.ipcRenderer;
+
+            ipcRenderer.on('update-initial-state', (event, initialState) => {
+                dispatch(updateInitialState(initialState));
+            });
+
+            ipcRenderer.on('new-workspace', () => {
+                dispatch(newWorkspaceInteractive() as any);
+            });
+
+            ipcRenderer.on('open-workspace', () => {
+                dispatch(openWorkspaceInteractive() as any);
+            });
+
+            ipcRenderer.on('close-workspace', () => {
+                dispatch(closeWorkspaceInteractive() as any);
+            });
+
+            ipcRenderer.on('save-workspace', () => {
+                dispatch(saveWorkspaceInteractive() as any);
+            });
+
+            ipcRenderer.on('save-workspace-as', () => {
+                dispatch(saveWorkspaceAsInteractive());
+            });
+
+            ipcRenderer.on('delete-workspace', () => {
+                dispatch(deleteWorkspaceInteractive() as any);
+            });
+
+            ipcRenderer.on('show-preferences-dialog', () => {
+                dispatch(showPreferencesDialog());
+            });
+
+            ipcRenderer.on('logout', () => {
+                // dispatch(logout() as any);
+            });
+        }
+
+        document.addEventListener('drop', function (event: any) {
+            event.preventDefault();
+            event.stopPropagation();
+            for (let file of event.dataTransfer.files) {
+                readDroppedFile(file, dispatch);
+            }
+        });
+
+        document.addEventListener('dragover', function (event: any) {
+            event.preventDefault();
+            event.stopPropagation();
+        });
+
+        window.addEventListener('beforeunload', (event: any) => {
+            event.preventDefault();
+            const state = getState();
+            if (state.communication.webAPIClient) {
+                dispatch(savePreferences() as any);
+            }
+        });
+
+        _handlersInstalled = true;
+    }
+}
+
+function readDroppedFile(file: File, dispatch: Dispatch) {
+    let opName, opArgs;
+    if (file.name.endsWith('.nc')) {
+        opName = 'read_netcdf';
+        // opArgs = {file: {value: file.path}, normalize: {value: false}}
+    } else if (file.name.endsWith('.txt')) {
+        opName = 'read_text';
+    } else if (file.name.endsWith('.json')) {
+        opName = 'read_json';
+    } else if (file.name.endsWith('.csv')) {
+        opName = 'read_csv';
+    } else if (file.name.endsWith('.geojson') || file.name.endsWith('.shp') || file.name.endsWith('.gml')) {
+        opName = 'read_geo_data_frame';
+    }
+    if (!opArgs) {
+        opArgs = {file: {value: file.name}};
+    }
+    if (opName) {
+        dispatch(dropWorkspaceResource(opName,
+                                       file,
+                                       opArgs,
+                                       null,
+                                       false,
+                                       `Reading dropped file ${file.name}`) as any);
+    } else {
+        console.warn('Dropped file of unrecognized type: ', file.name);
+    }
+}

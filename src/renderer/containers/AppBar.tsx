@@ -12,7 +12,7 @@ import {
 } from '@blueprintjs/core';
 
 import * as actions from '../actions';
-import { State, WebAPIProvision } from '../state';
+import { State } from '../state';
 import cateIcon from '../resources/cate-icon-128.png';
 import UserMenu from './UserMenu';
 import WorkspacesMenu from './WorkspacesMenu';
@@ -27,7 +27,6 @@ interface IDispatch {
 }
 
 interface IAppBarProps {
-    webAPIProvision: WebAPIProvision;
     userProfile: KeycloakProfile | null,
     pwaInstallPromotionVisible: boolean;
 }
@@ -35,7 +34,6 @@ interface IAppBarProps {
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppBarProps {
     return {
-        webAPIProvision: state.communication.webAPIProvision,
         userProfile: state.communication.userProfile,
         pwaInstallPromotionVisible: state.control.pwaInstallPromotionVisible,
     };
@@ -44,7 +42,6 @@ function mapStateToProps(state: State): IAppBarProps {
 
 const _AppBar: React.FC<IAppBarProps & IDispatch> = (
     {
-        webAPIProvision,
         userProfile,
         pwaInstallPromotionVisible,
         dispatch,
@@ -88,7 +85,7 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                 <Popover content={<HelpMenu/>} position={PopoverPosition.BOTTOM}>
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Help</Button>
                 </Popover>
-                {webAPIProvision === 'CateHub' && userProfile !== null && (
+                {userProfile !== null && (
                     <Popover content={<UserMenu/>} position={PopoverPosition.BOTTOM}>
                         <Tooltip content={<UserInfo userProfile={userProfile}/>}>
                             <Button

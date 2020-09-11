@@ -26,7 +26,6 @@ import {
 } from './components/ViewState';
 import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './containers/operation-step-dialog-ids';
 import {
-    DEFAULT_SERVICE_URL,
     INITIAL_COMMUNICATION_STATE,
     INITIAL_CONTROL_STATE,
     INITIAL_DATA_STATE,
@@ -818,17 +817,9 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
 
 const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_STATE, action: Action) => {
     switch (action.type) {
-        case actions.SET_WEBAPI_PROVISION: {
-            const webAPIProvision = action.payload.webAPIProvision;
-            return {...state, webAPIProvision};
-        }
         case actions.SET_WEBAPI_SERVICE_URL: {
             const webAPIServiceURL = action.payload.webAPIServiceURL;
             return {...state, webAPIServiceURL};
-        }
-        case actions.SET_WEBAPI_SERVICE_CUSTOM_URL: {
-            const webAPIServiceCustomURL = action.payload.webAPIServiceCustomURL || DEFAULT_SERVICE_URL;
-            return {...state, webAPIServiceURL: webAPIServiceCustomURL, webAPIServiceCustomURL};
         }
         case actions.SET_WEBAPI_STATUS: {
             const webAPIStatus = action.payload.webAPIStatus;
@@ -851,20 +842,10 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             delete tasks[action.payload.jobId];
             return updateObject(state, {tasks: tasks});
         }
-        case actions.LOGIN: {
+        case actions.SET_USER_PROFILE: {
             return {
                 ...state,
                 userProfile: action.payload as KeycloakProfile,
-            };
-        }
-        case actions.LOGOUT: {
-            return {
-                ...state,
-                webAPIClient: null,
-                webAPIStatus: null,
-                webAPIProvision: null,
-                webAPIServiceURL: null,
-                userProfile: null,
             };
         }
     }

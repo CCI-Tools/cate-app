@@ -1,4 +1,3 @@
-import { KeycloakProfile } from 'keycloak-js';
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
@@ -6,7 +5,6 @@ import { connect, Dispatch } from 'react-redux';
 import { isElectron } from '../electron';
 import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
-import AppModePage from './AppModePage';
 import ChooseWorkspaceDialog, { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './ChooseWorkspaceDialog';
 import GlobeView from './GlobeView'
 import FigureView from './FigureView';
@@ -37,7 +35,6 @@ import {
     FigureViewDataState,
     State,
     TableViewDataState,
-    WebAPIProvision,
     WorldViewDataState
 } from '../state';
 import * as actions from '../actions';
@@ -84,26 +81,16 @@ interface IDispatch {
 }
 
 interface IApplicationPageProps {
-    webAPIProvision: WebAPIProvision;
-    userProfile: KeycloakProfile | null;
     forceAppBar?: boolean;
     fileSystemAPI: FileSystemAPI | null,
 }
 
-interface IApplicationPageDispatch {
-}
-
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
     return {
-        webAPIProvision: state.communication.webAPIProvision,
-        userProfile: state.communication.userProfile,
         forceAppBar: state.session.forceAppBar,
         fileSystemAPI: selectors.fileSystemAPISelector(state),
     };
 }
-
-const mapDispatchToPropsApplication = {};
-
 
 const ROOT_DIV_STYLE: CSSProperties = {
     display: 'flex',
@@ -121,19 +108,16 @@ const MAIN_DIV_STYLE: CSSProperties = {
     overflow: 'hidden'
 };
 
-const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatch> = (
+const _AppMainPage: React.FC<IApplicationPageProps & IDispatch> = (
     {
-        webAPIProvision,
-        userProfile,
         forceAppBar,
         fileSystemAPI,
+        dispatch
     }) => {
 
-    const isLoggedIn = webAPIProvision === 'CateHub' && userProfile !== null;
-    console.log("_ApplicationPage:", webAPIProvision, userProfile);
-    if (webAPIProvision === null || !isLoggedIn) {
-        return (<AppModePage/>);
-    }
+    React.useEffect(() => {
+        dispatch(actions.installGlobalHandlers() as any);
+    }, [dispatch]);
 
     let appBar;
     if (!isElectron() || !!forceAppBar) {
@@ -142,6 +126,7 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
 
     return (
         <div className={'bp3-dark'} style={ROOT_DIV_STYLE}>
+            <WebAPIStatusBox/>
             {appBar}
             <div style={MAIN_DIV_STYLE}>
                 <LeftPanel/>
@@ -158,7 +143,6 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
             <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
             <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>
             <JobFailureDialog/>
-            <WebAPIStatusBox/>
             {!desktopActions.isNativeUI && fileSystemAPI !== null && (<DirectorySelectDialog/>)}
             {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileOpenDialog/>)}
             {!desktopActions.isNativeUI && fileSystemAPI !== null && (<FileSaveDialog/>)}
@@ -168,8 +152,8 @@ const _ApplicationPage: React.FC<IApplicationPageProps & IApplicationPageDispatc
     );
 }
 
-const ApplicationPage = connect(mapStateToPropsApplication, mapDispatchToPropsApplication)(_ApplicationPage);
-export default ApplicationPage;
+const AppMainPage = connect(mapStateToPropsApplication)(_AppMainPage);
+export default AppMainPage;
 
 interface ILeftPanelProps {
     panelContainerUndockedMode: boolean;
@@ -216,14 +200,15 @@ class _LeftPanel extends React.PureComponent<ILeftPanelProps & IDispatch, null> 
 
     render() {
         return (
-            <PanelContainer position="left"
-                            undockedMode={this.props.panelContainerUndockedMode}
-                            layout={this.props.leftPanelContainerLayout}
-                            onLayoutChange={this.onLeftPanelContainerLayoutChange}
-                            selectedTopPanelId={this.props.selectedLeftTopPanelId}
-                            selectedBottomPanelId={this.props.selectedLeftBottomPanelId}
-                            onSelectedTopPanelChange={this.onSelectedLeftTopPanelChange}
-                            onSelectedBottomPanelChange={this.onSelectedLeftBottomPanelChange}
+            <PanelContainer
+                position="left"
+                undockedMode={this.props.panelContainerUndockedMode}
+                layout={this.props.leftPanelContainerLayout}
+                onLayoutChange={this.onLeftPanelContainerLayoutChange}
+                selectedTopPanelId={this.props.selectedLeftTopPanelId}
+                selectedBottomPanelId={this.props.selectedLeftBottomPanelId}
+                onSelectedTopPanelChange={this.onSelectedLeftTopPanelChange}
+                onSelectedBottomPanelChange={this.onSelectedLeftBottomPanelChange}
             >
                 <Panel id="dataSources" position="top" icon="database" title="Data Sources"
                        body={<DataSourcesPanel/>}/>
@@ -275,14 +260,15 @@ class _RightPanel extends React.PureComponent<IRightPanelProps & IDispatch, null
 
     render() {
         return (
-            <PanelContainer position="right"
-                            undockedMode={this.props.panelContainerUndockedMode}
-                            layout={this.props.rightPanelContainerLayout}
-                            onLayoutChange={this.onRightPanelContainerLayoutChange}
-                            selectedTopPanelId={this.props.selectedRightTopPanelId}
-                            selectedBottomPanelId={this.props.selectedRightBottomPanelId}
-                            onSelectedTopPanelChange={this.onSelectedRightTopPanelChange}
-                            onSelectedBottomPanelChange={this.onSelectedRightBottomPanelChange}
+            <PanelContainer
+                position="right"
+                undockedMode={this.props.panelContainerUndockedMode}
+                layout={this.props.rightPanelContainerLayout}
+                onLayoutChange={this.onRightPanelContainerLayoutChange}
+                selectedTopPanelId={this.props.selectedRightTopPanelId}
+                selectedBottomPanelId={this.props.selectedRightBottomPanelId}
+                onSelectedTopPanelChange={this.onSelectedRightTopPanelChange}
+                onSelectedBottomPanelChange={this.onSelectedRightBottomPanelChange}
             >
                 <Panel id="workspace" position="top" icon="flows" title="Workspace"
                        body={<WorkspacePanel/>}/>
@@ -379,6 +365,4 @@ class _CenterPanel extends React.PureComponent<IViewManagerPanelProps & IDispatc
 }
 
 const CenterPanel = connect(mapStateToPropsView)(_CenterPanel);
-
-
 

@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, DispatchProp } from 'react-redux';
-import { TermsAndConditions } from '../components/TermsAndConditions';
-import { GeographicPosition, State, TaskState, WebAPIProvision, WebAPIStatus } from '../state';
-import * as selectors from '../selectors';
-import * as actions from '../actions';
 import {
     Icon,
     IconName,
@@ -15,12 +11,17 @@ import {
     ProgressBar,
     Tooltip
 } from '@blueprintjs/core';
+
+import { TermsAndConditions } from '../components/TermsAndConditions';
+import { GeographicPosition, State, TaskState, WebAPIStatus } from '../state';
+import * as selectors from '../selectors';
+import * as actions from '../actions';
 import { JobStatusEnum } from '../webapi';
 import TaskComponent from './TaskComponent';
 
+
 interface IStatusBarProps {
-    webAPIStatus: WebAPIStatus;
-    webAPIProvision: WebAPIProvision;
+    webAPIStatus: WebAPIStatus | null;
     webAPIServiceURL: string;
     tasks: { [jobId: number]: TaskState };
     globePosition: GeographicPosition | null;
@@ -35,7 +36,6 @@ interface IStatusBarDispatch {
 function mapStateToProps(state: State): IStatusBarProps {
     return {
         webAPIStatus: state.communication.webAPIStatus,
-        webAPIProvision: state.communication.webAPIProvision,
         webAPIServiceURL: state.communication.webAPIServiceURL,
         tasks: state.communication.tasks,
         globePosition: selectors.globeMousePositionSelector(state) || selectors.globeViewPositionSelector(state),
@@ -63,11 +63,12 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
         overflow: 'hidden',
     };
 
-    static readonly DIV_MESSAGE_STYLE: CSSProperties = {flex: '60 1 auto', padding: 2};
-    static readonly DIV_TAC_STYLE: CSSProperties = {flex: '0 1 auto', padding: 2};
-    static readonly DIV_TASKS_STYLE: CSSProperties = {flex: '20 1 auto', padding: 2};
-    static readonly DIV_CURSOR_STYLE: CSSProperties = {flex: '20 1 auto', padding: 2};
-    static readonly DIV_STATUS_STYLE: CSSProperties = {flex: '0 1 auto', padding: 2};
+    static readonly DIV_MARGIN: CSSProperties = {margin: "2px 4px 2px 4px"};
+    static readonly DIV_MESSAGE_STYLE: CSSProperties = {flex: '60 1 auto', ...StatusBar.DIV_MARGIN};
+    static readonly DIV_TAC_STYLE: CSSProperties = {flex: '0 1 auto', ...StatusBar.DIV_MARGIN};
+    static readonly DIV_TASKS_STYLE: CSSProperties = {flex: '20 1 auto', ...StatusBar.DIV_MARGIN};
+    static readonly DIV_CURSOR_STYLE: CSSProperties = {flex: '20 1 auto', ...StatusBar.DIV_MARGIN};
+    static readonly DIV_STATUS_STYLE: CSSProperties = {flex: '0 1 auto', margin: "0px 4px 0px 4px"};
 
     render() {
         // TODO dummy

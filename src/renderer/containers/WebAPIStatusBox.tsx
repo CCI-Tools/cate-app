@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar } from '@blueprintjs/core';
 
-import * as actions from '../actions';
 import { State, WebAPIStatus } from '../state';
 
 
@@ -11,7 +11,7 @@ interface IDispatch {
 }
 
 interface IWebAPIStatusBoxProps {
-    webAPIStatus: WebAPIStatus;
+    webAPIStatus: WebAPIStatus | null;
 }
 
 function mapStateToProps(state: State): IWebAPIStatusBoxProps {
@@ -21,6 +21,16 @@ function mapStateToProps(state: State): IWebAPIStatusBoxProps {
 }
 
 const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) => {
+    const history = useHistory();
+
+    const reload = () => {
+        window.location.reload();
+    };
+
+    const goHome = () => {
+        history.replace("/");
+    };
+
     switch (props.webAPIStatus) {
         case 'open':
             return null;
@@ -60,8 +70,15 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
                 message={'Oops! The connection to the Cate service has been closed unexpectedly.'}
                 icon="offline"
                 isWaiting={false}
-                onRetry={() => props.dispatch(actions.connectWebAPIClient() as any)}
-                onCancel={() => props.dispatch(actions.setWebAPIStatus(null))}
+                onRetry={reload}
+                onCancel={goHome}
+            />);
+        default:
+            return (<StatusBox
+                message={'Oops! No service available.'}
+                icon="offline"
+                isWaiting={false}
+                onCancel={goHome}
             />);
     }
 };
