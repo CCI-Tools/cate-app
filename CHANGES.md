@@ -1,6 +1,14 @@
 ### Changes 2.1.3 (in dev)
 
-* Added the app's terms & conditions to all pages (#109)
+* Using KeyCloak authentication and user management service 
+  running in the project's JASMIN cloud tenant. (#121)
+* Using a new Cate WebAPI cloud service provider
+  running in the project's JASMIN cloud tenant. 
+* Using web page routing to for CateApps main pages:
+  - `${origin}/`  - the login screen
+  - `${origin}/hub`  - main page that runs with Cate's cloud service provider 
+  - `${origin}/sa?serviceUrl=${serviceUrl}` - to run the app with a stand-alone server at `${serviceUrl}`   
+* Added the app's terms & conditions to all main pages. (#109)
 
 ### Changes 2.1.2
 
