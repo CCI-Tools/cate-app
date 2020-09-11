@@ -3,8 +3,16 @@ import { KeycloakInstance } from 'keycloak-js';
 import { HttpError } from '../HttpError';
 
 
-const WEBAPI_INST_API_URL = 'https://catehub-stage.brockmann-consult.de/user/{username}/webapi';
-const WEBAPI_COUNT_API_URL = 'https://catehub-stage.brockmann-consult.de/webapi/count';
+const API_ENDPOINT = process.env.REACT_APP_CATEHUB_ENDPOINT;
+if (!API_ENDPOINT) {
+    throw new Error('Missing REACT_APP_CATEHUB_ENDPOINT in .env');
+}
+
+const WEBAPI_MANAG_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_MANAG_PATH || '/user/{username}/webapi';
+const WEBAPI_COUNT_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_COUNT_PATH || '/webapi/count';
+
+const WEBAPI_MANAG_API_URL = `${API_ENDPOINT}/${WEBAPI_MANAG_PATH}`;
+const WEBAPI_COUNT_API_URL = `${API_ENDPOINT}/${WEBAPI_COUNT_PATH}`;
 
 export interface ServiceStatus {
     host_ip: string;
@@ -86,12 +94,13 @@ export class WebAPIServiceAPI {
 
     // noinspection JSMethodCanBeStatic
     private getServiceUrl(username: string) {
-        return new URL(WEBAPI_INST_API_URL.replace('{username}', username)).toString();
+        return new URL(WEBAPI_MANAG_API_URL.replace('{username}', username)).toString();
     }
 
     // noinspection JSMethodCanBeStatic
     private getServiceHeaders(token: string): string[][] {
         return [
+            ['Accept', `application/json`],
             ['Authorization', `Bearer ${token}`],
         ]
     }

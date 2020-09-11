@@ -10,7 +10,7 @@ import { Provider as StoreProvider } from 'react-redux';
 import { applyMiddleware, createStore, Middleware, Store } from 'redux';
 import { createLogger } from 'redux-logger';
 import thunkMiddleware from 'redux-thunk';
-import Keycloak, { KeycloakInitOptions } from 'keycloak-js'
+import Keycloak, { KeycloakInitOptions, KeycloakConfig } from 'keycloak-js'
 import { KeycloakProvider } from '@react-keycloak/web'
 
 import * as actions from './actions'
@@ -21,12 +21,7 @@ import { stateReducer } from './reducers';
 import { State } from './state';
 import { isElectron } from './electron';
 
-const keycloak = Keycloak({
-                              realm: process.env.REACT_APP_KEYCLOAK_REALM,
-                              url: process.env.REACT_APP_KEYCLOAK_URL,
-                              clientId: process.env.REACT_APP_KEYCLOAK_CLIENT_ID,
-                          });
-console.log(keycloak);
+const keycloak = Keycloak(getKeycloakConfig());
 
 const keycloakProviderInitConfig: KeycloakInitOptions = {
     onLoad: 'check-sso',
@@ -57,11 +52,11 @@ export function main() {
     const store = createStore(stateReducer, middleware) as Store<State>;
 
     const onKeycloakEvent = (event, error) => {
-        console.log('onKeycloakEvent', event, error)
+        console.debug('onKeycloakEvent', event, error);
     }
 
     const onKeycloakTokens = (tokens) => {
-        console.log('onKeycloakTokens', tokens)
+        console.debug('onKeycloakTokens', tokens);
     }
 
     ReactDOM.render(
@@ -102,3 +97,14 @@ export function main() {
         });
     }
 }
+
+function getKeycloakConfig(): KeycloakConfig {
+    const realm = process.env.REACT_APP_KEYCLOAK_REALM;
+    const url = process.env.REACT_APP_KEYCLOAK_URL;
+    const clientId = process.env.REACT_APP_KEYCLOAK_CLIENT_ID;
+    if (!realm || !url || !clientId) {
+        throw new Error('Missing or incomplete KeyCloak configuration in .env');
+    }
+    return {realm, url, clientId};
+}
+
