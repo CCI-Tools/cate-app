@@ -145,6 +145,11 @@ export const UPDATE_SESSION_STATE = 'UPDATE_SESSION_STATE';
 export const INVOKE_CTX_OPERATION = 'INVOKE_CTX_OPERATION';
 export const SET_USER_PROFILE = 'SET_USER_PROFILE';
 
+const MAX_NUM_USERS = process.env.REACT_APP_MAX_NUM_USERS ? parseInt(process.env.REACT_APP_MAX_NUM_USERS) : 50;
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
+
+
 export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): ThunkAction {
     return async (dispatch: Dispatch) => {
         dispatch(setWebAPIStatus('login'));
@@ -160,8 +165,9 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
 
         const serviceAPI = new WebAPIServiceAPI(keycloak);
         const serviceCount = await serviceAPI.getServiceCount();
-        if (serviceCount > 3) {
-            showToast({type: 'error', text: 'Too many concurrent user. Please try later...'});
+        if (serviceCount >= MAX_NUM_USERS) {
+            showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
+            dispatch(setWebAPIStatus('error'));
             return;
         }
 
@@ -178,7 +184,7 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
         } else {
             const handleServiceError = (error: any) => {
                 handleFetchError(error, 'Launching of Cate service failed.');
-                dispatch(setWebAPIStatus(null));
+                dispatch(setWebAPIStatus('error'));
             };
 
             const getServiceStatus = async () => {
@@ -189,15 +195,12 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
                 }
             };
 
-            const SECOND = 1000;
-            const MINUTE = 60 * SECOND;
-
             invokeUntil(getServiceStatus,
                         isServiceRunning,
                         () => dispatch(connectWebAPIService(serviceURL)),
                         handleServiceError,
                         2 * SECOND,
-                        15 * MINUTE);
+                        5 * MINUTE);
         }
     }
 }

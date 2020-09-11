@@ -42,19 +42,19 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
             />);
         case 'launching':
             return (<StatusBox
-                message={'Launching Cate service instance...'}
+                message={'Launching Cate service...'}
                 icon="log-in"
                 isWaiting={true}
             />);
         case 'connecting':
             return (<StatusBox
-                message={'Connecting to Cate service instance...'}
+                message={'Connecting to Cate service...'}
                 icon="log-in"
                 isWaiting={true}
             />);
         case 'shuttingDown':
             return (<StatusBox
-                message={'Shutting down Cate service instance...'}
+                message={'Shutting down Cate service...'}
                 icon="log-out"
                 isWaiting={true}
             />);
@@ -65,9 +65,16 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
                 isWaiting={true}
             />);
         case 'closed':
-        case 'error':
             return (<StatusBox
                 message={'Oops! The connection to the Cate service has been closed unexpectedly.'}
+                icon="offline"
+                isWaiting={false}
+                onRetry={reload}
+                onCancel={goHome}
+            />);
+        case 'error':
+            return (<StatusBox
+                message={'Oops! An error occurred while launching or connecting the Cate service.'}
                 icon="offline"
                 isWaiting={false}
                 onRetry={reload}
