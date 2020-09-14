@@ -28,7 +28,10 @@ export function LabelWithType(props: ILabelWithTypeProps) {
     );
 
     if (props.tooltipText && props.tooltipText !== '') {
-        content = (<Tooltip content={props.tooltipText}>{content}</Tooltip>);
+        content = (<Tooltip content={<div style={{width: "15em"}}>{props.tooltipText}</div>}
+                            position={'top'}>
+                        {content}
+                   </Tooltip>);
     }
 
     return <span style={props.style}>{content}</span>;
