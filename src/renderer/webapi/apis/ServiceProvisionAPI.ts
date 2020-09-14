@@ -30,7 +30,7 @@ interface StartResult {
     serverUrl: string;
 }
 
-export class WebAPIServiceAPI {
+export class ServiceProvisionAPI {
     private readonly keycloak: KeycloakInstance<'native'>;
 
     constructor(keycloak: KeycloakInstance<'native'>) {

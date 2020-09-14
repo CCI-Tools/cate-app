@@ -95,7 +95,7 @@ import {
     WebAPIClient
 } from './webapi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
-import { ServiceStatus, WebAPIServiceAPI } from './webapi/apis/WebAPIServiceAPI';
+import { ServiceStatus, ServiceProvisionAPI } from './webapi/apis/ServiceProvisionAPI';
 import { HttpError } from './webapi/HttpError';
 
 const electron = requireElectron();
@@ -163,7 +163,7 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
 
         console.log("Token: ", keycloak.token);
 
-        const serviceAPI = new WebAPIServiceAPI(keycloak);
+        const serviceAPI = new ServiceProvisionAPI(keycloak);
         const serviceCount = await serviceAPI.getServiceCount();
         if (serviceCount >= MAX_NUM_USERS) {
             showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
@@ -210,18 +210,19 @@ function _setUserProfile(userProfile: KeycloakProfile): Action {
 }
 
 export function logout(keycloak: KeycloakInstance<'native'>, history: History): ThunkAction {
-    return (dispatch: Dispatch) => {
-        dispatch(savePreferences(async () => {
-            if (keycloak.authenticated) {
-                const serviceAPI = new WebAPIServiceAPI(keycloak);
+    return async (dispatch: Dispatch) => {
+        if (keycloak.authenticated) {
+            try {
+                const serviceAPI = new ServiceProvisionAPI(keycloak);
                 dispatch(setWebAPIStatus('shuttingDown'));
                 await serviceAPI.stopServiceInstance();
+            } finally {
                 dispatch(setWebAPIStatus('loggingOut'));
                 await keycloak.logout({redirectUri: window.location.origin});
-            } else {
-                history.replace('/');
             }
-        }));
+        } else {
+            history.replace('/');
+        }
     }
 }
 
@@ -230,7 +231,9 @@ export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction
         dispatch(savePreferences(() => {
             const accountUrl = keycloak.createAccountUrl();
             const accountWindow = window.open(accountUrl, '_blank');
-            accountWindow.focus();
+            if (accountWindow && typeof accountWindow.focus === 'function') {
+                accountWindow.focus();
+            }
         }));
     }
 }
@@ -2628,6 +2631,7 @@ export function installGlobalHandlers(): ThunkAction {
             if (state.communication.webAPIClient) {
                 dispatch(savePreferences() as any);
             }
+            return null;
         });
 
         _handlersInstalled = true;
