@@ -80,7 +80,6 @@ export const isLocalFSAccessAllowedSelector = (state: State): boolean => {
     // we can get rid of the electron requirement here.
     return !!electron
            && !!electron.ipcRenderer
-           && state.communication.webAPIProvision === 'CustomURL'
            && !!state.communication.webAPIServiceInfo
            && !state.communication.webAPIServiceInfo.userRootMode;
 };
@@ -228,7 +227,7 @@ export const isDialogOpenSelector = createSelector(
 );
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ApplicationPage layout selectors
+// AppMainPage layout selectors
 
 export const panelContainerUndockedModeSelector = (state: State): boolean => state.session.panelContainerUndockedMode;
 

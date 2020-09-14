@@ -61,7 +61,7 @@ describe('Actions', () => {
         it('updatePreferences', () => {
             dispatch(actions.updatePreferences({lastWorkspacePath: 'a/b'}));
             expect(getState().session.lastWorkspacePath).to.deep.equal('a/b');
-            dispatch(actions.updatePreferences({lastVar: 'c'}));
+            dispatch(actions.updatePreferences({lastVar: 'c'} as any));
             expect(getState().session.lastWorkspacePath).to.deep.equal('a/b');
             expect((getState().session as any).lastVar).to.deep.equal('c');
         });
@@ -633,7 +633,7 @@ describe('Actions', () => {
             // Cesium.DataSourceCollection mock
             class DataSourceCollection {
                 readonly length: number;
-                private dataSources: DataSource[];
+                private readonly dataSources: DataSource[];
 
                 constructor(dataSources: DataSource[]) {
                     this.dataSources = dataSources;
@@ -740,7 +740,7 @@ describe('Actions', () => {
 
             // Style change on entity of Countries layer --> change in countryLayer.entityStyles
             //
-            dispatch(actions.updateEntityStyle(getActiveView(), entity1, {
+            dispatch(actions.updateEntityStyle(getActiveView(), entity1 as any, {
                 fill: '#123456',
                 fillOpacity: 0.3,
             }));
@@ -755,7 +755,7 @@ describe('Actions', () => {
 
             // Another style change on entity of Countries layer--> change in countryLayer.entityStyles
             //
-            dispatch(actions.updateEntityStyle(getActiveView(), entity1, {
+            dispatch(actions.updateEntityStyle(getActiveView(), entity1 as any, {
                 stroke: '#615243',
                 strokeOpacity: 0.9,
             }));
@@ -770,7 +770,7 @@ describe('Actions', () => {
 
             // Yet another style change on another entity of Countries layer --> change in countryLayer.entityStyles
             //
-            dispatch(actions.updateEntityStyle(getActiveView(), entity2, {
+            dispatch(actions.updateEntityStyle(getActiveView(), entity2 as any, {
                 fill: '#112233',
                 fillOpacity: 0.4,
             }));
@@ -789,7 +789,7 @@ describe('Actions', () => {
 
             // Style change on a placemark entity --> change in state.session.placemarkCollection
             //
-            dispatch(actions.updateEntityStyle(getActiveView(), entity3, {
+            dispatch(actions.updateEntityStyle(getActiveView(), entity3 as any, {
                 markerSize: 'large',
                 markerSymbol: 'bus',
             }));
@@ -807,7 +807,7 @@ describe('Actions', () => {
 
             // Style change on a user entity --> change in userLayer.entityStyles
             //
-            dispatch(actions.updateEntityStyle(getActiveView(), entity5, {
+            dispatch(actions.updateEntityStyle(getActiveView(), entity5 as any, {
                 fill: '#FF00FF',
                 fillOpacity: 0.21,
             }));

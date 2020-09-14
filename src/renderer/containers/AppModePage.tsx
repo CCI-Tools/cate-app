@@ -1,18 +1,16 @@
 import * as React from 'react';
 import { CSSProperties, useEffect, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { Button, InputGroup, Intent, Tooltip } from '@blueprintjs/core';
-import * as actions from '../actions';
+import { useHistory } from "react-router-dom";
+import { useKeycloak } from '@react-keycloak/web'
+import { Button, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
+
 import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
-import OpenDialog from '../components/desktop/fs/OpenDialog';
-import SaveDialog from '../components/desktop/fs/SaveDialog';
-import { testData } from '../components/desktop/fs/testData';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
-const testFileChoosers = false;
 
 const CENTER_DIV_STYLE: CSSProperties = {
     display: 'flex',
@@ -38,32 +36,41 @@ interface IDispatch {
 }
 
 interface IAppModePageProps {
-    webAPIServiceURL: string;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppModePageProps {
-    return {
-        webAPIServiceURL: state.communication.webAPIServiceCustomURL,
-    };
+    return {};
 }
 
-const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
+const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
 
-    const [webAPIServiceURL, setWebAPIServiceURL] = useState(props.webAPIServiceURL);
-    const [openDialogOpen, setOpenDialogOpen] = useState(true);
-    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+    const history = useHistory();
+    const [, keycloakInitialized] = useKeycloak();
+    const [webAPIServiceURL, setWebAPIServiceURL] = useState(DEFAULT_SERVICE_URL);
 
     useEffect(() => {
-        setWebAPIServiceURL(props.webAPIServiceURL);
-    }, [props.webAPIServiceURL]);
+        try {
+            const webAPIServiceURL = window.localStorage.getItem('serviceUrl');
+            if (webAPIServiceURL !== null) {
+                setWebAPIServiceURL(webAPIServiceURL);
+            }
+        } catch (e) {
+            // ok
+        }
+    }, []);
 
     const setCustomURLMode = () => {
-        props.dispatch(actions.setWebAPIProvision('CustomURL', webAPIServiceURL) as any);
+        try {
+            window.localStorage.setItem('serviceUrl', webAPIServiceURL);
+        } catch (e) {
+            // ok
+        }
+        history.push(`/sa?serviceUrl=${encodeURI(webAPIServiceURL)}`)
     };
 
     const setCateHubMode = () => {
-        props.dispatch(actions.setWebAPIProvision('CateHub') as any);
+        history.push('/hub')
     };
 
     const resetURL = () => {
@@ -85,8 +92,12 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
                         style={{marginTop: 18}}
-                        onClick={setCateHubMode}>
-                    <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub Software-as-a-Service).</div>}>
+                        onClick={setCateHubMode}
+                        disabled={!keycloakInitialized}
+                        rightIcon={!keycloakInitialized && <Spinner size={16}/>}
+                >
+                    <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub
+                        Software-as-a-Service).<br/>Requires login information.</div>}>
                         Cate Cloud Service
                     </Tooltip>
                 </Button>
@@ -97,7 +108,8 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                         style={{marginTop: 18}}
                         disabled={!isValidURL(webAPIServiceURL)}
                         onClick={setCustomURLMode}>
-                    <Tooltip content={<div>Use a Cate service instance on your<br/>own machine or at another known URL.</div>}>
+                    <Tooltip content={<div>Use a Cate service instance on your<br/>own machine or at another known URL.
+                    </div>}>
                         Cate Local Service
                     </Tooltip>
                 </Button>
@@ -125,39 +137,6 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (props) => {
                     </div>
                 </div>
             </div>
-            {testFileChoosers && <OpenDialog
-                isOpen={openDialogOpen}
-                onClose={() => {
-                    setOpenDialogOpen(false);
-                    setSaveDialogOpen(true);
-                }}
-                rootNode={testData}
-                updateFileNode={() => {
-                }}
-                filters={[
-                    {name: 'All files', extensions: ['*']},
-                    {name: 'Images', extensions: ['jpg', 'png', 'gif']},
-                    {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
-                    {name: 'Vector data', extensions: ['geojson', 'shp']}
-                ]}
-                defaultPath={'Dir-2/Dir-21/File-212.nc'}
-            />
-            }
-            {testFileChoosers && <SaveDialog
-                isOpen={saveDialogOpen}
-                onClose={() => setSaveDialogOpen(false)}
-                rootNode={testData}
-                updateFileNode={() => {
-                }}
-                filters={[
-                    {name: 'All files', extensions: ['*']},
-                    {name: 'Images', extensions: ['jpg', 'png', 'gif']},
-                    {name: 'Gridded data', extensions: ['nc', 'zarr', 'h5', 'hdf']},
-                    {name: 'Vector data', extensions: ['geojson', 'shp']}
-                ]}
-                defaultPath={'Dir-2/Dir-21/File-212.nc'}
-            />
-            }
         </div>
     );
 };

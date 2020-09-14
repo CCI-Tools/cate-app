@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {connect, DispatchProp} from 'react-redux';
+import { connect, DispatchProp } from 'react-redux';
 import {
     ButtonGroup,
     Classes,
@@ -11,19 +11,19 @@ import {
     PopoverInteractionKind,
     Tag
 } from '@blueprintjs/core';
-import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
-import {LabelWithType} from '../components/LabelWithType';
-import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
-import {Card} from '@blueprintjs/core';
+import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
+import { LabelWithType } from '../components/LabelWithType';
+import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
+import { Card } from '@blueprintjs/core';
 import OperationStepDialog from './OperationStepDialog';
-import {OperationInputState, OperationOutputState, OperationState, State, WorkspaceState} from '../state';
+import { OperationInputState, OperationOutputState, OperationState, State, WorkspaceState } from '../state';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
-import {ScrollablePanelContent} from '../components/ScrollableContent';
-import {NO_OPERATIONS_FOUND} from '../messages';
-import {ToolButton} from '../components/ToolButton';
-import {NEW_OPERATION_STEP_DIALOG_ID} from './operation-step-dialog-ids';
-import {TextWithLinks} from '../components/TextWithLinks';
+import { ScrollablePanelContent } from '../components/ScrollableContent';
+import { NO_OPERATIONS_FOUND } from '../messages';
+import { ToolButton } from '../components/ToolButton';
+import { NEW_OPERATION_STEP_DIALOG_ID } from './operation-step-dialog-ids';
+import { TextWithLinks } from '../components/TextWithLinks';
 
 
 interface IOperationsPanelProps {
@@ -54,6 +54,8 @@ function mapStateToProps(state: State): IOperationsPanelProps {
         showOperationDetails: state.session.showOperationDetails,
     };
 }
+
+const OP_CARD_STYLE = {margin: 6, padding: 10};
 
 /**
  * The OperationsPanel is used to select and browse available operations.
@@ -227,9 +229,11 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
         const tagCounts = this.props.operationsTagCounts;
 
         const tagContainerStyle = {padding: '0.2em', display: 'flex', alignItems: 'center'};
-        const tagStyle = {marginRight: '0.2em', marginTop: '0',
+        const tagStyle = {
+            marginRight: '0.2em', marginTop: '0',
             marginBottom: '0', paddingTop: '0', paddingBottom: '0',
-            height: '4ex'};
+            height: '4ex'
+        };
 
         let selectedTagItems = [];
         selectedOperationTags.forEach(tagName => {
@@ -344,8 +348,8 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
 
         return (
             <ScrollablePanelContent>
-                <Card>
-                    <h5 className="user-selectable">{title}</h5>
+                <Card elevation={2} style={OP_CARD_STYLE}>
+                    <h3 className="user-selectable">{title}</h3>
                     {description}
                     {tags}
                     {outputs}

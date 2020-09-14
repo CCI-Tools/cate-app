@@ -1,5 +1,6 @@
 import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
+import { KeycloakProfile } from 'keycloak-js';
 
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { HostOS } from '../common/paths';
@@ -17,7 +18,6 @@ import {
 import { PanelContainerLayout } from './components/PanelContainer';
 import { ViewLayoutState, ViewState } from './components/ViewState';
 import { JobFailure, JobProgress, JobStatus, WebAPIClient } from './webapi';
-import { User } from './webapi/apis/AuthAPI';
 
 
 /**
@@ -54,8 +54,9 @@ export interface DataState {
     hasWebGL: boolean;
 }
 
-export type WebAPIProvision = 'CustomURL' | 'CateHub' | null;
-export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' | 'error' | 'closed' | 'logoff' | null;
+export type WebAPIProvision = 'standAlone' | 'hub';
+export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' |
+    'error' | 'closed' | 'shuttingDown' | 'loggingOut';
 
 export interface WebAPIServiceInfo {
     name: string;
@@ -647,16 +648,11 @@ export interface ColorMapCategoryState {
  * Communication state is the status of any not-yet-complete requests to other services.
  */
 export interface CommunicationState {
-    webAPIProvision: WebAPIProvision;
     webAPIServiceURL: string;
-    webAPIServiceCustomURL: string;
     webAPIServiceInfo: WebAPIServiceInfo | null;
-    webAPIStatus: WebAPIStatus;
+    webAPIStatus: WebAPIStatus | null;
     webAPIClient: WebAPIClient | null;
-    username: string | null;
-    password: string | null;
-    token: string | null;
-    user: User | null;
+    userProfile: KeycloakProfile | null;
     // A map that stores the current state of any tasks (e.g. data fetch jobs from remote API) given a jobId
     tasks: { [jobId: number]: TaskState; };
 }
@@ -791,7 +787,7 @@ export interface SessionState {
     autoUpdateSoftware: boolean;
     autoShowNewFigures: boolean;
 
-    // ApplicationPage
+    // AppMainPage
     panelContainerUndockedMode: boolean;
     leftPanelContainerLayout: PanelContainerLayout;
     rightPanelContainerLayout: PanelContainerLayout;

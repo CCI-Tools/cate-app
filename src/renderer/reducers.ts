@@ -1,33 +1,14 @@
 import { combineReducers, Reducer } from 'redux';
-import { updateFileNode } from './components/desktop/fs/FileNode';
-import {
-    CommunicationState,
-    ControlState,
-    DataState,
-    DataStoreState,
-    LayerState,
-    LocationState,
-    SessionState,
-    State,
-    VectorLayerBase
-} from './state';
+import { KeycloakProfile } from 'keycloak-js';
+import deepEqual from 'deep-equal';
+
+import * as assert from '../common/assert';
+import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style';
+import { updateObject, updatePropertyObject } from '../common/objutil';
+import { isString } from '../common/types';
 import * as actions from './actions';
 import { Action, UPDATE_FS_ROOT_NODE } from './actions';
-import * as assert from '../common/assert';
-import { updateObject, updatePropertyObject } from '../common/objutil';
-import {
-    AUTO_LAYER_ID,
-    getFigureViewTitle,
-    getPlacemarkTitleAndIndex,
-    isImageLayer,
-    isVectorLayer,
-    newAnimationView,
-    newFigureView,
-    newTableView,
-    newWorldView,
-    PLACEMARK_ID_PREFIX,
-    updateAutoLayer,
-} from './state-util';
+import { updateFileNode } from './components/desktop/fs/FileNode';
 import {
     addViewToLayout,
     addViewToPanel,
@@ -43,18 +24,39 @@ import {
     splitViewPanel,
     ViewState
 } from './components/ViewState';
-import { isString } from '../common/types';
-import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style';
+import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './containers/operation-step-dialog-ids';
 import {
-    DEFAULT_SERVICE_URL,
     INITIAL_COMMUNICATION_STATE,
     INITIAL_CONTROL_STATE,
     INITIAL_DATA_STATE,
     INITIAL_LOCATION_STATE,
     INITIAL_SESSION_STATE
 } from './initial-state';
-import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './containers/operation-step-dialog-ids';
-import deepEqual from 'deep-equal';
+import {
+    CommunicationState,
+    ControlState,
+    DataState,
+    DataStoreState,
+    LayerState,
+    LocationState,
+    SessionState,
+    State,
+    VectorLayerBase
+} from './state';
+import {
+    AUTO_LAYER_ID,
+    getFigureViewTitle,
+    getPlacemarkTitleAndIndex,
+    isImageLayer,
+    isVectorLayer,
+    newAnimationView,
+    newFigureView,
+    newTableView,
+    newWorldView,
+    PLACEMARK_ID_PREFIX,
+    updateAutoLayer,
+} from './state-util';
+
 
 // Note: reducers are unit-tested through actions.spec.ts
 
@@ -815,22 +817,17 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
 
 const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_STATE, action: Action) => {
     switch (action.type) {
-        case actions.SET_WEBAPI_PROVISION: {
-            const webAPIProvision = action.payload.webAPIProvision;
-            return {...state, webAPIProvision};
-        }
         case actions.SET_WEBAPI_SERVICE_URL: {
             const webAPIServiceURL = action.payload.webAPIServiceURL;
             return {...state, webAPIServiceURL};
         }
-        case actions.SET_WEBAPI_SERVICE_CUSTOM_URL: {
-            const webAPIServiceCustomURL = action.payload.webAPIServiceCustomURL || DEFAULT_SERVICE_URL;
-            return {...state, webAPIServiceURL: webAPIServiceCustomURL, webAPIServiceCustomURL};
-        }
         case actions.SET_WEBAPI_STATUS: {
-            const webAPIClient = action.payload.webAPIClient;
             const webAPIStatus = action.payload.webAPIStatus;
-            return {...state, webAPIClient, webAPIStatus};
+            return {...state, webAPIStatus};
+        }
+        case actions.SET_WEBAPI_CLIENT: {
+            const webAPIClient = action.payload.webAPIClient;
+            return {...state, webAPIClient, webAPIStatus: 'open'};
         }
         case actions.SET_WEBAPI_SERVICE_INFO: {
             const webAPIServiceInfo = action.payload.webAPIServiceInfo;
@@ -845,17 +842,11 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             delete tasks[action.payload.jobId];
             return updateObject(state, {tasks: tasks});
         }
-        case actions.SET_USER_CREDENTIALS: {
-            const username = action.payload.username;
-            const password = action.payload.password;
-            return {...state, username, password};
-        }
-        case actions.SET_AUTH_INFO: {
-            const {token, user} = action.payload;
-            return {...state, token, user};
-        }
-        case actions.LOGOUT: {
-            return {...state, token: null, user: null, webAPIStatus: null, webAPIProvision: null};
+        case actions.SET_USER_PROFILE: {
+            return {
+                ...state,
+                userProfile: action.payload as KeycloakProfile,
+            };
         }
     }
     return state;

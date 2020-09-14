@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { Classes, Button, Dialog, IconName, Intent, ProgressBar, Icon } from '@blueprintjs/core';
+import { useHistory } from 'react-router-dom';
+import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar } from '@blueprintjs/core';
+
 import { State, WebAPIStatus } from '../state';
-import * as actions from '../actions';
 
 
 interface IDispatch {
@@ -10,7 +11,7 @@ interface IDispatch {
 }
 
 interface IWebAPIStatusBoxProps {
-    webAPIStatus: WebAPIStatus;
+    webAPIStatus: WebAPIStatus | null;
 }
 
 function mapStateToProps(state: State): IWebAPIStatusBoxProps {
@@ -20,7 +21,19 @@ function mapStateToProps(state: State): IWebAPIStatusBoxProps {
 }
 
 const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) => {
+    const history = useHistory();
+
+    const reload = () => {
+        window.location.reload();
+    };
+
+    const goHome = () => {
+        history.replace("/");
+    };
+
     switch (props.webAPIStatus) {
+        case 'open':
+            return null;
         case 'login':
             return (<StatusBox
                 message={'Logging in...'}
@@ -29,33 +42,51 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
             />);
         case 'launching':
             return (<StatusBox
-                message={'Launching Cate service instance...'}
+                message={'Launching Cate service...'}
                 icon="log-in"
                 isWaiting={true}
             />);
         case 'connecting':
             return (<StatusBox
-                message={'Connecting to Cate service instance...'}
+                message={'Connecting to Cate service...'}
                 icon="log-in"
                 isWaiting={true}
             />);
-        case 'logoff':
+        case 'shuttingDown':
             return (<StatusBox
-                message={'Shutting down Cate service instance...'}
+                message={'Shutting down Cate service...'}
+                icon="log-out"
+                isWaiting={true}
+            />);
+        case 'loggingOut':
+            return (<StatusBox
+                message={'Logging out...'}
                 icon="log-out"
                 isWaiting={true}
             />);
         case 'closed':
-        case 'error':
             return (<StatusBox
                 message={'Oops! The connection to the Cate service has been closed unexpectedly.'}
                 icon="offline"
                 isWaiting={false}
-                onRetry={() => props.dispatch(actions.connectWebAPIClient() as any)}
-                onCancel={() => props.dispatch(actions.setWebAPIStatus(null))}
+                onRetry={reload}
+                onCancel={goHome}
+            />);
+        case 'error':
+            return (<StatusBox
+                message={'Oops! An error occurred while launching or connecting the Cate service.'}
+                icon="offline"
+                isWaiting={false}
+                onRetry={reload}
+                onCancel={goHome}
             />);
         default:
-            return null;
+            return (<StatusBox
+                message={'Oops! No service available.'}
+                icon="offline"
+                isWaiting={false}
+                onCancel={goHome}
+            />);
     }
 };
 
