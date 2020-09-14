@@ -211,7 +211,8 @@ function _setUserProfile(userProfile: KeycloakProfile): Action {
 
 export function logout(keycloak: KeycloakInstance<'native'>, history: History): ThunkAction {
     return async (dispatch: Dispatch) => {
-        if (keycloak.authenticated) {
+        // if (keycloak.authenticated) {
+        if (true) {
             try {
                 const serviceAPI = new ServiceProvisionAPI(keycloak);
                 dispatch(setWebAPIStatus('shuttingDown'));

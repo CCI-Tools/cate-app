@@ -38,7 +38,8 @@ const _UserMenu: React.FC<IUserMenuProps & IDispatch & ReactKeycloakInjectedProp
     };
 
     console.info("_UserMenu:", keycloakInitialized, keycloak.authenticated, keycloak.token);
-    const disabled = !(keycloakInitialized && keycloak.authenticated);
+    // const disabled = !(keycloakInitialized && keycloak.authenticated);
+    const disabled = !keycloakInitialized;
 
     return (
         <div>
