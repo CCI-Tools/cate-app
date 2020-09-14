@@ -1,6 +1,7 @@
 ### Changes 2.1.3 (in dev)
 
 * Added the app's terms & conditions to all pages (#109)
+* Fixed tooltip flickering in Variables Panel (#97)
 
 ### Changes 2.1.2
 
