@@ -1,4 +1,4 @@
-### Changes 2.1.3 (in dev)
+### Changes 2.2.0 (in dev)
 
 * Using Keycloak authentication and user management service 
   running in the project's JASMIN cloud tenant. (#121)
@@ -8,6 +8,7 @@
   - `${origin}/`  - the login screen
   - `${origin}/hub`  - main page that runs with Cate's cloud service provider 
   - `${origin}/sa?serviceUrl=${serviceUrl}` - to run the app with a stand-alone server at `${serviceUrl}`   
+* Added simple resource throttling limiting the overall number of concurrent users.
 * Added the app's terms & conditions to all main pages. (#109)
 * Fixed tooltip flickering in VARIABLES panel (#97)
 
