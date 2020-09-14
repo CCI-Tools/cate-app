@@ -37,6 +37,7 @@ const _UserMenu: React.FC<IUserMenuProps & IDispatch & ReactKeycloakInjectedProp
         dispatch(actions.logout(keycloak, history) as any);
     };
 
+    console.info("_UserMenu:", keycloakInitialized, keycloak.authenticated);
     const disabled = !(keycloakInitialized && keycloak.authenticated);
 
     return (
