@@ -238,21 +238,21 @@ export function logout(keycloak: KeycloakInstance<'native'>, history: History): 
                 dispatch(setWebAPIStatus('shuttingDown'));
                 const serviceProvisionAPI = new ServiceProvisionAPI();
                 await serviceProvisionAPI.stopServiceInstance(userProfile.username);
-            } catch (e) {
+            } catch (error) {
                 // ok, we are closing down anyway
             }
             if (keycloak.authenticated) {
                 try {
                     dispatch(setWebAPIStatus('loggingOut'));
-                    // await keycloak.logout({redirectUri: window.location.origin});
-                } catch (e) {
-                    // ok, we are closing down anyway
+                    await keycloak.logout({redirectUri: window.location.origin});
+                } catch (error) {
+                    history.replace('/');
                 }
             } else {
-                // history.replace('/');
+                history.replace('/');
             }
         } else {
-            // history.replace('/');
+            history.replace('/');
         }
     }
 }
@@ -330,11 +330,12 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
         };
 
         webAPIClient.onClose = (event) => {
-            console.error('webAPIClient.onClose:', event);
-            if (getState().communication.webAPIStatus === 'shuttingDown') {
+            const webAPIStatus = getState().communication.webAPIStatus;
+            if (webAPIStatus === 'shuttingDown' || webAPIStatus === 'loggingOut') {
                 // When we are logging off, the webAPIClient is expected to close.
                 return;
             }
+            console.error('webAPIClient.onClose:', event);
             dispatch(setWebAPIStatus('closed'));
             showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
         };
