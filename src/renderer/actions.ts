@@ -155,16 +155,28 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
         dispatch(setWebAPIStatus('login'));
 
         if (!keycloak.authenticated) {
-            await keycloak.login({redirectUri: window.location.origin + '/hub'});
+            await keycloak.login({
+                                     redirectUri: window.location.origin + '/hub',
+                                     prompt: 'login',
+                                     maxAge: 86400, // seconds = 24h
+                                 });
         }
 
         const userProfile = await keycloak.loadUserProfile();
         dispatch(_setUserProfile(userProfile));
 
-        console.log("Token: ", keycloak.token);
+        const token = keycloak!.token;
+        // console.log("Token: ", token);
 
-        const serviceAPI = new ServiceProvisionAPI(keycloak);
-        const serviceCount = await serviceAPI.getServiceCount();
+        const serviceProvisionAPI = new ServiceProvisionAPI();
+        let serviceCount;
+        try {
+            serviceCount = await serviceProvisionAPI.getServiceCount();
+        } catch (error) {
+            dispatch(setWebAPIStatus('error'));
+            handleFetchError(error, 'Failed fetching server status.');
+            return;
+        }
         if (serviceCount >= MAX_NUM_USERS) {
             showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
             dispatch(setWebAPIStatus('error'));
@@ -172,13 +184,20 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
         }
 
         dispatch(setWebAPIStatus('launching'));
-        const serviceURL = await serviceAPI.startService();
+        let serviceURL;
+        try {
+            serviceURL = await serviceProvisionAPI.startService(userProfile.username, token);
+        } catch (error) {
+            dispatch(setWebAPIStatus('error'));
+            handleFetchError(error, 'Launching of Cate service failed.');
+            return;
+        }
 
         function isServiceRunning(serviceStatus: ServiceStatus | null) {
             return serviceStatus && serviceStatus.phase === 'Running';
         }
 
-        const serviceStatus = await serviceAPI.getServiceStatus();
+        const serviceStatus = await serviceProvisionAPI.getServiceStatus(userProfile.username, token);
         if (isServiceRunning(serviceStatus)) {
             dispatch(connectWebAPIService(serviceURL));
         } else {
@@ -189,7 +208,7 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
 
             const getServiceStatus = async () => {
                 try {
-                    return await serviceAPI.getServiceStatus();
+                    return await serviceProvisionAPI.getServiceStatus(userProfile.username, token);
                 } catch (error) {
                     return null;
                 }
@@ -210,19 +229,30 @@ function _setUserProfile(userProfile: KeycloakProfile): Action {
 }
 
 export function logout(keycloak: KeycloakInstance<'native'>, history: History): ThunkAction {
-    return async (dispatch: Dispatch) => {
-        if (keycloak.authenticated) {
-            console.info("Shutting down service...");
+    return async (dispatch: Dispatch, getState: GetState) => {
+        const userProfile = getState().communication.userProfile;
+        const hubMode = Boolean(userProfile);
+        if (hubMode) {
             try {
-                const serviceAPI = new ServiceProvisionAPI(keycloak);
+                console.debug("Shutting down service...");
                 dispatch(setWebAPIStatus('shuttingDown'));
-                await serviceAPI.stopServiceInstance();
-            } finally {
-                dispatch(setWebAPIStatus('loggingOut'));
-                await keycloak.logout({redirectUri: window.location.origin});
+                const serviceProvisionAPI = new ServiceProvisionAPI();
+                await serviceProvisionAPI.stopServiceInstance(userProfile.username);
+            } catch (e) {
+                // ok, we are closing down anyway
+            }
+            if (keycloak.authenticated) {
+                try {
+                    dispatch(setWebAPIStatus('loggingOut'));
+                    // await keycloak.logout({redirectUri: window.location.origin});
+                } catch (e) {
+                    // ok, we are closing down anyway
+                }
+            } else {
+                // history.replace('/');
             }
         } else {
-            history.replace('/');
+            // history.replace('/');
         }
     }
 }

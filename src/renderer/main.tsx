@@ -25,6 +25,7 @@ const keycloak = Keycloak(getKeycloakConfig());
 
 const keycloakProviderInitConfig: KeycloakInitOptions = {
     onLoad: 'check-sso',
+    enableLogging: true,
 };
 
 export function main() {

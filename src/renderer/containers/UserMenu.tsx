@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { useHistory } from 'react-router-dom';
-import { ReactKeycloakInjectedProps, withKeycloak } from '@react-keycloak/web';
-import { connect, Dispatch } from "react-redux";
 import { Menu, MenuItem } from '@blueprintjs/core';
+import { ReactKeycloakInjectedProps, withKeycloak } from '@react-keycloak/web';
+import * as React from 'react';
+import { connect, Dispatch } from "react-redux";
+import { useHistory } from 'react-router-dom';
 
 import * as actions from '../actions';
 import { State } from '../state';
@@ -37,10 +37,6 @@ const _UserMenu: React.FC<IUserMenuProps & IDispatch & ReactKeycloakInjectedProp
         dispatch(actions.logout(keycloak, history) as any);
     };
 
-    console.info("_UserMenu:", keycloakInitialized, keycloak.authenticated, keycloak.token);
-    // const disabled = !(keycloakInitialized && keycloak.authenticated);
-    const disabled = !keycloakInitialized;
-
     return (
         <div>
             <Menu>
@@ -48,13 +44,13 @@ const _UserMenu: React.FC<IUserMenuProps & IDispatch & ReactKeycloakInjectedProp
                     text="Account"
                     icon="user"
                     onClick={handleAccount}
-                    disabled={disabled}
+                    disabled={!keycloakInitialized}
                 />
                 <MenuItem
                     text="Logout"
                     icon="log-out"
                     onClick={handleLogout}
-                    disabled={disabled}
+                    disabled={!keycloakInitialized}
                 />
             </Menu>
         </div>
@@ -62,4 +58,4 @@ const _UserMenu: React.FC<IUserMenuProps & IDispatch & ReactKeycloakInjectedProp
 }
 
 const UserMenu = connect(mapStateToProps)(withKeycloak<'native'>(_UserMenu));
-export default UserMenu
+export default UserMenu;
