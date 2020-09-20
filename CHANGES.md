@@ -1,4 +1,6 @@
-### Changes 2.2.0 (in dev)
+### Changes 2.2.1 (in dev)
+
+### Changes 2.2.0
 
 * Using Keycloak authentication and user management service 
   running in the project's JASMIN cloud tenant. (#121)
