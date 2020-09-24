@@ -1,5 +1,8 @@
 ### Changes 2.2.1 (in dev)
 
+* The DATA SOURCES panel now indicates by a progress spinner that data sources are being fetched. (#126)
+* Fixed bug, where no data sources were shown right after start (#56)
+
 ### Changes 2.2.0
 
 * Using Keycloak authentication and user management service 
