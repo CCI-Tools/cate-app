@@ -1,14 +1,8 @@
-import * as React from 'react';
-import {CSSProperties} from 'react';
-import {connect} from 'react-redux';
-import {Cell, Column, Table, TruncatedFormat} from '@blueprintjs/table';
-import ReactMarkdown from 'react-markdown';
-import {EcvMeta} from '../ecv-meta';
-import {DataSourceState, DataStoreNotice, DataStoreState, State} from '../state';
 import {
     AnchorButton,
     ButtonGroup,
     Callout,
+    Card,
     Checkbox,
     Classes,
     Collapse,
@@ -22,21 +16,27 @@ import {
     Tabs,
     Tag
 } from '@blueprintjs/core';
-import {ListBox, ListBoxSelectionMode} from '../components/ListBox';
-import {Card} from '@blueprintjs/core';
-import {ScrollablePanelContent} from '../components/ScrollableContent';
-import {ContentWithDetailsPanel} from '../components/ContentWithDetailsPanel';
-import {ToolButton} from '../components/ToolButton';
-import {TextWithLinks} from '../components/TextWithLinks';
-import DownloadDatasetDialog from './DownloadDataSourceDialog';
-import OpenDatasetDialog from './OpenDatasetDialog';
-import AddDatasetDialog from './AddDatasetDialog';
-import RemoveDatasetDialog from './RemoveDatasetDialog';
+import { Cell, Column, Table, TruncatedFormat } from '@blueprintjs/table';
+import * as React from 'react';
+import { CSSProperties } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { connect } from 'react-redux';
 import * as actions from '../actions';
-import * as selectors from '../selectors';
-import {NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES} from '../messages';
+import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
+import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
+import { ScrollablePanelContent } from '../components/ScrollableContent';
+import { TextWithLinks } from '../components/TextWithLinks';
+import { ToolButton } from '../components/ToolButton';
+import { EcvMeta } from '../ecv-meta';
+import { DATA_SOURCES_LOADING, NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES } from '../messages';
 
 import _ecvMeta from '../resources/ecv-meta.json';
+import * as selectors from '../selectors';
+import { DataSourceState, DataStoreNotice, DataStoreState, State } from '../state';
+import AddDatasetDialog from './AddDatasetDialog';
+import DownloadDatasetDialog from './DownloadDataSourceDialog';
+import OpenDatasetDialog from './OpenDatasetDialog';
+import RemoveDatasetDialog from './RemoveDatasetDialog';
 
 
 const ECV_META: EcvMeta = _ecvMeta;
@@ -128,7 +128,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
     private static readonly SPACER_STYLE: CSSProperties = {flex: 1};
     private static readonly LABEL_STYLE: CSSProperties = {margin: '0 0.5em 0 0', display: 'flex', flexGrow: 1};
     private static readonly LABEL_TEXT_STYLE: CSSProperties =
-            {minWidth: '5em', overflow: 'hidden', whiteSpace: 'nowrap'};
+        {minWidth: '5em', overflow: 'hidden', whiteSpace: 'nowrap'};
     private static readonly SELECT_STYLE: CSSProperties = {flexGrow: 1};
 
     constructor(props: IDataSourcesPanelProps & IDataSourcesPanelDispatch) {
@@ -145,60 +145,11 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.handleShowDataSourceIDsChanged = this.handleShowDataSourceIDsChanged.bind(this);
     }
 
-    private handleAddDatasetDialog() {
-        this.props.showDialog('addDatasetDialog');
-    }
-
-    private handleRemoveDatasetDialog() {
-        this.props.showDialog('removeDatasetDialog');
-    }
-
-    private handleShowDownloadDataSourceDialog() {
-        this.maybeLoadTemporalCoverage();
-        this.props.showDialog('downloadDataSourceDialog');
-    }
-
-    private handleShowOpenDatasetDialog() {
-        this.maybeLoadTemporalCoverage();
-        this.props.showDialog('openDatasetDialog');
-    }
-
-    private maybeLoadTemporalCoverage() {
-        if (!this.props.selectedDataSource.temporalCoverage) {
-            this.props.loadTemporalCoverage(this.props.selectedDataStore.id, this.props.selectedDataSource.id);
-        }
-    }
-
-    private handleDataStoreSelected(event) {
-        const dataStoreId = event.target.value;
-        this.props.setSelectedDataStoreId(dataStoreId);
-    }
-
-    private handleListHeightChanged(value: number) {
-        this.props.setSessionState('dataSourceListHeight', value);
-    }
-
-    private handleShowDetailsChanged(value: boolean) {
-        this.props.setSessionState('showDataSourceDetails', value);
-    }
-
-    private handleShowDataStoreDescriptionChanged() {
-        this.props.updateSessionState({showDataStoreDescription: !this.props.showDataStoreDescription});
-    }
-
-    private handleShowDataStoreNoticesChanged() {
-        this.props.updateSessionState({showDataStoreNotices: !this.props.showDataStoreNotices});
-    }
-
-    private handleShowDataSourceIDsChanged(ev: any) {
-        this.props.updateSessionState({showDataSourceIDs: ev.target.checked});
-    }
-
     render() {
         const hasDataStores = this.props.dataStores && this.props.dataStores.length;
         const hasDataSources = this.props.selectedDataSources && this.props.selectedDataSources.length;
         let body;
-        if (hasDataStores) {
+        if (hasDataSources) {
             const hasSelection = this.props.selectedDataSource;
             const isDynamicLocalStore = this.props.selectedDataStore && this.props.selectedDataStore.id === 'local';
             const isLocalStore = isDynamicLocalStore || (this.props.selectedDataStore && this.props.selectedDataStore.isLocal);
@@ -264,6 +215,14 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             body = (
                 <div>
                     {this.renderDataStoreSelector()}
+                    <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
+                        <span style={DataSourcesPanel.SPACER_STYLE}/>
+                        <Checkbox label="Show identifiers"
+                                  checked={this.props.showDataSourceIDs}
+                                  onChange={this.handleShowDataSourceIDsChanged}
+                                  style={{marginBottom: 2, marginTop: 6}}
+                        />
+                    </div>
                     {this.renderDataSourceFilterExprInput()}
                     <ContentWithDetailsPanel showDetails={this.props.showDataSourceDetails}
                                              onShowDetailsChange={this.handleShowDetailsChanged}
@@ -291,6 +250,55 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             body = this.renderNoDataStoreMessage();
         }
         return body;
+    }
+
+    private handleAddDatasetDialog() {
+        this.props.showDialog('addDatasetDialog');
+    }
+
+    private handleRemoveDatasetDialog() {
+        this.props.showDialog('removeDatasetDialog');
+    }
+
+    private handleShowDownloadDataSourceDialog() {
+        this.maybeLoadTemporalCoverage();
+        this.props.showDialog('downloadDataSourceDialog');
+    }
+
+    private handleShowOpenDatasetDialog() {
+        this.maybeLoadTemporalCoverage();
+        this.props.showDialog('openDatasetDialog');
+    }
+
+    private maybeLoadTemporalCoverage() {
+        if (!this.props.selectedDataSource.temporalCoverage) {
+            this.props.loadTemporalCoverage(this.props.selectedDataStore.id, this.props.selectedDataSource.id);
+        }
+    }
+
+    private handleDataStoreSelected(event) {
+        const dataStoreId = event.target.value;
+        this.props.setSelectedDataStoreId(dataStoreId);
+    }
+
+    private handleListHeightChanged(value: number) {
+        this.props.setSessionState('dataSourceListHeight', value);
+    }
+
+    private handleShowDetailsChanged(value: boolean) {
+        this.props.setSessionState('showDataSourceDetails', value);
+    }
+
+    private handleShowDataStoreDescriptionChanged() {
+        this.props.updateSessionState({showDataStoreDescription: !this.props.showDataStoreDescription});
+    }
+
+    private handleShowDataStoreNoticesChanged() {
+        this.props.updateSessionState({showDataStoreNotices: !this.props.showDataStoreNotices});
+    }
+
+    private handleShowDataSourceIDsChanged(ev: any) {
+        this.props.updateSessionState({showDataSourceIDs: ev.target.checked});
     }
 
     private renderDataSourceFilterExprInput() {
@@ -326,7 +334,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             );
         }
 
-        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices, showDataSourceIDs} = this.props;
+        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices} = this.props;
 
         const hasDataStoreDescription = selectedDataStore && selectedDataStore.description;
         const hasDataStoreNotices = selectedDataStore && selectedDataStore.notices && selectedDataStore.notices.length;
@@ -402,15 +410,6 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                 {dataStoreDescriptionElement}
                 {dataStoreNoticesElement}
 
-                <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
-                    <span style={DataSourcesPanel.SPACER_STYLE}/>
-                    <Checkbox label="Show identifiers"
-                              checked={showDataSourceIDs}
-                              onChange={this.handleShowDataSourceIDsChanged}
-                              style={{marginBottom: 2, marginTop: 6}}
-                    />
-                </div>
-
             </React.Fragment>
         );
     }
@@ -426,7 +425,12 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         if (selectedDataStore && selectedDataStore.id === 'local') {
             return NO_LOCAL_DATA_SOURCES;
         } else {
-            return NO_DATA_SOURCES_FOUND;
+            const selectedDataSources = this.props.selectedDataSources;
+            if (selectedDataSources === null) {
+                return DATA_SOURCES_LOADING;
+            } else {
+                return NO_DATA_SOURCES_FOUND;
+            }
         }
     }
 
@@ -507,6 +511,24 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
         this.handleIconLoadError = this.handleIconLoadError.bind(this);
     }
 
+    private static getItemKey(dataSource: DataSourceState) {
+        return dataSource.id;
+    }
+
+    render() {
+        return (
+            <ScrollablePanelContent>
+                <ListBox items={this.props.dataSources}
+                         getItemKey={DataSourcesList.getItemKey}
+                         renderItem={this.renderDataSourceTitle}
+                         selectionMode={ListBoxSelectionMode.SINGLE}
+                         selection={this.props.selectedDataSourceId}
+                         onItemDoubleClick={this.props.doubleClickAction}
+                         onSelection={this.handleDataSourceSelected}/>
+            </ScrollablePanelContent>
+        );
+    }
+
     private handleDataSourceSelected(newSelection: Array<React.Key>) {
         if (newSelection.length > 0) {
             this.props.setSelectedDataSourceId(newSelection[0] as string);
@@ -518,10 +540,6 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
     private handleIconLoadError(img) {
         img.onError = null;
         img.src = `resources/images/data-sources/esacci/${this.defaultIconName}.png`;
-    }
-
-    private static getItemKey(dataSource: DataSourceState) {
-        return dataSource.id;
     }
 
     private renderIcon(dataSource: DataSourceState) {
@@ -561,23 +579,9 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
                         <div className="user-selectable" style={DataSourcesList.ID_DIV_STYLE}>{dataSource.id}</div>
                     </div>
                 ) : (
-                    <span className="user-selectable">{title}</span>
-                )}
+                     <span className="user-selectable">{title}</span>
+                 )}
             </div>
-        );
-    }
-
-    render() {
-        return (
-            <ScrollablePanelContent>
-                <ListBox items={this.props.dataSources}
-                         getItemKey={DataSourcesList.getItemKey}
-                         renderItem={this.renderDataSourceTitle}
-                         selectionMode={ListBoxSelectionMode.SINGLE}
-                         selection={this.props.selectedDataSourceId}
-                         onItemDoubleClick={this.props.doubleClickAction}
-                         onSelection={this.handleDataSourceSelected}/>
-            </ScrollablePanelContent>
         );
     }
 }
@@ -598,99 +602,6 @@ class DataSourceDetails extends React.PureComponent<IDataSourceDetailsProps, nul
         super(props);
         this.renderAbstract = this.renderAbstract.bind(this);
         this.openOdpLink = this.openOdpLink.bind(this);
-    }
-
-    private openOdpLink() {
-        const uuid = this.props.dataSource.meta_info.uuid;
-        const url = 'http://catalogue.ceda.ac.uk/uuid/' + uuid;
-        actions.openExternal(url);
-    }
-
-    private renderAbstract(dataSource: DataSourceState): DetailPart {
-        const metaInfo = dataSource.meta_info;
-        let element;
-        if (metaInfo) {
-            let openOdpPage;
-            if (metaInfo.uuid) {
-                openOdpPage =
-                    <AnchorButton onClick={this.openOdpLink}
-                                  style={{float: 'right', margin: 4}}>Catalogue</AnchorButton>
-            }
-            let spatialCoverage;
-            if (metaInfo.bbox_miny && metaInfo.bbox_maxy && metaInfo.bbox_minx && metaInfo.bbox_maxx) {
-                spatialCoverage = (
-                    <div>
-                        <h5>Spatial coverage</h5>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td/>
-                                <td className="user-selectable">{metaInfo.bbox_maxy}&#176;</td>
-                                <td/>
-                            </tr>
-                            <tr>
-                                <td className="user-selectable">{metaInfo.bbox_minx}&#176;</td>
-                                <td/>
-                                <td className="user-selectable">{metaInfo.bbox_maxx}&#176;</td>
-                            </tr>
-                            <tr>
-                                <td/>
-                                <td className="user-selectable">{metaInfo.bbox_miny}&#176;</td>
-                                <td/>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <br/>
-                    </div>
-                );
-            }
-            let temporalCoverage;
-            if (dataSource.temporalCoverage) {
-                temporalCoverage = (
-                    <div><h5>Temporal coverage</h5>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td>Start</td>
-                                <td className="user-selectable">{dataSource.temporalCoverage[0]}</td>
-                            </tr>
-                            <tr>
-                                <td>End</td>
-                                <td className="user-selectable">{dataSource.temporalCoverage[1]}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <br/>
-                    </div>
-                );
-            }
-            let summary;
-            if (metaInfo.abstract) {
-                summary = (
-                    <div><h5>Summary</h5>
-                        <p className="user-selectable"><TextWithLinks>{metaInfo.abstract}</TextWithLinks></p>
-                    </div>
-                );
-            }
-            if (openOdpPage || spatialCoverage || temporalCoverage || summary) {
-                element = (
-                    <ScrollablePanelContent>
-                        <Card>
-                            {openOdpPage}
-                            {spatialCoverage}
-                            {temporalCoverage}
-                            {summary}
-                        </Card>
-                    </ScrollablePanelContent>
-                );
-            }
-        }
-
-        if (!element) {
-            element = <Card>No abstract available.</Card>;
-        }
-
-        return {title: 'Abstract', id: 'abstract', element};
     }
 
     private static renderVariablesTable(variables?: any[]): DetailPart {
@@ -804,6 +715,99 @@ class DataSourceDetails extends React.PureComponent<IDataSourceDetailsProps, nul
                 {details.map(d => <Tab key={d.id} id={d.id} title={d.title} panel={d.element}/>)}
             </Tabs>
         );
+    }
+
+    private openOdpLink() {
+        const uuid = this.props.dataSource.meta_info.uuid;
+        const url = 'http://catalogue.ceda.ac.uk/uuid/' + uuid;
+        actions.openExternal(url);
+    }
+
+    private renderAbstract(dataSource: DataSourceState): DetailPart {
+        const metaInfo = dataSource.meta_info;
+        let element;
+        if (metaInfo) {
+            let openOdpPage;
+            if (metaInfo.uuid) {
+                openOdpPage =
+                    <AnchorButton onClick={this.openOdpLink}
+                                  style={{float: 'right', margin: 4}}>Catalogue</AnchorButton>
+            }
+            let spatialCoverage;
+            if (metaInfo.bbox_miny && metaInfo.bbox_maxy && metaInfo.bbox_minx && metaInfo.bbox_maxx) {
+                spatialCoverage = (
+                    <div>
+                        <h5>Spatial coverage</h5>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td/>
+                                <td className="user-selectable">{metaInfo.bbox_maxy}&#176;</td>
+                                <td/>
+                            </tr>
+                            <tr>
+                                <td className="user-selectable">{metaInfo.bbox_minx}&#176;</td>
+                                <td/>
+                                <td className="user-selectable">{metaInfo.bbox_maxx}&#176;</td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td className="user-selectable">{metaInfo.bbox_miny}&#176;</td>
+                                <td/>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                    </div>
+                );
+            }
+            let temporalCoverage;
+            if (dataSource.temporalCoverage) {
+                temporalCoverage = (
+                    <div><h5>Temporal coverage</h5>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>Start</td>
+                                <td className="user-selectable">{dataSource.temporalCoverage[0]}</td>
+                            </tr>
+                            <tr>
+                                <td>End</td>
+                                <td className="user-selectable">{dataSource.temporalCoverage[1]}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                    </div>
+                );
+            }
+            let summary;
+            if (metaInfo.abstract) {
+                summary = (
+                    <div><h5>Summary</h5>
+                        <p className="user-selectable"><TextWithLinks>{metaInfo.abstract}</TextWithLinks></p>
+                    </div>
+                );
+            }
+            if (openOdpPage || spatialCoverage || temporalCoverage || summary) {
+                element = (
+                    <ScrollablePanelContent>
+                        <Card>
+                            {openOdpPage}
+                            {spatialCoverage}
+                            {temporalCoverage}
+                            {summary}
+                        </Card>
+                    </ScrollablePanelContent>
+                );
+            }
+        }
+
+        if (!element) {
+            element = <Card>No abstract available.</Card>;
+        }
+
+        return {title: 'Abstract', id: 'abstract', element};
     }
 }
 
