@@ -2,6 +2,11 @@
 
 * The DATA SOURCES panel now indicates by a progress spinner that data sources are being fetched. (#126)
 * Fixed bug, where no data sources were shown right after start (#56)
+* Allow disabling Cate cloud service usage and display a maintenance 
+  message instead. Can be activated by a new setting in `.env` (#128):
+  ```
+    REACT_APP_CATEHUB_MAINTENANCE=Sorry, the Cate cloud service is temporarily unavailable ... 
+  ```
 
 ### Changes 2.2.0
 

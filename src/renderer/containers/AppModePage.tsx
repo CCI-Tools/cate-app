@@ -3,7 +3,7 @@ import { CSSProperties, useEffect, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { useHistory } from "react-router-dom";
 import { useKeycloak } from '@react-keycloak/web'
-import { Button, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
+import { Button, Checkbox, Icon, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
 
 import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
@@ -11,6 +11,8 @@ import { State } from '../state';
 
 import cateIcon from '../resources/cate-icon-512.png';
 
+
+const maintenanceReason: string | undefined = process.env.REACT_APP_CATEHUB_MAINTENANCE;
 
 const CENTER_DIV_STYLE: CSSProperties = {
     display: 'flex',
@@ -48,6 +50,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
     const history = useHistory();
     const [, keycloakInitialized] = useKeycloak();
     const [webAPIServiceURL, setWebAPIServiceURL] = useState(DEFAULT_SERVICE_URL);
+    const [termsAndConditionsAgreed, setTermsAndConditionsAgreed] = useState(false);
 
     useEffect(() => {
         try {
@@ -73,6 +76,10 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
         history.push('/hub')
     };
 
+    const handleTermsAndConditionsAgreedChange = (e: React.FormEvent<HTMLInputElement>) => {
+        setTermsAndConditionsAgreed(e.currentTarget.checked);
+    };
+
     const resetURL = () => {
         setWebAPIServiceURL(DEFAULT_SERVICE_URL);
     };
@@ -86,15 +93,21 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
                     <img src={cateIcon} width={128} height={128} alt={'Cate icon'}/>
                 </div>
 
-                <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center'}}>
-                    Please select a Cate service provision mode
-                </div>
+                {maintenanceReason ? (
+                    <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 320}}>
+                        <Icon icon="warning-sign" intent={Intent.WARNING}/>&nbsp;{maintenanceReason}
+                    </div>
+                ) : (
+                    <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 320}}>
+                        Please select a Cate service provision mode
+                    </div>
+                )}
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
                         style={{marginTop: 18}}
                         onClick={setCateHubMode}
-                        disabled={!keycloakInitialized}
-                        rightIcon={!keycloakInitialized && <Spinner size={16}/>}
+                        disabled={!keycloakInitialized || !termsAndConditionsAgreed || Boolean(maintenanceReason)}
+                        rightIcon={maintenanceReason ? null : !keycloakInitialized && <Spinner size={16}/>}
                 >
                     <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub
                         Software-as-a-Service).<br/>Requires login information.</div>}>
@@ -102,7 +115,13 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
                     </Tooltip>
                 </Button>
                 <div style={SA_MODE_LINK_STYLE}>
-                    <TermsAndConditions/>
+                    <Checkbox
+                        checked={termsAndConditionsAgreed}
+                        onChange={handleTermsAndConditionsAgreedChange}
+                        disabled={Boolean(maintenanceReason)}
+                    >
+                        I agree to the&nbsp;<TermsAndConditions/>
+                    </Checkbox>
                 </div>
                 <Button className={'bp3-large'}
                         style={{marginTop: 18}}

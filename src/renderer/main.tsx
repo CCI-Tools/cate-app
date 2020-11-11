@@ -4,6 +4,7 @@ import {
     BrowserRouter as Router,
     // HashRouter as Router,
     Switch,
+    Redirect,
     Route,
 } from "react-router-dom";
 import { Provider as StoreProvider } from 'react-redux';
@@ -21,7 +22,9 @@ import { stateReducer } from './reducers';
 import { State } from './state';
 import { isElectron } from './electron';
 
+
 const keycloak = Keycloak(getKeycloakConfig());
+const maintenanceReason: string | undefined = process.env.REACT_APP_CATEHUB_MAINTENANCE;
 
 const keycloakProviderInitConfig: KeycloakInitOptions = {
     onLoad: 'check-sso',
@@ -75,7 +78,11 @@ export function main() {
                                 <AppModePage/>
                             </Route>
                             <Route path="/hub">
-                                <AppMainPageForHub/>
+                                {
+                                    maintenanceReason
+                                    ? (<Redirect to="/"/>)
+                                    : (<AppMainPageForHub/>)
+                                }
                             </Route>
                             <Route path="/sa">
                                 <AppMainPageForSA/>
