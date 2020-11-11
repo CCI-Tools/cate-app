@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Icon, NonIdealState } from '@blueprintjs/core';
+import { Icon, Intent, NonIdealState, Spinner } from '@blueprintjs/core';
 import { IconName } from '@blueprintjs/icons';
 
 export const ICON_CIRCLE: IconName = 'circle';
@@ -43,7 +43,14 @@ export const NO_LOCAL_DATA_SOURCES = (
     <NonIdealState
         title="No file data sources"
         icon={ICON_CIRCLE}
-        description={<span>Add new file data sources using the <code>cate ds add <em>name</em> <em>files...</em></code> command-line</span>}/>
+        description={<span>Add new file data sources using the button below.</span>}/>
+);
+
+export const DATA_SOURCES_LOADING = (
+    <NonIdealState
+        title="Loading data sources..."
+        icon={<div style={{marginTop: 14}}><Spinner intent={Intent.PRIMARY}/></div>}
+        description={<span>Please wait until the list of data sources is being loaded from the server.</span>}/>
 );
 
 export const NO_DATA_SOURCES_FOUND = (
