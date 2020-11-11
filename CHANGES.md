@@ -1,10 +1,11 @@
-### Changes 2.2.1 (in dev)
+### Changes 2.2.1
 
 * Allow disabling Cate cloud service usage and display a maintenance 
   message instead. Can be activated by a new setting in `.env` (#128):
   ```
     REACT_APP_CATEHUB_MAINTENANCE=Sorry, the Cate cloud service is temporarily unavailable ... 
   ```
+* Added response headers to the apps's `index.html` that may avoid page caching in browsers.
 
 ### Changes 2.2.0
 
