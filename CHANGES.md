@@ -5,7 +5,7 @@
   ```
     REACT_APP_CATEHUB_MAINTENANCE=Sorry, the Cate cloud service is temporarily unavailable ... 
   ```
-* Added response headers to the apps's `index.html` that may avoid page caching in browsers.
+* Configured web server to no longer cache the app's `index.html` in browsers.
 * The DATA SOURCES panel now indicates by a progress spinner that data sources are being fetched. (#126)
 * Fixed a bug, where no data sources were shown right after start (#56)
 
