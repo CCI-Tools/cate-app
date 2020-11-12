@@ -1,3 +1,5 @@
+### Changes 2.2.2 (in development)
+
 ### Changes 2.2.1
 
 * Allow disabling Cate cloud service usage and display a maintenance 
