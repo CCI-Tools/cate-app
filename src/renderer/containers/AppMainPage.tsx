@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
+import GdprBanner from '../components/GdprBanner';
 
 import { isElectron } from '../electron';
 import { FileSystemAPI } from '../webapi/apis';
@@ -126,6 +127,7 @@ const _AppMainPage: React.FC<IApplicationPageProps & IDispatch> = (
 
     return (
         <div className={'bp3-dark'} style={ROOT_DIV_STYLE}>
+            <GdprBanner/>
             <WebAPIStatusBox/>
             {appBar}
             <div style={MAIN_DIV_STYLE}>

@@ -4,6 +4,7 @@ import { connect, Dispatch } from 'react-redux';
 import { useHistory } from "react-router-dom";
 import { useKeycloak } from '@react-keycloak/web'
 import { Button, Checkbox, Icon, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
+import GdprBanner from '../components/GdprBanner';
 
 import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
@@ -86,6 +87,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
 
     return (
         <div style={CENTER_DIV_STYLE}>
+            <GdprBanner/>
             <div style={BOX_STYLE}>
                 <h1 style={{textAlign: 'center'}}>Select Cate Service</h1>
 
