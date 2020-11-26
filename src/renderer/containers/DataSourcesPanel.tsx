@@ -33,8 +33,8 @@ import { DATA_SOURCES_LOADING, NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_L
 import _ecvMeta from '../resources/ecv-meta.json';
 import * as selectors from '../selectors';
 import { DataSourceState, DataStoreNotice, DataStoreState, State } from '../state';
+import { isLocalDataStore } from '../state-util';
 import AddDatasetDialog from './AddDatasetDialog';
-import DownloadDatasetDialog from './DownloadDataSourceDialog';
 import OpenDatasetDialog from './OpenDatasetDialog';
 import RemoveDatasetDialog from './RemoveDatasetDialog';
 
@@ -135,7 +135,6 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         super(props);
         this.handleAddDatasetDialog = this.handleAddDatasetDialog.bind(this);
         this.handleRemoveDatasetDialog = this.handleRemoveDatasetDialog.bind(this);
-        this.handleShowDownloadDataSourceDialog = this.handleShowDownloadDataSourceDialog.bind(this);
         this.handleShowOpenDatasetDialog = this.handleShowOpenDatasetDialog.bind(this);
         this.handleListHeightChanged = this.handleListHeightChanged.bind(this);
         this.handleShowDetailsChanged = this.handleShowDetailsChanged.bind(this);
@@ -149,69 +148,41 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         const hasDataStores = this.props.dataStores && this.props.dataStores.length;
         const hasDataSources = this.props.selectedDataSources && this.props.selectedDataSources.length;
         let body;
-        if (hasDataSources) {
+        if (hasDataStores) {
             const hasSelection = this.props.selectedDataSource;
-            const isDynamicLocalStore = this.props.selectedDataStore && this.props.selectedDataStore.id === 'local';
-            const isLocalStore = isDynamicLocalStore || (this.props.selectedDataStore && this.props.selectedDataStore.isLocal);
-            const isNonLocalStore = this.props.selectedDataStore && this.props.selectedDataStore.id !== 'local';
-            const canAdd = isDynamicLocalStore;
-            const canRemove = hasSelection && isDynamicLocalStore;
-            const canDownload = hasSelection && !isLocalStore;
+            const isLocalStore = isLocalDataStore(this.props.selectedDataStore);
+            const canAdd = isLocalStore;
+            const canRemove = hasSelection && isLocalStore;
             const canOpen = hasSelection && this.props.hasWorkspace;
-            let primaryAction;
-            if (isLocalStore) {
-                primaryAction = (
-                    <ToolButton
-                        tooltipContent="Open file data source"
-                        intent={Intent.PRIMARY}
-                        onClick={this.handleShowOpenDatasetDialog}
-                        disabled={!canOpen}
-                        icon="folder-shared-open"
-                        tooltipPosition={'top'}
-                    />
-                );
-            } else {
-                primaryAction = (
-                    <ToolButton
-                        tooltipContent="Open remote data source"
-                        intent={Intent.PRIMARY}
-                        onClick={this.handleShowDownloadDataSourceDialog}
-                        disabled={!canDownload}
-                        icon="cloud-download"
-                        tooltipPosition={'top'}
-                    />
-                );
-            }
             const actionComponent = (
                 <ButtonGroup>
-                    <ToolButton
-                        tooltipContent="Add file data source"
-                        intent={(isDynamicLocalStore && !hasDataSources) ? Intent.PRIMARY : Intent.NONE}
+                    {isLocalStore && <ToolButton
+                        tooltipContent="Add data source"
                         onClick={this.handleAddDatasetDialog}
                         disabled={!canAdd}
                         icon="add"
                         tooltipPosition={'top'}
-                    />
-                    <ToolButton
-                        tooltipContent="Remove file data source"
+                    />}
+                    {isLocalStore && <ToolButton
+                        tooltipContent="Remove data source"
                         onClick={this.handleRemoveDatasetDialog}
                         disabled={!canRemove}
                         icon="trash"
                         tooltipPosition={'top'}
+                    />}
+                    <ToolButton
+                        tooltipContent="Open data source"
+                        intent={Intent.PRIMARY}
+                        onClick={this.handleShowOpenDatasetDialog}
+                        disabled={!canOpen}
+                        icon={"folder-shared-open"}
+                        tooltipPosition={'top'}
                     />
-                    {primaryAction}
                     <AddDatasetDialog/>
                     <RemoveDatasetDialog/>
-                    <DownloadDatasetDialog/>
                     <OpenDatasetDialog/>
                 </ButtonGroup>
             );
-            let listItemDoubleClickAction = null;
-            if (isLocalStore && canOpen) {
-                listItemDoubleClickAction = this.handleShowOpenDatasetDialog;
-            } else if (isNonLocalStore && canDownload) {
-                listItemDoubleClickAction = this.handleShowDownloadDataSourceDialog;
-            }
             body = (
                 <div>
                     {this.renderDataStoreSelector()}
@@ -230,20 +201,20 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                                              contentHeight={this.props.dataSourceListHeight}
                                              onContentHeightChange={this.handleListHeightChanged}
                                              actionComponent={actionComponent}>
-                        <DataSourcesList dataSources={this.props.filteredDataSources}
-                                         selectedDataSourceId={this.props.selectedDataSource ? this.props.selectedDataSource.id : null}
-                                         setSelectedDataSourceId={this.props.setSelectedDataSourceId}
-                                         showDataSourceIDs={this.props.showDataSourceIDs}
-                                         doubleClickAction={listItemDoubleClickAction}/>
+                        {hasDataSources ?
+                         (
+                             <DataSourcesList dataSources={this.props.filteredDataSources}
+                                          selectedDataSourceId={this.props.selectedDataSource ? this.props.selectedDataSource.id : null}
+                                          setSelectedDataSourceId={this.props.setSelectedDataSourceId}
+                                          showDataSourceIDs={this.props.showDataSourceIDs}
+                                          doubleClickAction={this.handleShowOpenDatasetDialog}/>
+                                          )
+                                          : (
+                             this.renderNoDataSourcesMessage()
+                         )
+                        }
                         <DataSourceDetails dataSource={this.props.selectedDataSource}/>
                     </ContentWithDetailsPanel>
-                </div>
-            );
-        } else if (hasDataStores) {
-            body = (
-                <div>
-                    {this.renderDataStoreSelector()}
-                    {this.renderNoDataSourcesMessage()}
                 </div>
             );
         } else {
@@ -258,11 +229,6 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
 
     private handleRemoveDatasetDialog() {
         this.props.showDialog('removeDatasetDialog');
-    }
-
-    private handleShowDownloadDataSourceDialog() {
-        this.maybeLoadTemporalCoverage();
-        this.props.showDialog('downloadDataSourceDialog');
     }
 
     private handleShowOpenDatasetDialog() {
@@ -334,7 +300,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             );
         }
 
-        const {selectedDataStore, showDataStoreDescription, showDataStoreNotices} = this.props;
+        const {selectedDataStore, showDataStoreDescription, /*showDataStoreNotices*/} = this.props;
 
         const hasDataStoreDescription = selectedDataStore && selectedDataStore.description;
         const hasDataStoreNotices = selectedDataStore && selectedDataStore.notices && selectedDataStore.notices.length;
@@ -350,7 +316,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             );
         }
 
-        let dataStoreNoticesElement;
+        // let dataStoreNoticesElement;
         if (hasDataStoreNotices) {
             const callouts = [];
             selectedDataStore.notices.forEach((notice: DataStoreNotice) => {
@@ -366,7 +332,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                     </div>
                 );
             });
-            dataStoreNoticesElement = (<Collapse isOpen={showDataStoreNotices}>{callouts}</Collapse>);
+            // dataStoreNoticesElement = (<Collapse isOpen={showDataStoreNotices}>{callouts}</Collapse>);
         }
 
         // TODO (forman): BP3: use new Select component
@@ -396,19 +362,22 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                             icon="help"
                             tooltipPosition={'top'}
                         />
-                        <ToolButton
-                            tooltipContent="Show/hide data store notices"
-                            onClick={this.handleShowDataStoreNoticesChanged}
-                            disabled={!hasDataStoreNotices}
-                            active={showDataStoreNotices}
-                            icon="notifications"
-                            tooltipPosition={'top'}
-                        />
+                        {/*This was an ESA requirement long time ago. It may no longer apply.*/}
+                        {/*<ToolButton*/}
+                        {/*    tooltipContent="Show/hide data store notices"*/}
+                        {/*    onClick={this.handleShowDataStoreNoticesChanged}*/}
+                        {/*    disabled={!hasDataStoreNotices}*/}
+                        {/*    active={showDataStoreNotices}*/}
+                        {/*    icon="notifications"*/}
+                        {/*    tooltipPosition={'top'}*/}
+                        {/*/>*/}
                     </ButtonGroup>
                 </div>
 
                 {dataStoreDescriptionElement}
-                {dataStoreNoticesElement}
+
+                {/*This was an ESA requirement long time ago. It may no longer apply.*/}
+                {/*{dataStoreNoticesElement}*/}
 
             </React.Fragment>
         );
@@ -422,7 +391,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
     //noinspection JSMethodCanBeStatic
     private renderNoDataSourcesMessage() {
         const selectedDataStore = this.props.selectedDataStore;
-        if (selectedDataStore && selectedDataStore.id === 'local') {
+        if (isLocalDataStore(selectedDataStore)) {
             return NO_LOCAL_DATA_SOURCES;
         } else {
             const selectedDataSources = this.props.selectedDataSources;

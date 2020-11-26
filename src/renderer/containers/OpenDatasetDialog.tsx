@@ -1,13 +1,15 @@
 import * as React from 'react';
-import { DataSourceState, DataStoreState, DialogState, State } from '../state';
-import { ModalDialog } from '../components/ModalDialog';
 import { connect, DispatchProp } from 'react-redux';
+import { DataSourceState, DataStoreState, DialogState, State } from '../state';
+import { isLocalDataStore, isRemoteDataStore } from '../state-util';
+import { ModalDialog } from '../components/ModalDialog';
 import * as actions from '../actions';
 import * as selectors from '../selectors';
 import { DataAccessComponent, IDataAccessComponentOptions } from './DataAccessComponent';
 import { renderInputErrors } from './OperationStepDialog';
 
 type TimeRangeValue = [string, string];
+
 
 interface IOpenDatasetDialogProps {
     isOpen: boolean;
@@ -50,7 +52,9 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
     }
 
     static mapPropsToState(nextProps: IOpenDatasetDialogProps): IOpenDatasetDialogState {
-        let options = nextProps.options || DataAccessComponent.defaultOptions(true, nextProps.temporalCoverage);
+        let options = nextProps.options
+                      || DataAccessComponent.defaultOptions(isLocalDataStore(nextProps.dataStore),
+                                                            nextProps.temporalCoverage);
         options = DataAccessComponent.ensureDateRangeIsValidated(options, nextProps.temporalCoverage);
         return {options};
     }
@@ -60,17 +64,21 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
     }
 
     private canConfirm(): boolean {
-        return DataAccessComponent.validateOptions(true, this.state.options);
+        return DataAccessComponent.validateOptions(this.isLocalDataStore, this.state.options);
     }
 
     private onConfirm() {
         const options = this.state.options;
-        // clear hasVariablesConstraint, variableNames
+        // Clear cachedDataSourceId, so on next props, we can create a new default from selected data source
+        // clear cachedDataSourceTitle, hasVariablesConstraint, variableNames, too
         // keep time and geo constraint
+        const dsDefault = this.isRemoteDataStore ? '' : undefined;
         const dialogState = {
             options:
                 {
                     ...options,
+                    makeLocalDataSourceId: dsDefault,
+                    makeLocalDataSourceTitle: dsDefault,
                     hasVariablesConstraint: false,
                     variableNames: null,
                 }
@@ -79,15 +87,22 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
         this.props.dispatch(actions.openDataset(
             this.props.dataSource.id,
             DataAccessComponent.optionsToOperationArguments(this.state.options),
-            false
+            this.isRemoteDataStore && this.state.options.isCacheDataSourceSelected
         ) as any);
         // Save modified state
         this.setState(dialogState);
     }
 
     private onOptionsChange(options: IDataAccessComponentOptions) {
-        // console.log(options);
         this.setState({options});
+    }
+
+    private get isRemoteDataStore() {
+        return isRemoteDataStore(this.props.dataStore);
+    }
+
+    private get isLocalDataStore() {
+        return isLocalDataStore(this.props.dataStore);
     }
 
     render() {
@@ -96,16 +111,17 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
             return null;
         }
 
+        const cacheSelected = this.isRemoteDataStore && this.state.options.isCacheDataSourceSelected;
         const inputErrors = DataAccessComponent.optionsToErrors(this.state.options);
         const confirmTooltip = renderInputErrors(inputErrors);
 
         return (
             <ModalDialog
                 isOpen={isOpen}
-                title={'Open Dataset from File(s)'}
+                title={'Open Dataset'}
                 icon="database"
-                confirmTitle="Open File(s)"
-                confirmIconName="folder-shared-open"
+                confirmTitle={cacheSelected ? 'Cache and Open' : 'Open'}
+                confirmIconName={"folder-shared-open"}
                 confirmTooltip={confirmTooltip}
                 onCancel={this.onCancel}
                 onConfirm={this.onConfirm}
@@ -118,13 +134,12 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
         if (!this.props.isOpen) {
             return null;
         }
-
         return (
             <DataAccessComponent
                 options={this.state.options}
                 onChange={this.onOptionsChange}
                 dataSource={this.props.dataSource}
-                isLocalDataSource={true}
+                isLocalDataSource={this.isLocalDataStore}
                 temporalCoverage={this.props.temporalCoverage}/>
         );
     }

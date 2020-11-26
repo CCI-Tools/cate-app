@@ -24,9 +24,9 @@ export interface IDataAccessComponentOptions {
     hasVariablesConstraint: boolean;
     variableNames: TextFieldValue | null;
 
-    isMakeLocalSelected?: boolean;
-    makeLocalDataSourceId?: string;
-    makeLocalDataSourceTitle?: string;
+    isCacheDataSourceSelected?: boolean;
+    cachedDataSourceId?: string;
+    cachedDataSourceTitle?: string;
 
     openDatasetResourceName: string;
 }
@@ -89,11 +89,11 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
     }
 
     private onMakeLocalSelectedChange(ev: any) {
-        this.props.onChange({...this.props.options, isMakeLocalSelected: ev.target.checked});
+        this.props.onChange({...this.props.options, isCacheDataSourceSelected: ev.target.checked});
     }
 
     private onMakeLocalDataSourceIdChange(ev: any) {
-        this.props.onChange({...this.props.options, makeLocalDataSourceId: ev.target.value});
+        this.props.onChange({...this.props.options, cachedDataSourceId: ev.target.value});
     }
 
     private onOpenDatasetResourceNameChange(ev: any) {
@@ -138,13 +138,13 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         const hasVariablesConstraint = options.hasVariablesConstraint;
         const isLocalDataSource = this.props.isLocalDataSource;
         const isRemoteDataSource = !isLocalDataSource;
-        const isMakeLocalSelected = isRemoteDataSource && options.isMakeLocalSelected;
+        const isMakeLocalSelected = isRemoteDataSource && options.isCacheDataSourceSelected;
 
         const res = DataAccessComponent.dataSourceToResource(this.props.dataSource);
 
         let headerText;
-        let localDataSourceCheck;
-        let localDataSourcePanel;
+        let cacheDataSourceCheck;
+        let cacheDataSourcePanel;
         // let openDatasetResourceNamePanel = (
         //     <div style={DataAccessComponent.OPTION_DIV_STYLE}>
         //         <Label>
@@ -162,7 +162,7 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
             headerText = (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>);
         } else {
             headerText = (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>);
-            localDataSourceCheck = (
+            cacheDataSourceCheck = (
                 <Tooltip
                     content="If unchecked, remote data will be accessed using an available protocol, e.g. OPeNDAP.">
                     <Checkbox
@@ -173,7 +173,7 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                     />
                 </Tooltip>
             );
-            localDataSourcePanel = (
+            cacheDataSourcePanel = (
                 <Collapse isOpen={isMakeLocalSelected}>
                     <div style={DataAccessComponent.OPTION_DIV_STYLE}>
                         <Label>
@@ -182,7 +182,7 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                             <InputGroup
                                 style={{width: '100%'}}
                                 type="text"
-                                value={options.makeLocalDataSourceId}
+                                value={options.cachedDataSourceId}
                                 onChange={this.onMakeLocalDataSourceIdChange}
                             />
                         </Label>
@@ -248,8 +248,8 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                     </div>
                 </Collapse>
 
-                {localDataSourceCheck}
-                {localDataSourcePanel}
+                {cacheDataSourceCheck}
+                {cacheDataSourcePanel}
                 {/*{openDatasetResourceNamePanel}*/}
 
             </div>
@@ -288,8 +288,8 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         }
 
         let validDataSourceId = true;
-        if (!isLocalDataSource && options.isMakeLocalSelected) {
-            const makeLocalDataSourceId = options.makeLocalDataSourceId;
+        if (!isLocalDataSource && options.isCacheDataSourceSelected) {
+            const makeLocalDataSourceId = options.cachedDataSourceId;
             if (makeLocalDataSourceId && !/[^\\/:*?"<>|\r\n]+$/im.test(makeLocalDataSourceId)) {
                 validDataSourceId = false;
             }
@@ -333,15 +333,15 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                 var_names: variableNames
             };
         }
-        if (options.isMakeLocalSelected) {
+        if (options.isCacheDataSourceSelected) {
             args = {
                 ...args,
                 force_local: true
             };
-            if (options.makeLocalDataSourceId) {
+            if (options.cachedDataSourceId) {
                 args = {
                     ...args,
-                    local_ds_id: options.makeLocalDataSourceId
+                    local_ds_id: options.cachedDataSourceId
                 };
             }
         }
@@ -376,20 +376,20 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
             hasVariablesConstraint: false,
             variableNames: null,
 
-            isMakeLocalSelected: !isLocalDataSource,
-            makeLocalDataSourceId: '',
+            isCacheDataSourceSelected: !isLocalDataSource,
+            cachedDataSourceId: '',
 
             openDatasetResourceName: '',
         };
     }
 
     // static adjustLocalDataSourceName(options: IDataAccessComponentOptions, dataSource: DataSourceState): IDataAccessComponentOptions {
-    //     if (!options.makeLocalDataSourceId || options.makeLocalDataSourceId === '') {
+    //     if (!options.cachedDataSourceId || options.cachedDataSourceId === '') {
     //         let dataSourceId = dataSource && dataSource.id;
     //         if (!dataSourceId) {
     //             dataSourceId = 'unnamed';
     //         }
-    //         return {...options, makeLocalDataSourceId: 'local.' + dataSourceId};
+    //         return {...options, cachedDataSourceId: 'local.' + dataSourceId};
     //     }
     //     return options;
     // }

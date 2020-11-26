@@ -1,5 +1,8 @@
 ### Changes 2.2.2 (in development)
 
+* Fixed a bug where local file data sources could not be added, when the
+  list was initially empty. (#132)
+
 ### Changes 2.2.1
 
 * Allow disabling Cate cloud service usage and display a maintenance 
