@@ -3,6 +3,7 @@
 * Fixed a bug where local file data sources could not be added, when the
   list was initially empty. (#132)
 * Using clearer terminology in the DATA SOURCES panel.
+* Added new Cookie banner and made app compliant to EU GDPR. (#131)
 
 ### Changes 2.2.1
 
