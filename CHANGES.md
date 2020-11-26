@@ -1,5 +1,7 @@
 ### Changes 2.2.2 (in development)
 
+* Added new Cookie banner and made app compliant to EU GDPR. (#131)
+
 ### Changes 2.2.1
 
 * Allow disabling Cate cloud service usage and display a maintenance 
