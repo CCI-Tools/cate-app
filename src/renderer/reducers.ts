@@ -7,7 +7,7 @@ import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style
 import { updateObject, updatePropertyObject } from '../common/objutil';
 import { isString } from '../common/types';
 import * as actions from './actions';
-import { Action, UPDATE_FS_ROOT_NODE } from './actions';
+import { Action, OBTAIN_COOKIE_CONSENT, UPDATE_FS_ROOT_NODE } from './actions';
 import { updateFileNode } from './components/desktop/fs/FileNode';
 import {
     addViewToLayout,
@@ -25,6 +25,7 @@ import {
     ViewState
 } from './components/ViewState';
 import { NEW_CTX_OPERATION_STEP_DIALOG_ID } from './containers/operation-step-dialog-ids';
+import { storeCookieConsent } from './cookies';
 import {
     INITIAL_COMMUNICATION_STATE,
     INITIAL_CONTROL_STATE,
@@ -733,7 +734,7 @@ let updatePlacemarkGeometry = function (state: SessionState, placemarkId: any, g
     return {...state, placemarkCollection};
 };
 
-const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Action) => {
+const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Action): SessionState => {
     switch (action.type) {
         case actions.SET_SELECTED_ENTITY_ID: {
             const selectedEntityId = action.payload.selectedEntityId || null;
@@ -807,6 +808,11 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
             const properties = featurePropertiesFromSimpleStyle(style);
             const defaultPlacemarkStyle = {...state.defaultPlacemarkStyle, ...style};
             return {...updatePlacemarkProperties(state, placemarkId, properties), defaultPlacemarkStyle};
+        }
+        case OBTAIN_COOKIE_CONSENT: {
+            const {trackingConsentObtained} = action.payload;
+            storeCookieConsent(trackingConsentObtained)
+            return {...state, cookieConsentObtained: true, trackingConsentObtained};
         }
     }
     return state;

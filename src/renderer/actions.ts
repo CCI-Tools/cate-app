@@ -2250,6 +2250,15 @@ export function updatePwaDisplayMode(pwaDisplayMode: string): Action {
     return {type: UPDATE_PWA_DISPLAY_MODE, payload: pwaDisplayMode};
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
+// EU GDPR actions
+
+export const OBTAIN_COOKIE_CONSENT = 'OBTAIN_COOKIE_CONSENT';
+
+export function obtainCookieConsent(trackingConsentObtained: boolean): Action {
+    return {type: OBTAIN_COOKIE_CONSENT, payload: {trackingConsentObtained}};
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // File choosers and message boxes
 
@@ -2698,3 +2707,4 @@ function readDroppedFile(file: File, dispatch: Dispatch) {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
 }
+

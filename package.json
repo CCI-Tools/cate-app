@@ -8,6 +8,7 @@
     "@blueprintjs/icons": "^3.20.0",
     "@blueprintjs/select": "^3.13.6",
     "@blueprintjs/table": "^3.8.12",
+    "@datapunt/matomo-tracker-react": "^0.3.1",
     "@react-keycloak/web": "^1.0.6",
     "@types/js-cookie": "^2.2.6",
     "cesium": "1.71.0",

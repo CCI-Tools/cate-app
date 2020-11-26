@@ -1,3 +1,4 @@
+import { isCookieConsentObtained, isTrackingConsentObtained } from './cookies';
 import {
     CommunicationState,
     ControlState,
@@ -130,6 +131,9 @@ export const INITIAL_SESSION_STATE: SessionState = {
         resourceNamePattern: 'res_{index}',
         proxyUrl: null,
     },
+
+    cookieConsentObtained: isCookieConsentObtained(),
+    trackingConsentObtained: isTrackingConsentObtained(),
 };
 
 

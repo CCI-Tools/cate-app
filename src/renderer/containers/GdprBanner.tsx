@@ -1,38 +1,48 @@
 import * as React from 'react';
 import { Button, Checkbox, Classes, Collapse, Drawer, Intent, Position } from '@blueprintjs/core';
-import * as Cookies from 'js-cookie';
+import { connect, Dispatch } from 'react-redux';
+import { State } from '../state';
+import { obtainCookieConsent } from '../actions';
 
-const COOKIE_CONSENT = 'cookieConsent';
-const TRACKING_ALLOWED = 'trackingAllowed';
 
-const C_ON = '1';
-const C_OFF = '0';
-const C_OPTIONS: Cookies.CookieAttributes = {expires: 365};
-
-function setConsentCookies(trackingAllowed: boolean) {
-    Cookies.set(COOKIE_CONSENT, C_ON, C_OPTIONS);
-    Cookies.set(TRACKING_ALLOWED, trackingAllowed ? C_ON : C_OFF, C_OPTIONS);
+interface IDispatch {
+    dispatch: Dispatch<State>;
 }
 
-const GdprBanner: React.FC = () => {
-    return (Cookies.get(COOKIE_CONSENT) === C_ON) ? null : <GdprBannerCore/>;
+interface IGdprBannerProps {
+    cookieConsentObtained: boolean;
+    trackingConsentObtained: boolean;
 }
 
-export default GdprBanner;
+// noinspection JSUnusedLocalSymbols
+function mapStateToProps(state: State): IGdprBannerProps {
+    return {
+        cookieConsentObtained: state.session.cookieConsentObtained,
+        trackingConsentObtained: state.session.trackingConsentObtained,
+    };
+}
 
-const GdprBannerCore: React.FC = () => {
+const GdprBanner: React.FC<IGdprBannerProps & IDispatch> = (
+    {
+        cookieConsentObtained,
+        trackingConsentObtained,
+        dispatch,
+    }
+) => {
     const [customizeMode, setCustomizeMode] = React.useState(false);
-    const [trackingAllowed, setTrackingAllowed] = React.useState(false);
-    const [consent, setConsent] = React.useState(false);
+    const [trackingAllowed, setTrackingAllowed] = React.useState(trackingConsentObtained);
 
-    if (consent) {
+    if (cookieConsentObtained) {
         return null;
     }
 
     const handleConsent = () => {
-        setConsentCookies(customizeMode ? trackingAllowed : true);
-        setConsent(true);
-    }
+        dispatch(obtainCookieConsent(customizeMode ? trackingAllowed : true));
+    };
+
+    const handleTrackingConsentObtained = (e: React.FormEvent<HTMLInputElement>) => {
+        setTrackingAllowed(e.currentTarget.checked);
+    };
 
     return (
         <Drawer
@@ -81,12 +91,12 @@ const GdprBannerCore: React.FC = () => {
                             if you use the Cate cloud services.
                         </Checkbox>
                         <Checkbox
-                            checked={trackingAllowed}
-                            onChange={(e) => setTrackingAllowed(e.currentTarget.checked)}
+                            checked={trackingConsentObtained}
+                            onChange={handleTrackingConsentObtained}
                         >
                             <strong>Tracking</strong>: Cate uses the open source software
                             tool <a href="https://matomo.org/">Matomo</a>, which uses cookies.
-                            With these cookies we can count your Cate App visits.
+                            With these cookies we count Cate App visits - of course anonymously.
                             Matomo fully complies to the EU General Data Protection Regulation (GDPR).
                         </Checkbox>
                     </div>
@@ -96,4 +106,4 @@ const GdprBannerCore: React.FC = () => {
     );
 }
 
-
+export default connect(mapStateToProps)(GdprBanner);

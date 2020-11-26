@@ -5,37 +5,38 @@ import { useLocation } from 'react-router-dom';
 import * as actions from '../actions';
 import { State } from '../state';
 import { showToast } from '../toast';
-import AppMainPage from './AppMainPage';
-
+import AppMainPageWrapper from './AppMainPage';
 
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
 
-
 interface IDispatch {
     dispatch: Dispatch<State>;
 }
 
 interface IAppMainPageForSAProps {
+    cookieConsentObtained: boolean;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppMainPageForSAProps {
     return {
+        cookieConsentObtained: state.session.cookieConsentObtained,
     };
 }
 
 const _AppMainPageForSA: React.FC<IAppMainPageForSAProps & IDispatch> = (
     {
+        cookieConsentObtained,
         dispatch,
     }
 ) => {
     const query = useQuery();
     const [init, setInit] = React.useState(false);
     React.useEffect(() => {
-        if (!init) {
+        if (!init && cookieConsentObtained) {
             const serviceUrl = query.get('serviceUrl');
             if (serviceUrl !== null) {
                 dispatch(actions.connectWebAPIService(serviceUrl) as any);
@@ -45,9 +46,9 @@ const _AppMainPageForSA: React.FC<IAppMainPageForSAProps & IDispatch> = (
             }
             setInit(true);
         }
-    }, [dispatch, init, setInit, query]);
+    }, [dispatch, init, setInit, query, cookieConsentObtained]);
 
-    return (<AppMainPage/>);
+    return (<AppMainPageWrapper/>);
 }
 
 const AppMainPageForSA = connect(mapStateToProps)(_AppMainPageForSA);

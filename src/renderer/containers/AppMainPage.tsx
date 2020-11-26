@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
 import { connect, Dispatch } from 'react-redux';
-import GdprBanner from '../components/GdprBanner';
+import { useMatomo } from '@datapunt/matomo-tracker-react'
 
+import GdprBanner from './GdprBanner';
 import { isElectron } from '../electron';
 import { FileSystemAPI } from '../webapi/apis';
 import AppBar from './AppBar';
@@ -50,6 +51,7 @@ import desktopActions from '../components/desktop/actions';
 import FileUploadDialog from "./FileUploadDialog";
 import FileDownloadDialog from "./FileDownloadDialog";
 
+type AppServiceMode = 'local' | 'cloud';
 
 function renderWorldView(view: ViewState<WorldViewDataState>) {
     // See #390, Drop 2D map view https://github.com/CCI-Tools/cate/issues/390.
@@ -83,13 +85,21 @@ interface IDispatch {
 
 interface IApplicationPageProps {
     forceAppBar?: boolean;
-    fileSystemAPI: FileSystemAPI | null,
+    fileSystemAPI: FileSystemAPI | null;
+    appServiceMode: AppServiceMode;
+    appServiceURL: string;
+    appServiceHostOS: string;
+    appServiceVersion: string;
 }
 
 function mapStateToPropsApplication(state: State): IApplicationPageProps {
     return {
         forceAppBar: state.session.forceAppBar,
         fileSystemAPI: selectors.fileSystemAPISelector(state),
+        appServiceMode: state.communication.userProfile ? 'cloud' : 'local',
+        appServiceURL: state.communication.webAPIServiceURL,
+        appServiceHostOS: state.communication.webAPIServiceInfo && state.communication.webAPIServiceInfo.hostOS,
+        appServiceVersion: state.communication.webAPIServiceInfo && state.communication.webAPIServiceInfo.version,
     };
 }
 
@@ -113,8 +123,26 @@ const _AppMainPage: React.FC<IApplicationPageProps & IDispatch> = (
     {
         forceAppBar,
         fileSystemAPI,
+        appServiceMode,
+        appServiceURL,
+        appServiceHostOS,
+        appServiceVersion,
         dispatch
     }) => {
+
+    const {trackPageView} = useMatomo();
+
+    // Track page view
+    React.useEffect(() => {
+        const customDimensions = [
+            {id: 1, value: appServiceMode},
+            {id: 2, value: appServiceURL},
+            {id: 3, value: appServiceHostOS},
+            {id: 4, value: appServiceVersion},
+        ];
+        console.log("Tracking:", customDimensions);
+        trackPageView({customDimensions});
+    }, [trackPageView, appServiceMode, appServiceURL, appServiceHostOS, appServiceVersion]);
 
     React.useEffect(() => {
         dispatch(actions.installGlobalHandlers() as any);
