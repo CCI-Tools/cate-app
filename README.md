@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/4g3vwk8oyotj1kqm?svg=true)](https://ci.appveyor.com/project/bcdev/cate-app)
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
