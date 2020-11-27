@@ -1,0 +1,8 @@
+version: 2.2.0.{build}
+image: Ubuntu
+install:
+  - yarn install
+build_script:
+  - yarn build
+test_script:
+  - yarn test
