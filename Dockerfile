@@ -1,8 +1,8 @@
 FROM node:stretch-slim as build-deps
 
 LABEL maintainer="helge.dzierzon@brockmann-consult.de"
-LABEL name="cate webui"
-LABEL cate-webui-version="2.2.2-dev.1"
+LABEL name="Cate App"
+LABEL version="2.2.2-dev.1"
 
 RUN apt-get -y update && apt-get install -y git apt-utils wget vim
 
