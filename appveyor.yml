@@ -4,6 +4,8 @@ stack: node 12
 install:
   - yarn install
 build_script:
+  - export CI=false
   - yarn build
-test_script:
-  - yarn test
+  - docker build .
+#test_script:
+#  - yarn test
