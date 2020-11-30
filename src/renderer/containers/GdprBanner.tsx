@@ -40,7 +40,7 @@ const GdprBanner: React.FC<IGdprBannerProps & IDispatch> = (
         dispatch(obtainCookieConsent(customizeMode ? trackingAllowed : true));
     };
 
-    const handleTrackingConsentObtained = (e: React.FormEvent<HTMLInputElement>) => {
+    const handleTrackingAllowed = (e: React.FormEvent<HTMLInputElement>) => {
         setTrackingAllowed(e.currentTarget.checked);
     };
 
@@ -91,8 +91,8 @@ const GdprBanner: React.FC<IGdprBannerProps & IDispatch> = (
                             if you use the Cate cloud services.
                         </Checkbox>
                         <Checkbox
-                            checked={trackingConsentObtained}
-                            onChange={handleTrackingConsentObtained}
+                            checked={trackingAllowed}
+                            onChange={handleTrackingAllowed}
                         >
                             <strong>Tracking</strong>: Cate uses the open source software
                             tool <a href="https://matomo.org/">Matomo</a>, which uses cookies.
