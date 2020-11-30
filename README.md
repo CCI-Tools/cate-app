@@ -44,6 +44,7 @@ To prepare a Cate App release, follow these steps:
 -[ ] `package.json`: Make sure `version` field is higher than the last release
      and compatible with [SemVer](https://semver.org/).
 -[ ] `Dockerfile`: Make sure `version` label is the same version.
+-[ ] `appveyor.yml`: Make sure `version` label is the same version appended by `-{build}`.
 -[ ] `src/serviceWorker.ts`: Make sure `PWA_VERSION` constant is the same version.
 -[ ] `src/renderer/containers/PreferencesDialog.tsx`: Make sure `CATE_WEBUI_VERSION` constant is the same version.
 -[ ] `CHANGES.md`: Make sure latest changes are up-to-date and refer to the same version.
