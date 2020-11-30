@@ -1,5 +1,12 @@
 ### Changes 2.2.2 (in development)
 
+* Fixed a bug where local file data sources could not be added, when the
+  list was initially empty. (#132)
+* Using clearer terminology in the data sources panel.
+* Made app compliant to EU GDPR. (#131)
+  * Added new Cookie banner 
+  * Now using Matomo Analytics
+
 ### Changes 2.2.1
 
 * Allow disabling Cate cloud service usage and display a maintenance 

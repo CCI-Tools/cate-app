@@ -4,7 +4,7 @@ import { connect, Dispatch } from 'react-redux';
 
 import * as actions from '../actions';
 import { State } from '../state';
-import AppMainPage from './AppMainPage';
+import AppMainPageWrapper from './AppMainPage';
 
 
 interface IDispatch {
@@ -12,29 +12,36 @@ interface IDispatch {
 }
 
 interface IAppMainPageForHubProps {
+    cookieConsentObtained: boolean;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppMainPageForHubProps {
-    return {};
+    return {
+        cookieConsentObtained: state.session.cookieConsentObtained,
+    };
 }
 
 const _AppMainPageForHub: React.FC<IAppMainPageForHubProps & IDispatch> = (
     {
+        cookieConsentObtained,
         dispatch,
     }
 ) => {
     // const [init, setInit] = React.useState(false);
     const [keycloak, keycloakInitialized] = useKeycloak();
     React.useEffect(() => {
+        if (!cookieConsentObtained) {
+            return;
+        }
         if (keycloakInitialized) {
             dispatch(actions.launchWebAPIService(keycloak) as any);
         } else {
             dispatch(actions.setWebAPIStatus('login') as any);
         }
-    }, [dispatch, keycloak, keycloakInitialized]);
+    }, [dispatch, keycloak, keycloakInitialized, cookieConsentObtained]);
 
-    return (<AppMainPage/>);
+    return (<AppMainPageWrapper/>);
 }
 
 

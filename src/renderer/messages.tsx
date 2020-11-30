@@ -41,9 +41,9 @@ export const NO_DATA_STORES_FOUND = (
 
 export const NO_LOCAL_DATA_SOURCES = (
     <NonIdealState
-        title="No file data sources"
+        title="No data sources"
         icon={ICON_CIRCLE}
-        description={<span>Add new file data sources using the button below.</span>}/>
+        description={<span>You can add a new data source using the "+" button below.</span>}/>
 );
 
 export const DATA_SOURCES_LOADING = (

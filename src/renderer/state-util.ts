@@ -2,7 +2,7 @@ import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
 
 import {
-    AnimationViewDataState, BaseMapState,
+    AnimationViewDataState, BaseMapState, DataStoreState,
     DimSizes,
     FigureViewDataState,
     LayerState,
@@ -73,6 +73,14 @@ export const MY_PLACES_LAYER = {
 };
 
 export const PLACEMARK_ID_PREFIX = 'placemark-';
+
+export function isLocalDataStore(dataStore: DataStoreState | null) {
+    return dataStore && (dataStore.id === 'local' || dataStore.isLocal);
+}
+
+export function isRemoteDataStore(dataStore: DataStoreState | null) {
+    return dataStore && dataStore.id !== 'local' && !dataStore.isLocal;
+}
 
 export function getTileUrl(baseUrl: string, baseDir: string, layer: VariableImageLayerState): string {
     return baseUrl + `ws/res/tile/${encodeURIComponent(baseDir)}/${layer.resId}/{z}/{y}/{x}.png?`

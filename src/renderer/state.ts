@@ -846,6 +846,10 @@ export interface SessionState {
     placemarkListHeight: number;
     showPlacemarkDetails: boolean;
     defaultPlacemarkStyle: SimpleStyle;
+
+    // EU GDPR
+    cookieConsentObtained: boolean;
+    trackingConsentObtained: boolean;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
