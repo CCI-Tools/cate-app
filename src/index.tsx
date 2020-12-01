@@ -18,8 +18,7 @@ declare global {
     }
 }
 
-window.CESIUM_BASE_URL = new URL(`${window.location.href}/cesium`).href;
-console.debug('CESIUM_BASE_URL =', window.CESIUM_BASE_URL);
+window.CESIUM_BASE_URL = './cesium';
 
 main();
 
