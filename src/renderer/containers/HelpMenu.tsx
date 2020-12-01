@@ -11,11 +11,12 @@ interface IDispatch {
 interface IHelpMenuProps {
 }
 
+// noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IHelpMenuProps {
     return {};
 }
 
-const _HelpMenu: React.FC<IHelpMenuProps & IDispatch> = (props) => {
+const _HelpMenu: React.FC<IHelpMenuProps & IDispatch> = () => {
 
     const openUrl = (url: string) => {
         window.open(url, '_blank');
@@ -24,29 +25,21 @@ const _HelpMenu: React.FC<IHelpMenuProps & IDispatch> = (props) => {
     return (
         <div>
             <Menu>
-                {/*<MenuItem */}
-                {/*    text="Website"*/}
-                {/*    onClick={() => openUrl("https://climatetoolbox.io/")}*/}
-                {/*/>*/}
                 <MenuItem
                     text="Cate Documentation"
-                    onClick={() => openUrl("http://cate.readthedocs.io/")}
+                    onClick={() => openUrl("http://cate.readthedocs.io")}
                 />
-                {/*<MenuItem */}
-                {/*    text="Downloads"*/}
-                {/*    onClick={() => openUrl("https://github.com/CCI-Tools/cate/releases")}*/}
-                {/*/>*/}
                 <MenuItem
-                    text="Cate Issue Tracker"
-                    onClick={() => openUrl("https://github.com/CCI-Tools/cate-webui/issues")}
+                    text="Cate Website"
+                    onClick={() => openUrl("https://climate.esa.int/en/explore/analyse-climate-data")}
                 />
-                {/*<MenuItem*/}
-                {/*    text="User Survey"*/}
-                {/*    onClick={() => openUrl("https://github.com/CCI-Tools/cate-webui/issues")}*/}
-                {/*/>*/}
                 <MenuItem
-                    text="ESA Climate Office"
-                    onClick={() => openUrl("https://climate.esa.int/")}
+                    text="Cate on GitHub"
+                    onClick={() => openUrl("https://github.com/CCI-Tools/cate")}
+                />
+                <MenuItem
+                    text="ESA Climate Office Helpdesk"
+                    onClick={() => openUrl("https://climate.esa.int/en/helpdesk")}
                 />
             </Menu>
         </div>

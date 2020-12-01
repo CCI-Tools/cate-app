@@ -1,5 +1,12 @@
 ### Changes 2.2.2 (in development)
 
+* In help menu, 
+  - we now provide a link to the Helpdesk of the 
+    ESA Climate Office instead of the issue tracker.
+  - new link to GitHub
+* The endpoint URL of the Cate cloud service (CateHub) is now determined
+  by the web page origin. It may be overridden by `REACT_APP_CATEHUB_ENDPOINT`
+  in the `.env` file. 
 * Fixed a bug where local file data sources could not be added, when the
   list was initially empty. (#132)
 * Using clearer terminology in the data sources panel.
