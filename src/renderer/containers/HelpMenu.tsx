@@ -20,7 +20,7 @@ const _HelpMenu: React.FC<IHelpMenuProps & IDispatch> = () => {
 
     const openUrl = (url: string) => {
         window.open(url, '_blank');
-    }
+    };
 
     return (
         <div>
