@@ -1,18 +1,27 @@
 import { HttpError } from '../HttpError';
 
 
-const API_ENDPOINT = process.env.REACT_APP_CATEHUB_ENDPOINT;
-if (!API_ENDPOINT) {
-    throw new Error('Missing REACT_APP_CATEHUB_ENDPOINT in .env');
+function getEndpointUrl(): string {
+    let endpointUrl;
+    if (process.env.REACT_APP_CATEHUB_ENDPOINT) {
+        endpointUrl = process.env.REACT_APP_CATEHUB_ENDPOINT;
+    } else if (window.location.host.indexOf('stage') >= 0) {
+        endpointUrl = 'https://stage.catehub.brockmann-consult.de';
+    } else {
+        endpointUrl = 'https://catehub.brockmann-consult.de';
+    }
+    return new URL(endpointUrl).href;
 }
+
+const API_ENDPOINT = getEndpointUrl();
 
 const WEBAPI_MANAG_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_MANAG_PATH || '/user/{username}/webapi';
 const WEBAPI_CLOSE_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_CLOSE_PATH || '/user/{username}/webapi/shutdown';
 const WEBAPI_COUNT_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_COUNT_PATH || '/webapi/count';
 
-const WEBAPI_MANAG_API_URL = `${API_ENDPOINT}${WEBAPI_MANAG_PATH}`;
-const WEBAPI_CLOSE_API_URL = `${API_ENDPOINT}${WEBAPI_CLOSE_PATH}`;
-const WEBAPI_COUNT_API_URL = `${API_ENDPOINT}${WEBAPI_COUNT_PATH}`;
+const WEBAPI_MANAG_API_URL = new URL(`${API_ENDPOINT}${WEBAPI_MANAG_PATH}`).href;
+const WEBAPI_CLOSE_API_URL = new URL(`${API_ENDPOINT}${WEBAPI_CLOSE_PATH}`).href;
+const WEBAPI_COUNT_API_URL = new URL(`${API_ENDPOINT}${WEBAPI_COUNT_PATH}`).href;
 
 export interface ServiceStatus {
     host_ip: string;
