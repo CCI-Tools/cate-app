@@ -1,5 +1,5 @@
 {
-  "name": "cate-webui",
+  "name": "cate-app",
   "version": "2.2.2-dev.3",
   "private": true,
   "dependencies": {
