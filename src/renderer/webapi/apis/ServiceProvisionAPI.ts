@@ -1,27 +1,14 @@
 import { HttpError } from '../HttpError';
 
+const DEFAULT_API_ENDPOINT_PRODUCTION = 'https://catehub.climate.esa.int';
+const DEFAULT_API_ENDPOINT_STAGE = 'https://stage.catehub.climate.esa.int';
 
-function getEndpointUrl(): string {
-    let endpointUrl;
-    if (process.env.REACT_APP_CATEHUB_ENDPOINT) {
-        endpointUrl = process.env.REACT_APP_CATEHUB_ENDPOINT;
-    } else if (window.location.host.indexOf('stage') >= 0) {
-        endpointUrl = 'https://stage.catehub.brockmann-consult.de';
-    } else {
-        endpointUrl = 'https://catehub.brockmann-consult.de';
-    }
-    return new URL(endpointUrl).href;
-}
-
-const API_ENDPOINT = getEndpointUrl();
-
-const WEBAPI_MANAG_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_MANAG_PATH || '/user/{username}/webapi';
-const WEBAPI_CLOSE_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_CLOSE_PATH || '/user/{username}/webapi/shutdown';
-const WEBAPI_COUNT_PATH = process.env.REACT_APP_CATEHUB_WEBAPI_COUNT_PATH || '/webapi/count';
-
-const WEBAPI_MANAG_API_URL = new URL(`${API_ENDPOINT}${WEBAPI_MANAG_PATH}`).href;
-const WEBAPI_CLOSE_API_URL = new URL(`${API_ENDPOINT}${WEBAPI_CLOSE_PATH}`).href;
-const WEBAPI_COUNT_API_URL = new URL(`${API_ENDPOINT}${WEBAPI_COUNT_PATH}`).href;
+const WEBAPI_MANAG_API_URL = getOperationUrl('REACT_APP_CATEHUB_WEBAPI_MANAG_PATH',
+                                             '/user/{username}/webapi');
+const WEBAPI_CLOSE_API_URL = getOperationUrl('REACT_APP_CATEHUB_WEBAPI_CLOSE_PATH',
+                                             '/user/{username}/webapi/shutdown');
+const WEBAPI_COUNT_API_URL = getOperationUrl('REACT_APP_CATEHUB_WEBAPI_COUNT_PATH',
+                                             '/webapi/count');
 
 export interface ServiceStatus {
     host_ip: string;
@@ -96,4 +83,26 @@ export class ServiceProvisionAPI {
         }
         return jsonObject.result as T;
     }
+}
+
+
+function getEndpointUrl(): string {
+    if (process.env.REACT_APP_CATEHUB_ENDPOINT) {
+        return process.env.REACT_APP_CATEHUB_ENDPOINT;
+    } else if (window.location.host.indexOf('stage') >= 0) {
+        return DEFAULT_API_ENDPOINT_STAGE;
+    } else {
+        return DEFAULT_API_ENDPOINT_PRODUCTION;
+    }
+}
+
+function getOperationUrl(envVarName: string, defaultPath: string): string {
+    const endpointUrl = getEndpointUrl();
+    const path = process.env[envVarName] || defaultPath;
+    if (endpointUrl.endsWith('/') && path.startsWith('/')) {
+        return endpointUrl + path.substr(1);
+    } else if (!endpointUrl.endsWith('/') && !path.startsWith('/')) {
+        return endpointUrl + '/' + path;
+    }
+    return endpointUrl + path;
 }
