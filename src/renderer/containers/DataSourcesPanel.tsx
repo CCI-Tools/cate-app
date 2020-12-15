@@ -188,30 +188,32 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                     {this.renderDataStoreSelector()}
                     <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
                         <span style={DataSourcesPanel.SPACER_STYLE}/>
-                        <Checkbox label="Show identifiers"
-                                  checked={this.props.showDataSourceIDs}
-                                  onChange={this.handleShowDataSourceIDsChanged}
-                                  style={{marginBottom: 2, marginTop: 6}}
+                        <Checkbox
+                            label="Show identifiers"
+                            checked={this.props.showDataSourceIDs}
+                            onChange={this.handleShowDataSourceIDsChanged}
+                            style={{marginBottom: 2, marginTop: 6}}
                         />
                     </div>
                     {this.renderDataSourceFilterExprInput()}
-                    <ContentWithDetailsPanel showDetails={this.props.showDataSourceDetails}
-                                             onShowDetailsChange={this.handleShowDetailsChanged}
-                                             isSplitPanel={true}
-                                             contentHeight={this.props.dataSourceListHeight}
-                                             onContentHeightChange={this.handleListHeightChanged}
-                                             actionComponent={actionComponent}>
-                        {hasDataSources ?
-                         (
-                             <DataSourcesList dataSources={this.props.filteredDataSources}
-                                          selectedDataSourceId={this.props.selectedDataSource ? this.props.selectedDataSource.id : null}
-                                          setSelectedDataSourceId={this.props.setSelectedDataSourceId}
-                                          showDataSourceIDs={this.props.showDataSourceIDs}
-                                          doubleClickAction={this.handleShowOpenDatasetDialog}/>
-                                          )
-                                          : (
-                             this.renderNoDataSourcesMessage()
-                         )
+                    <ContentWithDetailsPanel
+                        showDetails={this.props.showDataSourceDetails}
+                        onShowDetailsChange={this.handleShowDetailsChanged}
+                        isSplitPanel={true}
+                        contentHeight={this.props.dataSourceListHeight}
+                        onContentHeightChange={this.handleListHeightChanged}
+                        actionComponent={actionComponent}
+                    >
+                        {hasDataSources ? (<DataSourcesList
+                                            dataSources={this.props.filteredDataSources}
+                                            selectedDataSourceId={this.props.selectedDataSource
+                                                                  ? this.props.selectedDataSource.id
+                                                                  : null}
+                                            setSelectedDataSourceId={this.props.setSelectedDataSourceId}
+                                            showDataSourceIDs={this.props.showDataSourceIDs}
+                                            doubleClickAction={this.handleShowOpenDatasetDialog}
+                                        />)
+                                        : this.renderNoDataSourcesMessage()
                         }
                         <DataSourceDetails dataSource={this.props.selectedDataSource}/>
                     </ContentWithDetailsPanel>
@@ -487,13 +489,17 @@ class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
     render() {
         return (
             <ScrollablePanelContent>
-                <ListBox items={this.props.dataSources}
-                         getItemKey={DataSourcesList.getItemKey}
-                         renderItem={this.renderDataSourceTitle}
-                         selectionMode={ListBoxSelectionMode.SINGLE}
-                         selection={this.props.selectedDataSourceId}
-                         onItemDoubleClick={this.props.doubleClickAction}
-                         onSelection={this.handleDataSourceSelected}/>
+                <ListBox
+                    // key is here to force re-render on change of showDataSourceIDs
+                    key={'DataSourcesList-' + this.props.showDataSourceIDs}
+                    items={this.props.dataSources}
+                    getItemKey={DataSourcesList.getItemKey}
+                    renderItem={this.renderDataSourceTitle}
+                    selectionMode={ListBoxSelectionMode.SINGLE}
+                    selection={this.props.selectedDataSourceId}
+                    onItemDoubleClick={this.props.doubleClickAction}
+                    onSelection={this.handleDataSourceSelected}
+                />
             </ScrollablePanelContent>
         );
     }

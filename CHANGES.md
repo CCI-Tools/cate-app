@@ -2,6 +2,7 @@
 
 #### In current
 
+* Fixed deferred effect of checkbox "Show identifiers" in DATA SOURCES panel.
 * Using term "sandboxed file system" instead of "user root" in about box 
 
 #### From previous
