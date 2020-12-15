@@ -10,6 +10,10 @@ const WEBAPI_CLOSE_API_URL = getOperationUrl('REACT_APP_CATEHUB_WEBAPI_CLOSE_PAT
 const WEBAPI_COUNT_API_URL = getOperationUrl('REACT_APP_CATEHUB_WEBAPI_COUNT_PATH',
                                              '/webapi/count');
 
+// console.debug('WEBAPI_MANAG_API_URL:', WEBAPI_MANAG_API_URL);
+// console.debug('WEBAPI_CLOSE_API_URL:', WEBAPI_CLOSE_API_URL);
+// console.debug('WEBAPI_COUNT_API_URL:', WEBAPI_COUNT_API_URL);
+
 export interface ServiceStatus {
     host_ip: string;
     init_container_statuses?: string | null;

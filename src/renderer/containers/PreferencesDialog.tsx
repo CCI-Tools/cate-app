@@ -16,7 +16,7 @@ import { isDefined } from '../../common/types';
 // 1. Synchronize any changes of CATE_WEBUI_VERSION with the version field in "./package.json".
 // 2. Increase PWA_VERSION in "./src/serviceWorker.ts"
 //
-const CATE_WEBUI_VERSION = "2.2.2-dev.3";
+const CATE_WEBUI_VERSION = "2.2.2-dev.4";
 
 
 interface IPreferencesDialogProps {
@@ -170,7 +170,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                 <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
                     <span style={ABOUT_LABEL_STYLE}>Cate service mode:</span>
                     <span style={ABOUT_ITEM_STYLE}>
-                        {this.props.serviceInfo.userRootMode ? 'user root' : 'without user root'}
+                        {this.props.serviceInfo.userRootMode ? 'sandboxed file system' : 'full access to file system'}
                     </span>
                 </ControlGroup>
             </div>

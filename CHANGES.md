@@ -1,5 +1,11 @@
 ### Changes 2.2.2 (in development)
 
+#### In current
+
+* Using term "sandboxed file system" instead of "user root" in about box 
+
+#### From previous
+
 * In help menu, 
   - we now provide a link to the Helpdesk of the 
     ESA Climate Office instead of the issue tracker.
