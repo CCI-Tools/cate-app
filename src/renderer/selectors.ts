@@ -2,7 +2,7 @@ import { createSelector, Selector } from 'reselect';
 import * as Cesium from 'cesium';
 
 import { requireElectron } from './electron';
-import { DEFAULT_BASE_MAP, DEFAULT_BASE_MAP_ID } from './state-util';
+import { canOpenDataSource, DEFAULT_BASE_MAP, DEFAULT_BASE_MAP_ID } from './state-util';
 import {
     BaseMapState,
     ColorMapCategoryState,
@@ -359,6 +359,7 @@ export const selectedDataSourceIdSelector = (state: State) => state.session.sele
 export const dataSourceFilterExprSelector = (state: State) => state.session.dataSourceFilterExpr;
 export const dataSourceListHeightSelector = (state: State) => state.session.dataSourceListHeight;
 export const showDataSourceDetailsSelector = (state: State) => state.session.showDataSourceDetails;
+export const showAllDataSourcesSelector = (state: State): boolean => state.session.showAllDataSources;
 export const showDataSourceIDsSelector = (state: State): boolean => state.session.showDataSourceIDs;
 export const showDataStoreDescriptionSelector = (state: State): boolean => state.session.showDataStoreDescription;
 export const showDataStoreNoticesSelector = (state: State): boolean => state.session.showDataStoreNotices;
@@ -390,15 +391,14 @@ export const filteredDataSourcesSelector = createSelector<State, DataSourceState
     boolean>(
     selectedDataSourcesSelector,
     dataSourceFilterExprSelector,
-    showDataSourceIDsSelector,
-    (selectedDataSources, dataSourceFilterExpr, showDataSourceTitles) => {
+    showAllDataSourcesSelector,
+    (selectedDataSources, dataSourceFilterExpr, showAllDataSources) => {
         const hasDataSources = selectedDataSources && selectedDataSources.length;
         const hasFilterExpr = dataSourceFilterExpr && dataSourceFilterExpr !== '';
         if (hasDataSources && hasFilterExpr) {
             const dataSourceFilterExprLC = dataSourceFilterExpr.toLowerCase();
             const parts = dataSourceFilterExprLC.split(' ');
-            const dsMatcher = showDataSourceTitles ? matchesIdOrTitle : matchesId;
-            return selectedDataSources.filter(ds => dsMatcher(ds, parts));
+            return selectedDataSources.filter(ds => matchesIdOrTitle(ds, parts, showAllDataSources));
         }
         return selectedDataSources;
     }
@@ -409,7 +409,10 @@ function matchesId(ds: DataSourceState, parts: string[]) {
     return parts.every(part => id.includes(part));
 }
 
-function matchesIdOrTitle(ds: DataSourceState, parts: string[]) {
+function matchesIdOrTitle(ds: DataSourceState, parts: string[], showAllDataSources: boolean) {
+    if (!showAllDataSources && !canOpenDataSource(ds)) {
+        return false;
+    }
     if (matchesId(ds, parts)) {
         return true;
     }

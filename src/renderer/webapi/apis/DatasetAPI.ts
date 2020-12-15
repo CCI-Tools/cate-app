@@ -10,6 +10,38 @@ function responseToTemporalCoverage(response: any): [string, string] | null {
     return null;
 }
 
+function addVerificationFlagsForTesting(dataSources: DataSourceState[]): DataSourceState[] {
+    return dataSources.map((ds, i) => {
+        if (i === 0) {
+            return {
+                ...ds,
+                typeSpecifier: 'dataset',
+                verificationFlags: []
+            }
+        } else if (i === 1) {
+            return {
+                ...ds,
+                typeSpecifier: 'dataset',
+                verificationFlags: ['open']
+            }
+        } else if (i === 1) {
+            return {
+                ...ds,
+                typeSpecifier: 'dataset',
+                verificationFlags: ['open', 'map']
+            }
+        } else if (i === 2) {
+            return {
+                ...ds,
+                typeSpecifier: 'dataset',
+                verificationFlags: ['open', 'map', 'cache']
+            }
+        } else {
+            return ds;
+        }
+    });
+}
+
 export class DatasetAPI {
     private readonly webAPIClient: WebAPIClient;
 
@@ -23,7 +55,11 @@ export class DatasetAPI {
 
     getDataSources(dataStoreId: string,
                    onProgress: (progress: JobProgress) => void): JobPromise<DataSourceState[]> {
-        return this.webAPIClient.call('get_data_sources', [dataStoreId], onProgress);
+        return this.webAPIClient
+                   .call('get_data_sources',
+                         [dataStoreId],
+                         onProgress,
+                         addVerificationFlagsForTesting);
     }
 
     getDataSourceTemporalCoverage(dataStoreId: string, dataSourceId: string,

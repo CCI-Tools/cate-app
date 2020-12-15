@@ -7,14 +7,19 @@ import {
     Classes,
     Collapse,
     Colors,
+    H5,
     HTMLSelect,
     IconName,
     InputGroup,
     Intent,
     Label,
+    Popover,
+    PopoverInteractionKind,
+    Position,
     Tab,
     Tabs,
-    Tag
+    Tag,
+    Tooltip
 } from '@blueprintjs/core';
 import { Cell, Column, Table, TruncatedFormat } from '@blueprintjs/table';
 import * as React from 'react';
@@ -33,7 +38,7 @@ import { DATA_SOURCES_LOADING, NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_L
 import _ecvMeta from '../resources/ecv-meta.json';
 import * as selectors from '../selectors';
 import { DataSourceState, DataStoreNotice, DataStoreState, State } from '../state';
-import { isLocalDataStore } from '../state-util';
+import { canOpenDataSource, isLocalDataStore } from '../state-util';
 import AddDatasetDialog from './AddDatasetDialog';
 import OpenDatasetDialog from './OpenDatasetDialog';
 import RemoveDatasetDialog from './RemoveDatasetDialog';
@@ -60,6 +65,7 @@ interface IDataSourcesPanelProps {
     selectedDataSources: DataSourceState[] | null;
     filteredDataSources: DataSourceState[] | null;
     dataSourceListHeight: number;
+    showAllDataSources: boolean;
     showDataSourceIDs: boolean;
     showDataSourceDetails: boolean;
     showDataStoreDescription: boolean;
@@ -78,6 +84,7 @@ function mapStateToProps(state: State): IDataSourcesPanelProps {
         filteredDataSources: selectors.filteredDataSourcesSelector(state),
         dataSourceListHeight: selectors.dataSourceListHeightSelector(state),
         showDataSourceDetails: selectors.showDataSourceDetailsSelector(state),
+        showAllDataSources: selectors.showAllDataSourcesSelector(state),
         showDataSourceIDs: selectors.showDataSourceIDsSelector(state),
         showDataStoreDescription: selectors.showDataStoreDescriptionSelector(state),
         showDataStoreNotices: selectors.showDataStoreNoticesSelector(state),
@@ -141,88 +148,125 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.handleDataStoreSelected = this.handleDataStoreSelected.bind(this);
         this.handleShowDataStoreDescriptionChanged = this.handleShowDataStoreDescriptionChanged.bind(this);
         this.handleShowDataStoreNoticesChanged = this.handleShowDataStoreNoticesChanged.bind(this);
+        this.handleShowAllDataSourcesChanged = this.handleShowAllDataSourcesChanged.bind(this);
         this.handleShowDataSourceIDsChanged = this.handleShowDataSourceIDsChanged.bind(this);
     }
 
     render() {
         const hasDataStores = this.props.dataStores && this.props.dataStores.length;
-        const hasDataSources = this.props.selectedDataSources && this.props.selectedDataSources.length;
-        let body;
-        if (hasDataStores) {
-            const hasSelection = this.props.selectedDataSource;
-            const isLocalStore = isLocalDataStore(this.props.selectedDataStore);
-            const canAdd = isLocalStore;
-            const canRemove = hasSelection && isLocalStore;
-            const canOpen = hasSelection && this.props.hasWorkspace;
-            const actionComponent = (
-                <ButtonGroup>
-                    {isLocalStore && <ToolButton
-                        tooltipContent="Add data source"
-                        onClick={this.handleAddDatasetDialog}
-                        disabled={!canAdd}
-                        icon="add"
-                        tooltipPosition={'top'}
-                    />}
-                    {isLocalStore && <ToolButton
-                        tooltipContent="Remove data source"
-                        onClick={this.handleRemoveDatasetDialog}
-                        disabled={!canRemove}
-                        icon="trash"
-                        tooltipPosition={'top'}
-                    />}
-                    <ToolButton
-                        tooltipContent="Open data source"
-                        intent={Intent.PRIMARY}
-                        onClick={this.handleShowOpenDatasetDialog}
-                        disabled={!canOpen}
-                        icon={"folder-shared-open"}
-                        tooltipPosition={'top'}
-                    />
-                    <AddDatasetDialog/>
-                    <RemoveDatasetDialog/>
-                    <OpenDatasetDialog/>
-                </ButtonGroup>
-            );
-            body = (
-                <div>
-                    {this.renderDataStoreSelector()}
-                    <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
-                        <span style={DataSourcesPanel.SPACER_STYLE}/>
-                        <Checkbox
-                            label="Show identifiers"
-                            checked={this.props.showDataSourceIDs}
-                            onChange={this.handleShowDataSourceIDsChanged}
-                            style={{marginBottom: 2, marginTop: 6}}
-                        />
-                    </div>
-                    {this.renderDataSourceFilterExprInput()}
-                    <ContentWithDetailsPanel
-                        showDetails={this.props.showDataSourceDetails}
-                        onShowDetailsChange={this.handleShowDetailsChanged}
-                        isSplitPanel={true}
-                        contentHeight={this.props.dataSourceListHeight}
-                        onContentHeightChange={this.handleListHeightChanged}
-                        actionComponent={actionComponent}
-                    >
-                        {hasDataSources ? (<DataSourcesList
-                                            dataSources={this.props.filteredDataSources}
-                                            selectedDataSourceId={this.props.selectedDataSource
-                                                                  ? this.props.selectedDataSource.id
-                                                                  : null}
-                                            setSelectedDataSourceId={this.props.setSelectedDataSourceId}
-                                            showDataSourceIDs={this.props.showDataSourceIDs}
-                                            doubleClickAction={this.handleShowOpenDatasetDialog}
-                                        />)
-                                        : this.renderNoDataSourcesMessage()
-                        }
-                        <DataSourceDetails dataSource={this.props.selectedDataSource}/>
-                    </ContentWithDetailsPanel>
-                </div>
-            );
-        } else {
-            body = this.renderNoDataStoreMessage();
+        if (!hasDataStores) {
+            return this.renderNoDataStoreMessage();
         }
-        return body;
+        const hasDataSources = this.props.selectedDataSources && this.props.selectedDataSources.length;
+        const selectedDataSource = this.props.selectedDataSource;
+        const isLocalStore = isLocalDataStore(this.props.selectedDataStore);
+        const canAdd = isLocalStore;
+        const canRemove = selectedDataSource && isLocalStore;
+        const isNotVerified = selectedDataSource ? !canOpenDataSource(selectedDataSource) : false;
+        const canOpen = selectedDataSource && this.props.hasWorkspace && !isNotVerified;
+        const actionComponent = (
+            <ButtonGroup>
+                {isLocalStore && <ToolButton
+                    tooltipContent="Add data source"
+                    onClick={this.handleAddDatasetDialog}
+                    disabled={!canAdd}
+                    icon="add"
+                    tooltipPosition={'top'}
+                />}
+                {isLocalStore && <ToolButton
+                    tooltipContent="Remove data source"
+                    onClick={this.handleRemoveDatasetDialog}
+                    disabled={!canRemove}
+                    icon="trash"
+                    tooltipPosition={'top'}
+                />}
+                {isNotVerified && (
+                    <Popover
+                        popoverClassName={Classes.POPOVER_CONTENT_SIZING}
+                        enforceFocus={false}
+                        interactionKind={PopoverInteractionKind.HOVER}
+                        position={Position.TOP}
+                    >
+                        <ToolButton icon={"warning-sign"} intent={Intent.WARNING}/>
+                        <div>
+                            <H5>Cannot open</H5>
+                            <p>This data source cannot be opened directly
+                                from its data store. You may download it
+                                manually and use one of the <code>read_xxx()</code>
+                                operations to open the downloaded data.
+                                "xxx" is determined by the type and format
+                                of the data."
+                            </p>
+                            <p>
+                                More information related to the data
+                                can be found <a href={"https://www.startpage.com/"}>here</a>.
+                            </p>
+                        </div>
+                    </Popover>
+                )}
+                <ToolButton
+                    tooltipContent="Open data source"
+                    intent={Intent.PRIMARY}
+                    onClick={this.handleShowOpenDatasetDialog}
+                    disabled={!canOpen}
+                    icon={"folder-shared-open"}
+                    tooltipPosition={'top'}
+                />
+                <AddDatasetDialog/>
+                <RemoveDatasetDialog/>
+                <OpenDatasetDialog/>
+            </ButtonGroup>
+        );
+        return (
+            <div>
+                {this.renderDataStoreSelector()}
+                <div style={DataSourcesPanel.FLEX_ROW_STYLE}>
+                    <span style={DataSourcesPanel.SPACER_STYLE}/>
+                    <Tooltip content={
+                        <div>
+                            List also datasets that cannot be opened directly.<br/>
+                            Usually they can be downloaded manually, then<br/>
+                            opened by some <code>read_xxx()</code> operation.
+                        </div>}>
+                        <Checkbox
+                            label="All data sources"
+                            checked={this.props.showAllDataSources}
+                            onChange={this.handleShowAllDataSourcesChanged}
+                            style={{marginBottom: 2, marginTop: 6, marginRight: 6}}
+                        />
+                    </Tooltip>
+                    <Checkbox
+                        label="Show identifiers"
+                        checked={this.props.showDataSourceIDs}
+                        onChange={this.handleShowDataSourceIDsChanged}
+                        style={{marginBottom: 2, marginTop: 6}}
+                    />
+                </div>
+                {this.renderDataSourceFilterExprInput()}
+                <ContentWithDetailsPanel
+                    showDetails={this.props.showDataSourceDetails}
+                    onShowDetailsChange={this.handleShowDetailsChanged}
+                    isSplitPanel={true}
+                    contentHeight={this.props.dataSourceListHeight}
+                    onContentHeightChange={this.handleListHeightChanged}
+                    actionComponent={actionComponent}
+                >
+                    {hasDataSources
+                     ? (<DataSourcesList
+                            dataSources={this.props.filteredDataSources}
+                            selectedDataSourceId={this.props.selectedDataSource
+                                                  ? this.props.selectedDataSource.id
+                                                  : null}
+                            setSelectedDataSourceId={this.props.setSelectedDataSourceId}
+                            showDataSourceIDs={this.props.showDataSourceIDs}
+                            doubleClickAction={this.handleShowOpenDatasetDialog}
+                        />)
+                     : this.renderNoDataSourcesMessage()
+                    }
+                    <DataSourceDetails dataSource={this.props.selectedDataSource}/>
+                </ContentWithDetailsPanel>
+            </div>
+        );
     }
 
     private handleAddDatasetDialog() {
@@ -263,6 +307,10 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
 
     private handleShowDataStoreNoticesChanged() {
         this.props.updateSessionState({showDataStoreNotices: !this.props.showDataStoreNotices});
+    }
+
+    private handleShowAllDataSourcesChanged(ev: any) {
+        this.props.updateSessionState({showAllDataSources: ev.target.checked});
     }
 
     private handleShowDataSourceIDsChanged(ev: any) {
@@ -576,7 +624,6 @@ class DataSourceDetails extends React.PureComponent<IDataSourceDetailsProps, nul
     constructor(props: IDataSourceDetailsProps) {
         super(props);
         this.renderAbstract = this.renderAbstract.bind(this);
-        this.openOdpLink = this.openOdpLink.bind(this);
     }
 
     private static renderVariablesTable(variables?: any[]): DetailPart {
@@ -692,20 +739,15 @@ class DataSourceDetails extends React.PureComponent<IDataSourceDetailsProps, nul
         );
     }
 
-    private openOdpLink() {
-        const uuid = this.props.dataSource.meta_info.uuid;
-        const url = 'http://catalogue.ceda.ac.uk/uuid/' + uuid;
-        actions.openExternal(url);
-    }
-
     private renderAbstract(dataSource: DataSourceState): DetailPart {
         const metaInfo = dataSource.meta_info;
         let element;
         if (metaInfo) {
+            const catalogUrl = metaInfo.catalog_url || (metaInfo.uuid ? `https://catalogue.ceda.ac.uk/${metaInfo.uuid}` : null);
             let openOdpPage;
-            if (metaInfo.uuid) {
+            if (catalogUrl) {
                 openOdpPage =
-                    <AnchorButton onClick={this.openOdpLink}
+                    <AnchorButton onClick={() => actions.openExternal(catalogUrl)}
                                   style={{float: 'right', margin: 4}}>Catalogue</AnchorButton>
             }
             let spatialCoverage;

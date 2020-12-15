@@ -2,7 +2,7 @@ import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
 
 import {
-    AnimationViewDataState, BaseMapState, DataStoreState,
+    AnimationViewDataState, BaseMapState, DataSourceState, DataSourceVerificationFlags, DataStoreState,
     DimSizes,
     FigureViewDataState,
     LayerState,
@@ -81,6 +81,34 @@ export function isLocalDataStore(dataStore: DataStoreState | null) {
 export function isRemoteDataStore(dataStore: DataStoreState | null) {
     return dataStore && dataStore.id !== 'local' && !dataStore.isLocal;
 }
+
+export function canOpenDataSource(dataSource: DataSourceState) {
+    return _checkDataSource(dataSource, 'open', 'map', 'cache');
+}
+
+export function canCacheDataSource(dataSource: DataSourceState) {
+    return _checkDataSource(dataSource, 'cache');
+}
+
+function _checkDataSource(dataSource: DataSourceState, ...flags: DataSourceVerificationFlags[]): boolean {
+    if (Array.isArray(dataSource.verificationFlags)) {
+        // dataSource.verificationFlags have been introduced for ESA CCI datasets only
+        const s = new Set<string>(dataSource.verificationFlags);
+        for (let flag in flags) {
+            if (s.has(flag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    if (isString(dataSource.typeSpecifier)) {
+        // dataSource.typeSpecifier have been introduced for ESA CCI datasets only
+        return dataSource.typeSpecifier.startsWith("dataset");
+    }
+    // We assume, we can open all other (non ESA CCI) datasets
+    return true;
+}
+
 
 export function getTileUrl(baseUrl: string, baseDir: string, layer: VariableImageLayerState): string {
     return baseUrl + `ws/res/tile/${encodeURIComponent(baseDir)}/${layer.resId}/{z}/{y}/{x}.png?`
