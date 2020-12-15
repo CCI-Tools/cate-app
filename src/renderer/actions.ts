@@ -8,7 +8,6 @@ import * as redux from 'redux';
 import * as assert from '../common/assert';
 import { isAssignableFrom, VAR_NAME_LIKE_TYPE, VAR_NAMES_LIKE_TYPE } from '../common/cate-types';
 import { SimpleStyle } from '../common/geojson-simple-style';
-import { updateObject } from '../common/objutil';
 import { isDefined, isNumber } from '../common/types';
 import { getEntityByEntityId } from './components/cesium/cesium-util';
 import { GeometryToolType } from './components/cesium/geometry-tool';
@@ -2132,7 +2131,7 @@ export function moveLayerDown(viewId: string, id: string): Action {
 export function updateLayer(viewId: string, layer: LayerState, ...layerProperties): ThunkAction {
     return (dispatch: Dispatch) => {
         if (layerProperties.length) {
-            layer = updateObject({}, layer, ...layerProperties);
+            layer = {...layer, ...layerProperties};
         }
         dispatch(updateLayerImpl(viewId, layer));
         if (layer.id === AUTO_LAYER_ID) {
