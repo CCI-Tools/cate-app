@@ -189,7 +189,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                     >
                         <ToolButton icon={"warning-sign"} intent={Intent.WARNING}/>
                         <div>
-                            <H5>Cannot open</H5>
+                            <H5>Cannot open from Store</H5>
                             <p>This data source cannot be opened directly
                                 from its data store. You may download it
                                 manually and use one of the <code>read_xxx()</code>
