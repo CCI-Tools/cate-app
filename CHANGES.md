@@ -2,6 +2,13 @@
 
 #### In current
 
+* The DATA SOURCES panel has been updated:
+  - Fixed deferred effect of checkbox "Show identifiers"
+  - Added checkbox "All data sources" that will display all ODP datasets
+  - Added warn icon to those datasets that cannot be opened from store.
+    Such data sources disable the "Open" button and display a popup 
+    instead. The popup informs the user how to manually download and open 
+    the datasets. 
 * Using term "sandboxed file system" instead of "user root" in about box 
 
 #### From previous

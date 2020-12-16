@@ -2132,6 +2132,7 @@ export function moveLayerDown(viewId: string, id: string): Action {
 export function updateLayer(viewId: string, layer: LayerState, ...layerProperties): ThunkAction {
     return (dispatch: Dispatch) => {
         if (layerProperties.length) {
+            // layer = {...layer, ...layerProperties};
             layer = updateObject({}, layer, ...layerProperties);
         }
         dispatch(updateLayerImpl(viewId, layer));

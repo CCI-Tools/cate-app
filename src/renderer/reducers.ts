@@ -35,7 +35,7 @@ import {
 } from './initial-state';
 import {
     CommunicationState,
-    ControlState,
+    ControlState, DataSourceState,
     DataState,
     DataStoreState,
     LayerState,
@@ -64,21 +64,22 @@ import {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // state.data reducers
 
-const updateDataStores = (state: DataState, action: Action, createDataSources: (dataStore: DataStoreState) => void): DataStoreState[] => {
+const updateDataStores = (state: DataState,
+                          action: Action,
+                          createDataSources: (dataStore: DataStoreState) => DataSourceState[]): DataState => {
     const dataStoreId = action.payload.dataStoreId;
     const dataStoreIndex = state.dataStores.findIndex(dataStore => dataStore.id === dataStoreId);
     if (dataStoreIndex < 0) {
         throw Error('illegal data store ID: ' + dataStoreId);
     }
     const oldDataStore = state.dataStores[dataStoreIndex];
-    const newDataSources = createDataSources(oldDataStore);
-    const newDataStore = updateObject(oldDataStore, {dataSources: newDataSources});
-    const newDataStores = state.dataStores.slice();
+    const newDataStore = {...oldDataStore, dataSources: createDataSources(oldDataStore)};
+    const newDataStores = [...state.dataStores];
     newDataStores[dataStoreIndex] = newDataStore;
-    return updateObject(state, {dataStores: newDataStores});
+    return {...state, dataStores: newDataStores};
 };
 
-const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
+const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action): DataState => {
     switch (action.type) {
         case actions.UPDATE_WORKSPACE_NAMES: {
             const workspaceNames = action.payload.workspaceNames || null;
@@ -86,7 +87,7 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
         }
         case actions.UPDATE_OPERATIONS: {
             const operations = action.payload.operations;
-            return updateObject(state, {operations});
+            return {...state, operations};
         }
         case actions.SET_CURRENT_WORKSPACE: {
             const workspace = action.payload.workspace;
@@ -99,11 +100,11 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
         }
         case actions.UPDATE_COLOR_MAPS: {
             const colorMaps = action.payload.colorMaps;
-            return updateObject(state, {colorMaps});
+            return {...state, colorMaps};
         }
         case actions.UPDATE_DATA_STORES: {
             const dataStores = action.payload.dataStores.slice();
-            return updateObject(state, {dataStores});
+            return {...state, dataStores};
         }
         case actions.UPDATE_DATA_SOURCES: {
             return updateDataStores(state, action, () => {
@@ -112,7 +113,7 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
         }
         case actions.UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE: {
             return updateDataStores(state, action, dataStore => {
-                const newDataSources = dataStore.dataSources.slice();
+                const newDataSources = [...dataStore.dataSources];
                 const dataSourceId = action.payload.dataSourceId;
                 const temporalCoverage = action.payload.temporalCoverage;
                 const dataSourceIndex = newDataSources.findIndex(dataSource => dataSource.id === dataSourceId);
@@ -120,7 +121,7 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action) => {
                     throw Error('illegal data source ID: ' + dataSourceId);
                 }
                 const oldDataSource = newDataSources[dataSourceIndex];
-                newDataSources[dataSourceIndex] = updateObject({}, oldDataSource, {temporalCoverage});
+                newDataSources[dataSourceIndex] = {...oldDataSource, temporalCoverage};
                 return newDataSources;
             });
         }
@@ -580,6 +581,7 @@ const viewReducer = (state: ViewState<any>, action: Action, activeViewId: string
                 const layers = state.data.layers.slice();
                 const layerIndex = layers.findIndex(l => l.id === layer.id);
                 assert.ok(layerIndex >= 0, 'layerIndex >= 0');
+                // layers[layerIndex] = {...layers[layerIndex], ...layer};
                 layers[layerIndex] = updateObject(layers[layerIndex], layer);
                 return {...state, data: {...state.data, layers}};
             }
@@ -757,6 +759,7 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
             return {...state, lastBaseMapId: action.payload.baseMapId};
         case actions.SAVE_LAYER: {
             const {key, layer} = action.payload;
+            // const savedLayers = {...state.savedLayers, [key]: layer};
             const savedLayers = updateObject(state.savedLayers, {[key]: layer});
             return {...state, savedLayers};
         }
@@ -840,13 +843,14 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             return {...state, webAPIServiceInfo};
         }
         case actions.UPDATE_TASK_STATE:
-            return updateObject(state, {
+            return {
+                ...state,
                 tasks: updatePropertyObject(state.tasks, action.payload.jobId, action.payload.taskState)
-            });
+            };
         case actions.REMOVE_TASK_STATE: {
-            const tasks = Object.assign({}, state.tasks);
+            const tasks = {...state.tasks};
             delete tasks[action.payload.jobId];
-            return updateObject(state, {tasks: tasks});
+            return {...state, tasks};
         }
         case actions.SET_USER_PROFILE: {
             return {

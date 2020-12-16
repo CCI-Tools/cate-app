@@ -83,11 +83,15 @@ export interface DataStoreState {
     dataSources?: DataSourceState[] | null;
 }
 
+export type DataSourceVerificationFlags = "open" | "cache" | "map";
+
 export interface DataSourceState {
     id: string;
     title?: string;
-    meta_info: any | null;
-    temporalCoverage?: any | null;
+    metaInfo: { [key: string]: any } | null;
+    typeSpecifier?: string | null;
+    verificationFlags?: DataSourceVerificationFlags[] | null;
+    temporalCoverage?: [string, string] | null;
 }
 
 export interface OperationState {
@@ -810,6 +814,7 @@ export interface SessionState {
     dataSourceFilterExpr: string;
     dataSourceListHeight: number;
     showDataSourceDetails: boolean;
+    showAllDataSources: boolean;
     showDataSourceIDs: boolean;
     showDataStoreDescription: boolean;
     showDataStoreNotices: boolean;
