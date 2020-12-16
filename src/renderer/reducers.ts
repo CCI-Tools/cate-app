@@ -4,7 +4,7 @@ import deepEqual from 'deep-equal';
 
 import * as assert from '../common/assert';
 import { featurePropertiesFromSimpleStyle } from '../common/geojson-simple-style';
-import { updatePropertyObject } from '../common/objutil';
+import { updateObject, updatePropertyObject } from '../common/objutil';
 import { isString } from '../common/types';
 import * as actions from './actions';
 import { Action, OBTAIN_COOKIE_CONSENT, UPDATE_FS_ROOT_NODE } from './actions';
@@ -581,7 +581,8 @@ const viewReducer = (state: ViewState<any>, action: Action, activeViewId: string
                 const layers = state.data.layers.slice();
                 const layerIndex = layers.findIndex(l => l.id === layer.id);
                 assert.ok(layerIndex >= 0, 'layerIndex >= 0');
-                layers[layerIndex] = {...layers[layerIndex], ...layer};
+                // layers[layerIndex] = {...layers[layerIndex], ...layer};
+                layers[layerIndex] = updateObject(layers[layerIndex], layer);
                 return {...state, data: {...state.data, layers}};
             }
             break;
@@ -758,7 +759,8 @@ const sessionReducer = (state: SessionState = INITIAL_SESSION_STATE, action: Act
             return {...state, lastBaseMapId: action.payload.baseMapId};
         case actions.SAVE_LAYER: {
             const {key, layer} = action.payload;
-            const savedLayers = {...state.savedLayers, [key]: layer};
+            // const savedLayers = {...state.savedLayers, [key]: layer};
+            const savedLayers = updateObject(state.savedLayers, {[key]: layer});
             return {...state, savedLayers};
         }
         case actions.ADD_PLACEMARK: {
