@@ -2,7 +2,13 @@ import { createSelector, Selector } from 'reselect';
 import * as Cesium from 'cesium';
 
 import { requireElectron } from './electron';
-import { canOpenDataSource, DEFAULT_BASE_MAP, DEFAULT_BASE_MAP_ID } from './state-util';
+import {
+    canCacheDataSource,
+    canMapDataSource,
+    canOpenDataSource,
+    DEFAULT_BASE_MAP,
+    DEFAULT_BASE_MAP_ID
+} from './state-util';
 import {
     BaseMapState,
     ColorMapCategoryState,
@@ -440,6 +446,20 @@ export const selectedDataSourceTemporalCoverageSelector = createSelector<State, 
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState): [string, string] | null => {
         return selectedDataSource ? selectedDataSource.temporalCoverage : null;
+    }
+);
+
+export const canCacheDataSourceSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        return selectedDataSource ? canCacheDataSource(selectedDataSource) : false;
+    }
+);
+
+export const canMapDataSourceSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        return selectedDataSource ? canMapDataSource(selectedDataSource) : false;
     }
 );
 

@@ -241,7 +241,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                                                   : null}
                             setSelectedDataSourceId={this.props.setSelectedDataSourceId}
                             showDataSourceIDs={this.props.showDataSourceIDs}
-                            doubleClickAction={this.handleShowOpenDatasetDialog}
+                            doubleClickAction={canOpen ? this.handleShowOpenDatasetDialog : undefined}
                         />)
                      : this.renderNoDataSourcesMessage()
                     }
@@ -260,6 +260,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
     }
 
     private handleShowOpenDatasetDialog() {
+        const canOpen = this.props.selectedDataSource;
         this.maybeLoadTemporalCoverage();
         this.props.showDialog('openDatasetDialog');
     }

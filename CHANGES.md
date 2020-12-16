@@ -3,13 +3,18 @@
 #### In current
 
 * The DATA SOURCES panel has been updated:
-  - Fixed deferred effect of checkbox "Show identifiers"
-  - Added checkbox "All data sources" that will display all ODP datasets
+  - Fixed deferred effect of checkbox "Show identifiers".
+  - Added checkbox "All data sources" that will display all ODP datasets.
   - Added warn icon to those datasets that cannot be opened from store.
     Such data sources disable the "Open" button and display a popup 
     instead. The popup informs the user how to manually download and open 
-    the datasets. 
-* Using term "sandboxed file system" instead of "user root" in about box 
+    the datasets.
+  - The data Open Dialog no longer displays 
+    + the region constraint, if a dataset has no spatial coordinates;
+    + the cached option, if a dataset cannot be cached.
+  - Displaying a data source's data type, if given, in its list item.
+  - Fixed crash on double-clicking a list item with no selection.
+* Using term "sandboxed file system" instead of "user root" in about box.
 
 #### From previous
 
