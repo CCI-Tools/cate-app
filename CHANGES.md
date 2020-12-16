@@ -12,7 +12,8 @@
   - The data Open Dialog no longer displays 
     + the region constraint, if a dataset has no spatial coordinates;
     + the cached option, if a dataset cannot be cached.
-  - Displaying a data source's data type, if given, in it's list item.
+  - Displaying a data source's data type, if given, in its list item.
+  - Fixed crash on double-clicking a list item with no selection.
 * Using term "sandboxed file system" instead of "user root" in about box.
 
 #### From previous
