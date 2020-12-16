@@ -37,6 +37,8 @@ export interface IDataAccessComponentProps {
     dataSource: DataSourceState | null;
     isLocalDataSource: boolean;
     temporalCoverage: TimeRangeValue | null;
+    canMap: boolean;
+    canCache: boolean;
 }
 
 
@@ -47,6 +49,7 @@ export interface IDataAccessComponentProps {
  */
 export class DataAccessComponent extends React.Component<IDataAccessComponentProps, null> {
     static readonly VAR_NAMES_INPUT = {name: 'varNames', dataType: 'string', description: null, nullable: true};
+    static readonly SUB_PANEL_STYLE = {marginTop: '1em'};
     static readonly OPTION_CHECK_STYLE = {marginTop: '1em'};
     static readonly OPTION_DIV_STYLE = {marginLeft: '2em'};
 
@@ -144,116 +147,97 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
 
         const res = DataAccessComponent.dataSourceToResource(this.props.dataSource);
 
-        let headerText;
-        let cacheDataSourceCheck;
-        let cacheDataSourcePanel;
-        // let openDatasetResourceNamePanel = (
-        //     <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-        //         <Label>
-        //             Unique name for the new dataset resource
-        //             <span className="bp3-text-muted"> (required)</span>
-        //             <input className="bp3-input"
-        //                    style={{width: '100%'}}
-        //                    type="text"
-        //                    value={options.openDatasetResourceName}
-        //                    onChange={this.onOpenDatasetResourceNameChange}/>
-        //         </Label>
-        //     </div>
-        // );
-        if (isLocalDataSource) {
-            headerText = (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>);
-        } else {
-            headerText = (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>);
-            cacheDataSourceCheck = (
-                <Tooltip
-                    content="If unchecked, remote data will be accessed using an available protocol, e.g. OPeNDAP.">
-                    <Checkbox
-                        style={DataAccessComponent.OPTION_CHECK_STYLE}
-                        checked={isMakeLocalSelected}
-                        label="Cache data source (allocates space on disk)"
-                        onChange={this.onMakeLocalSelectedChange}
-                    />
-                </Tooltip>
-            );
-            cacheDataSourcePanel = (
-                <Collapse isOpen={isMakeLocalSelected}>
-                    <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                        <Label>
-                            Unique identifier for the new local data source
-                            <span className="bp3-text-muted"> (optional)</span>
-                            <InputGroup
-                                style={{width: '100%'}}
-                                type="text"
-                                value={options.cachedDataSourceId}
-                                onChange={this.onMakeLocalDataSourceIdChange}
-                            />
-                        </Label>
-                    </div>
-                </Collapse>
-            );
-            /*
-             openDatasetResourceNamePanel = (
-             <Collapse isOpen={isOpenDatasetSelected}>
-             {openDatasetResourceNamePanel}
-             </Collapse>
-             );
-             */
-        }
-
         return (
             <div>
-                {headerText}
+                {isLocalDataSource
+                 ? (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>)
+                 : (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>)
+                }
 
-                <Checkbox
-                    style={DataAccessComponent.OPTION_CHECK_STYLE}
-                    disabled={!temporalCoverage}
-                    checked={hasTimeConstraint}
-                    label="Time constraint"
-                    onChange={this.onHasTimeConstraintChange}
-                />
-                <Collapse isOpen={hasTimeConstraint}>
-                    <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                        <DateRangeField
-                            nullable={true}
-                            min={minDate}
-                            max={maxDate}
-                            value={dateRange}
-                            onChange={this.onDateRangeChange}
+                <div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                    <Checkbox
+                        disabled={!temporalCoverage}
+                        checked={hasTimeConstraint}
+                        label="Time constraint"
+                        onChange={this.onHasTimeConstraintChange}
+                    />
+                    <Collapse isOpen={hasTimeConstraint}>
+                        <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                            <DateRangeField
+                                nullable={true}
+                                min={minDate}
+                                max={maxDate}
+                                value={dateRange}
+                                onChange={this.onDateRangeChange}
+                            />
+                            {temporalCoverageText}
+                        </div>
+                    </Collapse>
+                </div>
+
+                {this.props.canMap && (
+                    <div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                        <Checkbox
+                            checked={hasRegionConstraint}
+                            label="Region constraint"
+                            onChange={this.onHasRegionConstraintChange}
                         />
-                        {temporalCoverageText}
+                        <Collapse isOpen={hasRegionConstraint}>
+                            <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                                <Region
+                                    value={region}
+                                    disabled={!hasRegionConstraint}
+                                    onChange={this.onRegionChange}
+                                />
+                            </div>
+                        </Collapse>
                     </div>
-                </Collapse>
+                )}
 
-                <Checkbox style={DataAccessComponent.OPTION_CHECK_STYLE}
-                          checked={hasRegionConstraint}
-                          label="Region constraint"
-                          onChange={this.onHasRegionConstraintChange}/>
-                <Collapse isOpen={hasRegionConstraint}>
-                    <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                        <Region value={region}
-                                disabled={!hasRegionConstraint}
-                                onChange={this.onRegionChange}/>
+                <div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                    <Checkbox
+                        checked={hasVariablesConstraint}
+                        label="Variables constraint"
+                        onChange={this.onHasVariablesConstraintChange}
+                    />
+                    <Collapse isOpen={hasVariablesConstraint}>
+                        <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                            <VarNameValueEditor input={DataAccessComponent.VAR_NAMES_INPUT}
+                                                value={options.variableNames}
+                                                onChange={this.onVariableNamesChange}
+                                                resource={res}
+                                                multi={true}/>
+                        </div>
+                    </Collapse>
+                </div>
+
+                {this.props.canCache && (
+                    <div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                        <Tooltip content={"If unchecked, remote data will be accessed " +
+                                          "using an available protocol, e.g. OPeNDAP."}>
+                            <Checkbox
+                                checked={isMakeLocalSelected}
+                                label="Cache data source (allocates space on disk)"
+                                onChange={this.onMakeLocalSelectedChange}
+                            />
+                        </Tooltip>
+                        <Collapse isOpen={isMakeLocalSelected}>
+                            <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                                <Label>
+                                    Unique identifier for the new local data source
+                                    <span className="bp3-text-muted"> (optional)</span>
+                                    <InputGroup
+                                        style={{width: '100%'}}
+                                        type="text"
+                                        value={options.cachedDataSourceId}
+                                        onChange={this.onMakeLocalDataSourceIdChange}
+                                    />
+                                </Label>
+                            </div>
+                        </Collapse>
                     </div>
-                </Collapse>
-
-                <Checkbox style={DataAccessComponent.OPTION_CHECK_STYLE}
-                          checked={hasVariablesConstraint}
-                          label="Variables constraint"
-                          onChange={this.onHasVariablesConstraintChange}/>
-                <Collapse isOpen={hasVariablesConstraint}>
-                    <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                        <VarNameValueEditor input={DataAccessComponent.VAR_NAMES_INPUT}
-                                            value={options.variableNames}
-                                            onChange={this.onVariableNamesChange}
-                                            resource={res}
-                                            multi={true}/>
-                    </div>
-                </Collapse>
-
-                {cacheDataSourceCheck}
-                {cacheDataSourcePanel}
+                )}
                 {/*{openDatasetResourceNamePanel}*/}
-
             </div>
         );
     }

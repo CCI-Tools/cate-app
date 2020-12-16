@@ -16,6 +16,8 @@ interface IOpenDatasetDialogProps {
     dataStore: DataStoreState | null;
     dataSource: DataSourceState | null;
     temporalCoverage: TimeRangeValue | null;
+    canMap: boolean;
+    canCache: boolean;
     options: IDataAccessComponentOptions;
 }
 
@@ -30,6 +32,8 @@ function mapStateToProps(state: State): IOpenDatasetDialogProps {
         dataStore: selectors.selectedDataStoreSelector(state),
         dataSource: selectors.selectedDataSourceSelector(state),
         temporalCoverage: selectors.selectedDataSourceTemporalCoverageSelector(state),
+        canMap: selectors.canMapDataSourceSelector(state),
+        canCache: selectors.canCacheDataSourceSelector(state),
         options: (dialogState as any).options as IDataAccessComponentOptions,
     };
 }
@@ -52,10 +56,12 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
     }
 
     static mapPropsToState(nextProps: IOpenDatasetDialogProps): IOpenDatasetDialogState {
-        let options = nextProps.options
+        let options: IDataAccessComponentOptions = nextProps.options
                       || DataAccessComponent.defaultOptions(isLocalDataStore(nextProps.dataStore),
                                                             nextProps.temporalCoverage);
+        const isCacheDataSourceSelected = nextProps.canCache && options.isCacheDataSourceSelected;
         options = DataAccessComponent.ensureDateRangeIsValidated(options, nextProps.temporalCoverage);
+        options = {...options, isCacheDataSourceSelected}
         return {options};
     }
 
@@ -68,7 +74,8 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
     }
 
     private onConfirm() {
-        const options = this.state.options;
+        const isCacheDataSourceSelected = this.props.canCache && this.state.options.isCacheDataSourceSelected;
+        const options: IDataAccessComponentOptions = {...this.state.options, isCacheDataSourceSelected};
         // Clear cachedDataSourceId, so on next props, we can create a new default from selected data source
         // clear cachedDataSourceTitle, hasVariablesConstraint, variableNames, too
         // keep time and geo constraint
@@ -87,7 +94,7 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
         this.props.dispatch(actions.openDataset(
             this.props.dataSource.id,
             DataAccessComponent.optionsToOperationArguments(this.state.options),
-            this.isRemoteDataStore && this.state.options.isCacheDataSourceSelected
+            this.isRemoteDataStore && isCacheDataSourceSelected
         ) as any);
         // Save modified state
         this.setState(dialogState);
@@ -140,7 +147,10 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
                 onChange={this.onOptionsChange}
                 dataSource={this.props.dataSource}
                 isLocalDataSource={this.isLocalDataStore}
-                temporalCoverage={this.props.temporalCoverage}/>
+                temporalCoverage={this.props.temporalCoverage}
+                canCache={this.props.canCache}
+                canMap={this.props.canMap}
+            />
         );
     }
 

@@ -109,6 +109,10 @@ export function canCacheDataSource(dataSource: DataSourceState) {
     return _checkDataSource(dataSource, 'cache');
 }
 
+export function canMapDataSource(dataSource: DataSourceState) {
+    return _checkDataSource(dataSource, 'map');
+}
+
 function _checkDataSource(dataSource: DataSourceState, ...flags: DataSourceVerificationFlags[]): boolean {
     if (Array.isArray(dataSource.verificationFlags)) {
         // dataSource.verificationFlags have been introduced for ESA CCI datasets only
