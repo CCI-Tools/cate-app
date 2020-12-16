@@ -11,9 +11,11 @@ import { canOpenDataSource } from '../state-util';
 const ECV_META: EcvMeta = _ecvMeta;
 
 
-const ITEM_DIV_STYLE: CSSProperties = {display: 'flex', alignItems: 'flex-start'};
-const ID_DIV_STYLE: CSSProperties = {color: Colors.GREEN4, fontSize: '0.8em'};
-const TEXT_ICON_DIV_STYLE: CSSProperties = {
+const ITEM_STYLE: CSSProperties = {display: 'flex', alignItems: 'flex-start'};
+const ID_STYLE: CSSProperties = {color: Colors.BLUE5, fontSize: '0.8em'};
+const WARN_ICON_STYLE: CSSProperties = {marginRight: 4};
+const TYPE_SPEC_STYLE: CSSProperties = {color: Colors.GREEN4, fontSize: '0.8em', marginLeft: 4};
+const TEXT_ICON_STYLE: CSSProperties = {
     width: 32,
     height: 32,
     flex: 'none',
@@ -25,7 +27,6 @@ const TEXT_ICON_DIV_STYLE: CSSProperties = {
     justifyContent: 'center',
     alignItems: 'center',
 };
-const WARN_ICON_STYLE: CSSProperties = {marginRight: 4};
 
 interface DataSourceItemProps {
     dataSource: DataSourceState;
@@ -49,7 +50,7 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
     if (!label) {
         label = ecvId.substr(0, 3).toUpperCase() || '?';
     }
-    const icon = <div style={{...TEXT_ICON_DIV_STYLE, backgroundColor}}>{label}</div>;
+    const icon = <div style={{...TEXT_ICON_STYLE, backgroundColor}}>{label}</div>;
 
     const title = dataSource.title || (metaInfo && metaInfo.title);
 
@@ -59,16 +60,21 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
         warnIcon = <Icon icon={"warning-sign"} intent={Intent.WARNING} iconSize={16} style={WARN_ICON_STYLE}/>
     }
 
+    let typeSpec;
+    if (dataSource.typeSpecifier) {
+        typeSpec = <span style={TYPE_SPEC_STYLE}>{dataSource.typeSpecifier}</span>;
+    }
+
     return (
-        <div style={ITEM_DIV_STYLE}>
+        <div style={ITEM_STYLE}>
             {icon}
             {showDataSourceIDs ? (
                 <div>
-                    <div className="user-selectable">{warnIcon}{title}</div>
-                    <div className="user-selectable" style={ID_DIV_STYLE}>{dataSource.id}</div>
+                    <div className="user-selectable">{warnIcon}{title}{typeSpec}</div>
+                    <div className="user-selectable" style={ID_STYLE}>{dataSource.id}</div>
                 </div>
             ) : (
-                 <span className="user-selectable">{warnIcon}{title}</span>
+                 <span className="user-selectable">{warnIcon}{title}{typeSpec}</span>
              )}
         </div>
     );
