@@ -395,33 +395,30 @@ export const filteredDataSourcesSelector = createSelector<State, DataSourceState
     (selectedDataSources, dataSourceFilterExpr, showAllDataSources) => {
         const hasDataSources = selectedDataSources && selectedDataSources.length;
         const hasFilterExpr = dataSourceFilterExpr && dataSourceFilterExpr !== '';
-        if (hasDataSources && hasFilterExpr) {
+        if (hasDataSources && (hasFilterExpr || !showAllDataSources)) {
             const dataSourceFilterExprLC = dataSourceFilterExpr.toLowerCase();
             const parts = dataSourceFilterExprLC.split(' ');
-            return selectedDataSources.filter(ds => matchesIdOrTitle(ds, parts, showAllDataSources));
+            return selectedDataSources.filter(ds => matchesIdOrTitle(ds, showAllDataSources, parts));
         }
         return selectedDataSources;
     }
 );
 
-function matchesId(ds: DataSourceState, parts: string[]) {
-    const id = ds.id.toLowerCase();
-    return parts.every(part => id.includes(part));
-}
-
-function matchesIdOrTitle(ds: DataSourceState, parts: string[], showAllDataSources: boolean) {
-    if (!showAllDataSources && !canOpenDataSource(ds)) {
+function matchesIdOrTitle(ds: DataSourceState, showAllDataSources: boolean, searchWords: string[]) {
+    let isCandidate = showAllDataSources || canOpenDataSource(ds);
+    if (!isCandidate) {
         return false;
     }
-    if (matchesId(ds, parts)) {
+    const id = ds.id.toLowerCase();
+    if (searchWords.every(word => id.includes(word))) {
         return true;
     }
-    let title = ds.title || (ds.meta_info ? ds.meta_info.title : null);
+    let title = ds.title || (ds.metaInfo ? ds.metaInfo.title : null);
     if (!title || title === '') {
         return false;
     }
     title = title.toLowerCase();
-    return parts.every(part => title.includes(part));
+    return searchWords.every(word => title.includes(word));
 }
 
 export const selectedDataSourceSelector = createSelector<State, DataSourceState | null, DataSourceState[] | null,

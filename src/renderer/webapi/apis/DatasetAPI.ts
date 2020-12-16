@@ -12,11 +12,14 @@ function responseToTemporalCoverage(response: any): [string, string] | null {
 
 function addVerificationFlagsForTesting(dataSources: DataSourceState[]): DataSourceState[] {
     return dataSources.map((ds, i) => {
+        // console.debug(`dataSources[${i}]:`, ds);
+        return ds;
+        /*
         if (i === 0) {
             return {
                 ...ds,
                 typeSpecifier: 'dataset',
-                verificationFlags: []
+                verificationFlags: null
             }
         } else if (i === 1) {
             return {
@@ -24,13 +27,13 @@ function addVerificationFlagsForTesting(dataSources: DataSourceState[]): DataSou
                 typeSpecifier: 'dataset',
                 verificationFlags: ['open']
             }
-        } else if (i === 1) {
+        } else if (i === 2) {
             return {
                 ...ds,
                 typeSpecifier: 'dataset',
                 verificationFlags: ['open', 'map']
             }
-        } else if (i === 2) {
+        } else if (i === 3) {
             return {
                 ...ds,
                 typeSpecifier: 'dataset',
@@ -39,6 +42,7 @@ function addVerificationFlagsForTesting(dataSources: DataSourceState[]): DataSou
         } else {
             return ds;
         }
+         */
     });
 }
 

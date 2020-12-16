@@ -88,7 +88,6 @@ export type DataSourceVerificationFlags = "open" | "cache" | "map";
 export interface DataSourceState {
     id: string;
     title?: string;
-    meta_info: any | null;
     metaInfo: { [key: string]: any } | null;
     typeSpecifier?: string | null;
     verificationFlags?: DataSourceVerificationFlags[] | null;

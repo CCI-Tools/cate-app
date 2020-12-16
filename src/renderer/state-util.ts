@@ -82,6 +82,25 @@ export function isRemoteDataStore(dataStore: DataStoreState | null) {
     return dataStore && dataStore.id !== 'local' && !dataStore.isLocal;
 }
 
+export interface DataSourceUrls {
+    catalogUrl?: string;
+    infoUrl?: string;
+}
+
+export function getDataSourceUrls(dataSource: DataSourceState): DataSourceUrls {
+    const metaInfo = dataSource.metaInfo;
+    let catalogUrl;
+    let infoUrl;
+    if (metaInfo) {
+        catalogUrl = metaInfo.catalog_url || metaInfo.catalogue_url;
+        if (!catalogUrl && dataSource.id.includes("esacci") && metaInfo.uuid) {
+            catalogUrl = `https://catalogue.ceda.ac.uk/uuid/${metaInfo.uuid}`;
+        }
+        infoUrl = metaInfo.info_url || metaInfo.url;
+    }
+    return {catalogUrl, infoUrl};
+}
+
 export function canOpenDataSource(dataSource: DataSourceState) {
     return _checkDataSource(dataSource, 'open', 'map', 'cache');
 }
@@ -94,7 +113,7 @@ function _checkDataSource(dataSource: DataSourceState, ...flags: DataSourceVerif
     if (Array.isArray(dataSource.verificationFlags)) {
         // dataSource.verificationFlags have been introduced for ESA CCI datasets only
         const s = new Set<string>(dataSource.verificationFlags);
-        for (let flag in flags) {
+        for (let flag of flags) {
             if (s.has(flag)) {
                 return true;
             }

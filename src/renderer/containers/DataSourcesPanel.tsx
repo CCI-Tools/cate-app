@@ -1,5 +1,8 @@
+import * as React from 'react';
+import { CSSProperties } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { connect } from 'react-redux';
 import {
-    AnchorButton,
     ButtonGroup,
     Callout,
     Card,
@@ -7,7 +10,6 @@ import {
     Classes,
     Collapse,
     Colors,
-    H5,
     HTMLSelect,
     IconName,
     InputGroup,
@@ -16,26 +18,18 @@ import {
     Popover,
     PopoverInteractionKind,
     Position,
-    Tab,
-    Tabs,
     Tag,
     Tooltip
 } from '@blueprintjs/core';
-import { Cell, Column, Table, TruncatedFormat } from '@blueprintjs/table';
-import * as React from 'react';
-import { CSSProperties } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { connect } from 'react-redux';
+
 import * as actions from '../actions';
 import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
-import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
-import { ScrollablePanelContent } from '../components/ScrollableContent';
-import { TextWithLinks } from '../components/TextWithLinks';
+import DataSourceDetails from '../components/DataSourceDetails';
+import DataSourcesList from '../components/DataSourcesList';
+import DataSourceOpenHint from '../components/DataSourceOpenHint';
 import { ToolButton } from '../components/ToolButton';
-import { EcvMeta } from '../ecv-meta';
 import { DATA_SOURCES_LOADING, NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES } from '../messages';
 
-import _ecvMeta from '../resources/ecv-meta.json';
 import * as selectors from '../selectors';
 import { DataSourceState, DataStoreNotice, DataStoreState, State } from '../state';
 import { canOpenDataSource, isLocalDataStore } from '../state-util';
@@ -43,10 +37,6 @@ import AddDatasetDialog from './AddDatasetDialog';
 import OpenDatasetDialog from './OpenDatasetDialog';
 import RemoveDatasetDialog from './RemoveDatasetDialog';
 
-
-const ECV_META: EcvMeta = _ecvMeta;
-
-const USE_OLD_CCI_ICONS = false;
 
 const INTENTS = {
     'default': Intent.NONE,
@@ -71,6 +61,7 @@ interface IDataSourcesPanelProps {
     showDataStoreDescription: boolean;
     showDataStoreNotices: boolean;
     offlineMode: boolean;
+    isSandboxedMode: boolean;
 }
 
 function mapStateToProps(state: State): IDataSourcesPanelProps {
@@ -89,6 +80,7 @@ function mapStateToProps(state: State): IDataSourcesPanelProps {
         showDataStoreDescription: selectors.showDataStoreDescriptionSelector(state),
         showDataStoreNotices: selectors.showDataStoreNoticesSelector(state),
         offlineMode: selectors.offlineModeSelector(state),
+        isSandboxedMode: !selectors.isLocalFSAccessAllowedSelector(state),
     };
 }
 
@@ -188,20 +180,10 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                         position={Position.TOP}
                     >
                         <ToolButton icon={"warning-sign"} intent={Intent.WARNING}/>
-                        <div>
-                            <H5>Cannot open from Store</H5>
-                            <p>This data source cannot be opened directly
-                                from its data store. You may download it
-                                manually and use one of the <code>read_xxx()</code>
-                                operations to open the downloaded data.
-                                "xxx" is determined by the type and format
-                                of the data."
-                            </p>
-                            <p>
-                                More information related to the data
-                                can be found <a href={"https://www.startpage.com/"}>here</a>.
-                            </p>
-                        </div>
+                        <DataSourceOpenHint
+                            isSandboxedMode={this.props.isSandboxedMode}
+                            dataSource={selectedDataSource!}
+                        />
                     </Popover>
                 )}
                 <ToolButton
@@ -226,7 +208,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                         <div>
                             List also datasets that cannot be opened directly.<br/>
                             Usually they can be downloaded manually, then<br/>
-                            opened by some <code>read_xxx()</code> operation.
+                            opened by one of the <code>read_xxx()</code> operations.
                         </div>}>
                         <Checkbox
                             label="All data sources"
@@ -494,338 +476,5 @@ class MarkdownCode extends React.PureComponent<any> {
 
 const MARKDOWN_RENDERERS = {text: MarkdownText, inlineCode: MarkdownInlineCode, code: MarkdownCode};
 
-
-interface IDataSourcesListProps {
-    dataSources: DataSourceState[];
-    selectedDataSourceId: string | null;
-    setSelectedDataSourceId: (selectedDataSourceId: string) => void;
-    showDataSourceIDs: boolean;
-    doubleClickAction: (dataSource: DataSourceState) => any;
-}
-
-class DataSourcesList extends React.PureComponent<IDataSourcesListProps, null> {
-    static readonly ITEM_DIV_STYLE: CSSProperties = {display: 'flex', alignItems: 'flex-start'};
-    static readonly ID_DIV_STYLE: CSSProperties = {color: Colors.GREEN4, fontSize: '0.8em'};
-    static readonly ICON_DIV_STYLE: CSSProperties = {width: 32, height: 32, flex: 'none', marginRight: 6};
-    static readonly TEXT_ICON_DIV_STYLE: CSSProperties = {
-        width: 32,
-        height: 32,
-        flex: 'none',
-        marginRight: 6,
-        borderRadius: 16,
-        textAlign: 'center',
-        color: 'white',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    };
-    readonly defaultIconName = 'cci';
-
-    constructor(props: IDataSourcesListProps) {
-        super(props);
-        this.renderIcon = this.renderIcon.bind(this);
-        this.renderTextIcon = this.renderTextIcon.bind(this);
-        this.renderDataSourceTitle = this.renderDataSourceTitle.bind(this);
-        this.handleDataSourceSelected = this.handleDataSourceSelected.bind(this);
-        this.handleIconLoadError = this.handleIconLoadError.bind(this);
-    }
-
-    private static getItemKey(dataSource: DataSourceState) {
-        return dataSource.id;
-    }
-
-    render() {
-        return (
-            <ScrollablePanelContent>
-                <ListBox
-                    // key is here to force re-render on change of showDataSourceIDs
-                    key={'DataSourcesList-' + this.props.showDataSourceIDs}
-                    items={this.props.dataSources}
-                    getItemKey={DataSourcesList.getItemKey}
-                    renderItem={this.renderDataSourceTitle}
-                    selectionMode={ListBoxSelectionMode.SINGLE}
-                    selection={this.props.selectedDataSourceId}
-                    onItemDoubleClick={this.props.doubleClickAction}
-                    onSelection={this.handleDataSourceSelected}
-                />
-            </ScrollablePanelContent>
-        );
-    }
-
-    private handleDataSourceSelected(newSelection: Array<React.Key>) {
-        if (newSelection.length > 0) {
-            this.props.setSelectedDataSourceId(newSelection[0] as string);
-        } else {
-            this.props.setSelectedDataSourceId(null);
-        }
-    }
-
-    private handleIconLoadError(img) {
-        img.onError = null;
-        img.src = `resources/images/data-sources/esacci/${this.defaultIconName}.png`;
-    }
-
-    private renderIcon(dataSource: DataSourceState) {
-        const icon = ((dataSource.meta_info && dataSource.meta_info.cci_project) || 'cci').toLowerCase();
-        return <img src={`resources/images/data-sources/esacci/${icon}.png`}
-                    style={DataSourcesList.ICON_DIV_STYLE}
-                    alt="cci icon"
-                    onError={this.handleIconLoadError}/>
-    }
-
-    // noinspection JSMethodCanBeStatic
-    private renderTextIcon(dataSource: DataSourceState) {
-        const ecvId = ((dataSource.meta_info && dataSource.meta_info.cci_project) || '').toLowerCase();
-        const ecvMetaItem = ECV_META.ecvs[ecvId];
-        let backgroundColor, label;
-        if (ecvMetaItem) {
-            backgroundColor = ECV_META.colors[ecvMetaItem.color] || ecvMetaItem.color;
-            label = ecvMetaItem.label;
-        }
-        if (!backgroundColor) {
-            backgroundColor = ECV_META.colors["default"] || "#0BB7A0";
-        }
-        if (!label) {
-            label = ecvId.substr(0, 3).toUpperCase() || '?';
-        }
-        return <div style={{...DataSourcesList.TEXT_ICON_DIV_STYLE, backgroundColor}}>{label}</div>;
-    }
-
-    private renderDataSourceTitle(dataSource: DataSourceState) {
-        const title = dataSource.title || (dataSource.meta_info && dataSource.meta_info.title);
-        return (
-            <div style={DataSourcesList.ITEM_DIV_STYLE}>
-                {USE_OLD_CCI_ICONS ? this.renderIcon(dataSource) : this.renderTextIcon(dataSource)}
-                {this.props.showDataSourceIDs ? (
-                    <div>
-                        <div className="user-selectable">{title}</div>
-                        <div className="user-selectable" style={DataSourcesList.ID_DIV_STYLE}>{dataSource.id}</div>
-                    </div>
-                ) : (
-                     <span className="user-selectable">{title}</span>
-                 )}
-            </div>
-        );
-    }
-}
-
-interface DetailPart {
-    title: string;
-    id: string;
-    element: JSX.Element;
-}
-
-interface IDataSourceDetailsProps {
-    dataSource: DataSourceState
-}
-
-class DataSourceDetails extends React.PureComponent<IDataSourceDetailsProps, null> {
-
-    constructor(props: IDataSourceDetailsProps) {
-        super(props);
-        this.renderAbstract = this.renderAbstract.bind(this);
-    }
-
-    private static renderVariablesTable(variables?: any[]): DetailPart {
-        let element;
-        if (variables && variables.length > 0) {
-            const renderName = (rowIndex: number) => {
-                const variable = variables[rowIndex];
-                return (
-                    <Cell tooltip={variable.long_name}>
-                        <TruncatedFormat className="user-selectable">{variable.name}</TruncatedFormat>
-                    </Cell>
-                );
-            };
-
-            const renderUnit = (rowIndex: number) => {
-                const variable = variables[rowIndex];
-                return (
-                    <Cell>
-                        <TruncatedFormat className="user-selectable">{variable.units || '-'}</TruncatedFormat>
-                    </Cell>
-                );
-            };
-
-            const getCellClipboardData = (row: number, col: number) => {
-                console.log('getCellClipboardData: ', row, col);
-            };
-
-            element = (
-                <Table numRows={variables.length}
-                       enableRowHeader={false}
-                       getCellClipboardData={getCellClipboardData}>
-                    <Column name="Name" cellRenderer={renderName}/>
-                    <Column name="Units" cellRenderer={renderUnit}/>
-                </Table>
-            );
-        } else {
-            element = <Card>No information about variables available.</Card>;
-        }
-        return {title: 'Variables', id: 'var', element};
-    }
-
-    private static renderMetaInfoTable(metaInfo?: any, metaInfoKeys?: string[]): DetailPart {
-        let element;
-        if (metaInfo && metaInfoKeys) {
-
-            const renderKey = (rowIndex: number) => {
-                const key = metaInfoKeys[rowIndex];
-                return <Cell><TruncatedFormat>{key}</TruncatedFormat></Cell>;
-            };
-
-            const renderValue = (rowIndex: number) => {
-                const key = metaInfoKeys[rowIndex];
-                return <Cell><TruncatedFormat>{metaInfo[key]}</TruncatedFormat></Cell>;
-            };
-
-            const getCellClipboardData = (row: number, col: number) => {
-                console.log('getCellClipboardData: ', row, col);
-            };
-
-            element = (
-                <Table numRows={metaInfoKeys.length}
-                       enableRowHeader={false}
-                       getCellClipboardData={getCellClipboardData}>
-                    <Column name="Key" cellRenderer={renderKey}/>
-                    <Column name="Value" cellRenderer={renderValue}/>
-                </Table>
-            );
-        } else {
-            element = <Card>No global meta-information available.</Card>;
-        }
-
-        return {title: 'Meta-Info', id: 'meta', element};
-    }
-
-    private static renderMetaInfoLicences(metaInfo: any): DetailPart {
-        let element;
-        if (metaInfo && metaInfo.licences) {
-            element = (
-                <div>
-                    <p className="user-selectable"><TextWithLinks>{metaInfo.licences}</TextWithLinks></p>
-                </div>
-            );
-        } else {
-            element = <Card>No license information available.</Card>;
-        }
-        return {title: 'Licences', id: 'licences', element};
-    }
-
-    render() {
-        const dataSource = this.props.dataSource;
-        if (!dataSource) {
-            return null;
-        }
-        let metaInfoKeys;
-        if (dataSource.meta_info) {
-            metaInfoKeys = Object.keys(dataSource.meta_info).filter(key => key !== 'variables');
-        }
-        let variables;
-        if (dataSource.meta_info.variables) {
-            variables = dataSource.meta_info.variables;
-        }
-
-        const details: DetailPart[] = [];
-        details.push(this.renderAbstract(dataSource));
-        details.push(DataSourceDetails.renderVariablesTable(variables));
-        details.push(DataSourceDetails.renderMetaInfoTable(dataSource.meta_info, metaInfoKeys));
-        details.push(DataSourceDetails.renderMetaInfoLicences(dataSource.meta_info));
-
-        return (
-            <Tabs id="dsDetails" renderActiveTabPanelOnly={true}>
-                {details.map(d => <Tab key={d.id} id={d.id} title={d.title} panel={d.element}/>)}
-            </Tabs>
-        );
-    }
-
-    private renderAbstract(dataSource: DataSourceState): DetailPart {
-        const metaInfo = dataSource.meta_info;
-        let element;
-        if (metaInfo) {
-            const catalogUrl = metaInfo.catalog_url || (metaInfo.uuid ? `https://catalogue.ceda.ac.uk/${metaInfo.uuid}` : null);
-            let openOdpPage;
-            if (catalogUrl) {
-                openOdpPage =
-                    <AnchorButton onClick={() => actions.openExternal(catalogUrl)}
-                                  style={{float: 'right', margin: 4}}>Catalogue</AnchorButton>
-            }
-            let spatialCoverage;
-            if (metaInfo.bbox_miny && metaInfo.bbox_maxy && metaInfo.bbox_minx && metaInfo.bbox_maxx) {
-                spatialCoverage = (
-                    <div>
-                        <h5>Spatial coverage</h5>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td/>
-                                <td className="user-selectable">{metaInfo.bbox_maxy}&#176;</td>
-                                <td/>
-                            </tr>
-                            <tr>
-                                <td className="user-selectable">{metaInfo.bbox_minx}&#176;</td>
-                                <td/>
-                                <td className="user-selectable">{metaInfo.bbox_maxx}&#176;</td>
-                            </tr>
-                            <tr>
-                                <td/>
-                                <td className="user-selectable">{metaInfo.bbox_miny}&#176;</td>
-                                <td/>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <br/>
-                    </div>
-                );
-            }
-            let temporalCoverage;
-            if (dataSource.temporalCoverage) {
-                temporalCoverage = (
-                    <div><h5>Temporal coverage</h5>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td>Start</td>
-                                <td className="user-selectable">{dataSource.temporalCoverage[0]}</td>
-                            </tr>
-                            <tr>
-                                <td>End</td>
-                                <td className="user-selectable">{dataSource.temporalCoverage[1]}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <br/>
-                    </div>
-                );
-            }
-            let summary;
-            if (metaInfo.abstract) {
-                summary = (
-                    <div><h5>Summary</h5>
-                        <p className="user-selectable"><TextWithLinks>{metaInfo.abstract}</TextWithLinks></p>
-                    </div>
-                );
-            }
-            if (openOdpPage || spatialCoverage || temporalCoverage || summary) {
-                element = (
-                    <ScrollablePanelContent>
-                        <Card>
-                            {openOdpPage}
-                            {spatialCoverage}
-                            {temporalCoverage}
-                            {summary}
-                        </Card>
-                    </ScrollablePanelContent>
-                );
-            }
-        }
-
-        if (!element) {
-            element = <Card>No abstract available.</Card>;
-        }
-
-        return {title: 'Abstract', id: 'abstract', element};
-    }
-}
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataSourcesPanel as any);
