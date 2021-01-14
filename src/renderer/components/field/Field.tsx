@@ -25,9 +25,11 @@ export interface IFieldProps {
     style?: { [key: string]: any };
     disabled?: boolean;
     uncontrolled?: boolean;
+    type?: string;
 }
 
 type IFieldState = AnyFieldValue | null;
+
 
 export function toTextValue(value: AnyFieldValue | any, defaultValue: any = '') {
     if (isFieldValue(value)) {
@@ -65,6 +67,7 @@ export class Field<P extends IFieldProps> extends React.PureComponent<P, IFieldS
         if (this.props.uncontrolled) {
             this.state = this._fieldValue;
         }
+
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
@@ -211,13 +214,14 @@ export class Field<P extends IFieldProps> extends React.PureComponent<P, IFieldS
         // console.log("Field.render: fieldValue = ", this._fieldValue);
         const errorClassName = Field.ERROR_CLASS + ' ' + this.props.className;
         const nominalClassName = Field.NOMINAL_CLASS + ' ' + this.props.className;
+
         return (
             <InputGroup
                 value={this.getTextValue()}
                 onChange={this.handleInputChange}
                 onBlur={this.handleBlur}
                 onKeyPress={this.handleKeyPress}
-                type="text"
+                type={this.props.type || "text"}
                 className={error ? errorClassName : nominalClassName}
                 style={this.props.style}
                 size={this.props.size}

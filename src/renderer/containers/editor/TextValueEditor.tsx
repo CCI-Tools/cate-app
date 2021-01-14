@@ -11,11 +11,13 @@ export function TextValueEditor(props: IValueEditorProps<string>) {
                                  value={props.value}
                                  onChange={props.onChange}/>);
     } else {
+        const type = props.input.dataType == "cate.core.types.Password" ? "password" : "text"
         return (
             <TextField size={24}
                        value={props.value}
                        nullable={props.input.nullable}
                        onChange={value => props.onChange(props.input, value)}
+                       type={type}
             />
         );
     }
