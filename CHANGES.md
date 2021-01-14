@@ -15,6 +15,7 @@
   - Displaying a data source's data type, if given, in its list item.
   - Fixed crash on double-clicking a list item with no selection.
 * Using term "sandboxed file system" instead of "user root" in about box.
+* The cate read_zarr op is now using type `Password` for the bucket secret or token
 
 #### From previous
 
