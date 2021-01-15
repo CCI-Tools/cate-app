@@ -24,6 +24,7 @@ function responseInputToOperationInput(input: any): OperationInputState {
         dataType: input.data_type,
         description: (input.description || null),
         units: input.units,
+        password: input.password,
         /* optional properties used mainly for validation */
         defaultValue: input.default_value,
         nullable: (input.nullable || input.default_value === null),

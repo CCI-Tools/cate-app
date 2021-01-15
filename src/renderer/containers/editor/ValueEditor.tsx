@@ -153,7 +153,6 @@ const VALUE_EDITOR_FACTORIES = {
     [types.INT_TYPE]: renderIntValueEditor,
     [types.FLOAT_TYPE]: renderFloatValueEditor,
     [types.STR_TYPE]: renderStrValueEditor,
-    [types.PASSWD_TYPE]: renderStrValueEditor,
     [types.POINT_LIKE_TYPE]: renderPointLikeValueEditor,
     [types.POLYGON_LIKE_TYPE]: renderPolygonLikeValueEditor,
     [types.GEOMETRY_LIKE_TYPE]: renderGeometryLikeValueEditor,

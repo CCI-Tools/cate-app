@@ -123,6 +123,7 @@ export interface OperationInputState extends OperationIOBaseState {
     fileFilters?: FileFilter[];
     fileProps?: OpenDialogProperty[] | SaveDialogProperty[];
     noUI?: boolean;
+    password?: boolean;
 }
 
 export interface OperationOutputState extends OperationIOBaseState {

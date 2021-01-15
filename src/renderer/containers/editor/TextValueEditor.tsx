@@ -11,7 +11,7 @@ export function TextValueEditor(props: IValueEditorProps<string>) {
                                  value={props.value}
                                  onChange={props.onChange}/>);
     } else {
-        const type = props.input.dataType == "cate.core.types.Password" ? "password" : "text"
+        const type = props.input.password ? "password" : "text";
         return (
             <TextField size={24}
                        value={props.value}
