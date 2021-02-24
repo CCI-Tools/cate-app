@@ -3,6 +3,7 @@ export const BOOL_TYPE = 'bool';
 export const INT_TYPE = 'int';
 export const FLOAT_TYPE = 'float';
 export const STR_TYPE = 'str';
+export const PASSWD_TYPE = 'cate.core.types.Password';
 
 export const ND_ARRAY_TYPE = 'numpy.ndarray';
 

@@ -10,7 +10,7 @@ ADD . /usr/src/app
 WORKDIR /usr/src/app
 
 RUN ! test -f ".env.production" && cp ".env" ".env.production"
-ADD .env.production /usr/src/app
+# ADD .env.production /usr/src/app
 
 RUN yarn install --network-concurrency 1 --network-timeout 1000000
 
