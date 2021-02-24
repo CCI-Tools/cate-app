@@ -11,6 +11,7 @@ import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
 
 import cateIcon from '../resources/cate-icon-512.png';
+import VersionTags from './VersionTags';
 
 
 const maintenanceReason: string | undefined = process.env.REACT_APP_CATEHUB_MAINTENANCE;
@@ -100,10 +101,10 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
                         <Icon icon="warning-sign" intent={Intent.WARNING}/>&nbsp;{maintenanceReason}
                     </div>
                 ) : (
-                    <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 320}}>
-                        Please select a Cate service provision mode
-                    </div>
-                )}
+                     <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 320}}>
+                         Please select a Cate service provision mode
+                     </div>
+                 )}
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
                         style={{marginTop: 18}}
@@ -158,6 +159,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
                     </div>
                 </div>
             </div>
+            <div style={{position: "absolute", bottom: 4, right: 4}}><VersionTags/></div>
         </div>
     );
 };

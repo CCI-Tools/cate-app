@@ -11,12 +11,7 @@ import deepEqual from 'deep-equal';
 import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
-
-// IMPORTANT:
-// 1. Synchronize any changes of CATE_WEBUI_VERSION with the version field in "./package.json".
-// 2. Increase PWA_VERSION in "./src/serviceWorker.ts"
-//
-const CATE_WEBUI_VERSION = "2.2.2-dev.4";
+import { CATE_APP_VERSION } from '../../version';
 
 
 interface IPreferencesDialogProps {
@@ -39,7 +34,7 @@ function mapStateToProps(state: State): IPreferencesDialogProps {
 const ABOUT_LABEL_STYLE = {width: '40%'};
 const ABOUT_CONTROL_GROUP_STYLE = {width: '100%', marginBottom: '1em'};
 const ABOUT_DIV_STYLE = {width: '100%', marginTop: '1em'};
-const ABOUT_ITEM_STYLE:  React.CSSProperties = {width: '60%', wordWrap: 'break-word'};
+const ABOUT_ITEM_STYLE: React.CSSProperties = {width: '60%', wordWrap: 'break-word'};
 
 class PreferencesDialog extends React.Component<IPreferencesDialogProps & DispatchProp<State>, SessionState> {
     static readonly DIALOG_ID = 'preferencesDialog';
@@ -157,18 +152,18 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             <div style={ABOUT_DIV_STYLE}>
                 <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
                     <span style={ABOUT_LABEL_STYLE}>Cate UI version:</span>
-                    <span style={ABOUT_ITEM_STYLE}><code>{CATE_WEBUI_VERSION}</code></span>
+                    <span style={ABOUT_ITEM_STYLE}><code>{CATE_APP_VERSION}</code></span>
                 </ControlGroup>
                 <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
-                    <span style={ABOUT_LABEL_STYLE}>Cate service URL:</span>
+                    <span style={ABOUT_LABEL_STYLE}>Cate API URL:</span>
                     <span style={ABOUT_ITEM_STYLE}><code>{this.props.serviceURL}</code></span>
                 </ControlGroup>
                 <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
-                    <span style={ABOUT_LABEL_STYLE}>Cate service version:</span>
+                    <span style={ABOUT_LABEL_STYLE}>Cate API version:</span>
                     <span style={ABOUT_ITEM_STYLE}><code>{this.props.serviceInfo.version}</code></span>
                 </ControlGroup>
                 <ControlGroup style={ABOUT_CONTROL_GROUP_STYLE}>
-                    <span style={ABOUT_LABEL_STYLE}>Cate service mode:</span>
+                    <span style={ABOUT_LABEL_STYLE}>File access mode:</span>
                     <span style={ABOUT_ITEM_STYLE}>
                         {this.props.serviceInfo.userRootMode ? 'sandboxed file system' : 'full access to file system'}
                     </span>

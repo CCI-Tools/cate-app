@@ -18,6 +18,7 @@ import * as selectors from '../selectors';
 import * as actions from '../actions';
 import { JobStatusEnum } from '../webapi';
 import TaskComponent from './TaskComponent';
+import VersionTags from './VersionTags';
 
 
 interface IStatusBarProps {
@@ -88,6 +89,7 @@ class StatusBar extends React.Component<IStatusBarProps & IStatusBarDispatch & D
                 <div style={StatusBar.DIV_TASKS_STYLE}>{this.renderTasks()}</div>
                 <div style={StatusBar.DIV_CURSOR_STYLE}>{cursor}</div>
                 <div style={StatusBar.DIV_TAC_STYLE}>{<TermsAndConditions/>}</div>
+                <VersionTags minimal={true}/>
                 <div style={StatusBar.DIV_STATUS_STYLE}>{this.renderBackendStatus()}</div>
             </div>
         );

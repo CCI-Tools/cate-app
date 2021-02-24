@@ -260,7 +260,6 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
     }
 
     private handleShowOpenDatasetDialog() {
-        const canOpen = this.props.selectedDataSource;
         this.maybeLoadTemporalCoverage();
         this.props.showDialog('openDatasetDialog');
     }

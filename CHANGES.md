@@ -2,6 +2,8 @@
 
 #### In current
 
+* Added version tags for UI and API to main toolbox page and service 
+  selection page.    
 * The DATA SOURCES panel has been updated:
   - Fixed deferred effect of checkbox "Show identifiers".
   - Added checkbox "All data sources" that will display all ODP datasets.
@@ -15,7 +17,8 @@
   - Displaying a data source's data type, if given, in its list item.
   - Fixed crash on double-clicking a list item with no selection.
 * Using term "sandboxed file system" instead of "user root" in about box.
-* The cate read_zarr op is now using type `Password` for the bucket secret or token
+* The `read_zarr` operation is now using type "password" for its `key`, 
+  `secret`, and `token` parameters.
 
 #### From previous
 
