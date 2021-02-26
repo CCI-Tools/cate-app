@@ -1,6 +1,5 @@
-### Changes 2.2.2 (in development)
+### Changes 2.2.2
 
-#### In current
 
 * Fixed various issues regarding user preferences:
   - Fixed a problem that prevented storing the last workspace path in 
@@ -9,14 +8,10 @@
     settings.
   - Removed some preferences settings that no longer apply
     in the Cate App web application.
-
-#### From previous
-
 * Added version tags for UI and API to main toolbox page and service
   selection page.
 * The `read_zarr` operation is now using type "password" for its `key`,
   `secret`, and `token` parameters.
-
 * The DATA SOURCES panel has been updated:
     - Fixed deferred effect of checkbox "Show identifiers".
     - Added checkbox "All data sources" that will display all ODP datasets.
