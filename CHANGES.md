@@ -1,6 +1,5 @@
 ### Changes 2.2.2
 
-
 * Fixed various issues regarding user preferences:
   - Fixed a problem that prevented storing the last workspace path in 
     user preferences.
