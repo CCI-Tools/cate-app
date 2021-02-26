@@ -1,6 +1,6 @@
 {
   "name": "cate-app",
-  "version": "2.2.2-dev.6",
+  "version": "2.2.2",
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^3.30.1",
