@@ -461,8 +461,7 @@ export function updatePreferences(session: Partial<SessionState>,
             return selectors.remoteStorageAPISelector(getState()).updatePreferences(session);
         }
 
-        function action(session: Partial<SessionState>) {
-            dispatch(updateSessionState(session));
+        function action() {
             if (postAction) {
                 dispatch(postAction);
             }
@@ -580,7 +579,7 @@ export function showJobFailureDetails(jobTitle: string, jobFailure: JobFailure):
 }
 
 export type JobPromiseFactory<T> = (jobProgressHandler: JobProgressHandler) => JobPromise<T>;
-export type JobPromiseAction<T> = (jobResult: T) => void;
+export type JobPromiseAction<T> = (jobResult?: T) => void;
 export type JobPromisePlanB = (jobFailure: JobFailure) => void;
 
 interface CallAPIOptions<T> {
@@ -1281,8 +1280,8 @@ export function saveWorkspace(): ThunkAction {
         }
 
         function action(workspace: WorkspaceState) {
-            dispatch(savePreferences());
             dispatch(setCurrentWorkspace(workspace));
+            dispatch(savePreferences());
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1317,6 +1316,7 @@ export function saveWorkspaceAs(workspacePath: string): ThunkAction {
 
         function action(workspace: WorkspaceState) {
             dispatch(setCurrentWorkspace(workspace));
+            dispatch(savePreferences());
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1631,8 +1631,12 @@ function maybeSaveCurrentWorkspace(dispatch, getState: GetState, title: string, 
 }
 
 export function setCurrentWorkspace(workspace: WorkspaceState): ThunkAction {
-    return (dispatch: Dispatch) => {
+    return (dispatch: Dispatch, getState) => {
         dispatch(setCurrentWorkspaceImpl(workspace));
+        const lastWorkspacePath = workspace.baseDir;
+        if (getState().session.lastWorkspacePath !== lastWorkspacePath) {
+            dispatch(updateSessionState({lastWorkspacePath}));
+        }
     }
 }
 

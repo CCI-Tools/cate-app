@@ -779,14 +779,13 @@ export type WorkspacePanelMode = 'resources' | 'steps';
  * Session state can be used to save preferences.
  */
 export interface SessionState {
-    lastWorkspaceDir?: string | null;
     mainWindowBounds?: { x: number; y: number; width: number; height: number };
     devToolsOpened?: boolean;
     forceAppBar?: boolean;
     /**
      * lastWorkspacePath != null, only if it is not a scratch-workspace
      */
-    lastWorkspacePath?: string;
+    lastWorkspacePath?: string | null;
     reopenLastWorkspace?: boolean;
     offlineMode: boolean;
     autoUpdateSoftware: boolean;

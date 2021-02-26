@@ -59,6 +59,7 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             const backendConfig = this.state.backendConfig;
             const autoUpdateSoftwareChangeDetected = this.props.preferences.autoUpdateSoftware !== this.state.autoUpdateSoftware;
             const backendChangesDetected = !deepEqual(this.props.preferences.backendConfig, backendConfig);
+            this.props.dispatch(actions.updateSessionState(this.state));
             this.props.dispatch(actions.updatePreferences(this.state) as any);
             if (autoUpdateSoftwareChangeDetected || backendChangesDetected) {
                 this.props.dispatch(actions.storeBackendConfig(backendConfig) as any);
@@ -116,14 +117,14 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
     }
 
     private renderGeneralPanel() {
-        const userRootMode = this.props.serviceInfo.userRootMode;
+        // const userRootMode = this.props.serviceInfo.userRootMode;
         return (
             <div style={{width: '100%', marginTop: '1em'}}>
                 {this.renderReopenLastWorkspace()}
                 {this.renderAutoShowNewFigures()}
-                {this.renderPanelContainerUndockedMode()}
-                {!userRootMode && this.renderAutoUpdates()}
-                {!userRootMode && this.renderOfflineMode()}
+                {/*Does not work with blueprintjs 3+*//*{this.renderPanelContainerUndockedMode()}*/}
+                {/*For Electron only*/ /*{!userRootMode && this.renderAutoUpdates()}*/}
+                {/*For Electron only*/ /*{!userRootMode && this.renderOfflineMode()}*/}
             </div>
         );
     }
@@ -180,13 +181,13 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         );
     }
 
-    private renderAutoUpdates() {
-        return this.renderBooleanValue(
-            'autoUpdateSoftware',
-            false,
-            'Automatic software updates'
-        );
-    }
+    // private renderAutoUpdates() {
+    //     return this.renderBooleanValue(
+    //         'autoUpdateSoftware',
+    //         false,
+    //         'Automatic software updates'
+    //     );
+    // }
 
     private renderAutoShowNewFigures() {
         return this.renderBooleanValue(
@@ -196,21 +197,21 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
         );
     }
 
-    private renderOfflineMode() {
-        return this.renderBooleanValue(
-            'offlineMode',
-            false,
-            'Force offline mode (requires restart)'
-        );
-    }
+    // private renderOfflineMode() {
+    //     return this.renderBooleanValue(
+    //         'offlineMode',
+    //         false,
+    //         'Force offline mode (requires restart)'
+    //     );
+    // }
 
-    private renderPanelContainerUndockedMode() {
-        return this.renderBooleanValue(
-            'panelContainerUndockedMode',
-            false,
-            'Undocked tool panels (experimental)'
-        );
-    }
+    // private renderPanelContainerUndockedMode() {
+    //     return this.renderBooleanValue(
+    //         'panelContainerUndockedMode',
+    //         false,
+    //         'Undocked tool panels (experimental)'
+    //     );
+    // }
 
     private renderDataStoresPath() {
         return this.renderDirectoryPath(

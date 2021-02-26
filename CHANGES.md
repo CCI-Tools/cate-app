@@ -2,12 +2,20 @@
 
 #### In current
 
-* Added version tags for UI and API to main toolbox page and service 
-  selection page.    
-* The `read_zarr` operation is now using type "password" for its `key`, 
-  `secret`, and `token` parameters.
+* Fixed various issues regarding user preferences:
+  - Fixed a problem that prevented storing the last workspace path in 
+    user preferences.
+  - Fixed problem in preferences dialog that prevented applying the new 
+    settings.
+  - Removed some preferences settings that no longer apply
+    in the Cate App web application.
 
 #### From previous
+
+* Added version tags for UI and API to main toolbox page and service
+  selection page.
+* The `read_zarr` operation is now using type "password" for its `key`,
+  `secret`, and `token` parameters.
 
 * The DATA SOURCES panel has been updated:
     - Fixed deferred effect of checkbox "Show identifiers".

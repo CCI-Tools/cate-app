@@ -466,8 +466,6 @@ export const canMapDataSourceSelector = createSelector<State, boolean, DataSourc
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Workspace, resource, step, and variable selectors
 
-// lastWorkspaceDir
-
 export const workspaceSelector = (state: State): WorkspaceState | null => {
     return state.data.workspace;
 };
