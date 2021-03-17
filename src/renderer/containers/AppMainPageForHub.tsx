@@ -4,7 +4,7 @@ import { connect, Dispatch } from 'react-redux';
 
 import * as actions from '../actions';
 import { State } from '../state';
-import AppMainPageWrapper from './AppMainPage';
+import AppMainPageWrapper from './AppMainPageWrapper';
 
 
 interface IDispatch {

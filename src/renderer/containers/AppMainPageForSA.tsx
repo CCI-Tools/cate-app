@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import * as actions from '../actions';
 import { State } from '../state';
 import { showToast } from '../toast';
-import AppMainPageWrapper from './AppMainPage';
+import AppMainPageWrapper from './AppMainPageWrapper';
 
 
 function useQuery() {
