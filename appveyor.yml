@@ -1,4 +1,4 @@
-version: 2.2.3-dev.0-{build}
+version: 2.2.3-{build}
 image: Ubuntu
 stack: node 12
 install:
