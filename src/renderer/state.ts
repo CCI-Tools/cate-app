@@ -95,7 +95,7 @@ export interface DatasetDescriptor {
     spatial_res?: number;
     time_range?: [string | null, string | null];
     time_period?: string;
-    variables?: { [var_name: string]: VariableDescriptor };
+    variables?: VariableDescriptor[];
 
     [attr_name: string]: any;
 }
