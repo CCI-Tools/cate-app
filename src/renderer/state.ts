@@ -1,5 +1,6 @@
 import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
+import { JSONSchema7 } from 'json-schema';
 import { KeycloakProfile } from 'keycloak-js';
 
 import { SimpleStyle } from '../common/geojson-simple-style';
@@ -85,10 +86,68 @@ export interface DataStoreState {
 
 export type DataSourceVerificationFlags = "open" | "cache" | "map";
 
+
+export interface DatasetDescriptor {
+    data_id: string;
+    type_specifier: string;
+    crs?: string;
+    bbox?: [number, number, number, number];
+    spatial_res?: number;
+    time_range?: [string | null, string | null];
+    time_period?: string;
+    variables?: { [var_name: string]: VariableDescriptor };
+
+    [attr_name: string]: any;
+}
+
+export interface VariableDescriptor {
+    name: string;
+    units: string;
+    long_name: string;
+    standard_name: string;
+}
+
+// TODO: (forman) use this in the future instead of DatasetDescriptor/VariableDescriptor
+// {{{{{{{{{{{{
+
+export interface DataDescriptor2 {
+    data_id: string;
+    type_specifier: string;
+    crs?: string | null;
+    bbox?: [number, number, number, number] | null;
+    time_range?: [string | null, string | null] | null;
+    time_period?: string | null;
+    open_params_schema?: JSONSchema7 | null;
+}
+
+export interface GeoDataFrameDescriptor2 extends DataDescriptor2 {
+}
+
+export interface DatasetDescriptor2 extends DataDescriptor2 {
+    spatial_res?: number | null;
+    dims?: { [dim_name: string]: number } | null;
+    coords?: { [var_name: string]: VariableDescriptor2 } | null;
+    data_vars?: { [var_name: string]: VariableDescriptor2 } | null;
+    attrs?: { [attr_name: string]: any } | null;
+}
+
+export interface VariableDescriptor2 {
+    name: string;
+    dtype: string;
+    dims: string[];
+    chunks?: number[] | null;
+    attrs?: { [attr_name: string]: any } | null;
+}
+// }}}}}}}}}}}}
+
+
 export interface DataSourceState {
     id: string;
     title?: string;
-    metaInfo: { [key: string]: any } | null;
+    // TODO: (forman) replace by descriptor in the future
+    metaInfo?: DatasetDescriptor;
+    // TODO: (forman) use this in the future instead of metaInfo
+    descriptor?: DatasetDescriptor2 | GeoDataFrameDescriptor2;
     typeSpecifier?: string | null;
     verificationFlags?: DataSourceVerificationFlags[] | null;
     temporalCoverage?: [string, string] | null;

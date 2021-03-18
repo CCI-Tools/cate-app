@@ -2,7 +2,7 @@ FROM node:stretch-slim as build-deps
 
 LABEL maintainer="helge.dzierzon@brockmann-consult.de"
 LABEL name="Cate App"
-LABEL version="2.2.3"
+LABEL version="2.3.0-dev.0"
 
 RUN apt-get -y update && apt-get install -y git apt-utils wget vim
 

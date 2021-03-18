@@ -1,3 +1,7 @@
+### Changes 2.3.0 (in development)
+
+* ...
+
 ### Changes 2.2.3
 
 * Fixed a problem that prevented using Matomo Analytics service.
