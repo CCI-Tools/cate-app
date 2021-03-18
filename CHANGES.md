@@ -1,6 +1,12 @@
 ### Changes 2.3.0 (in development)
 
-* ...
+* Optimisations in the DATA SOURCES panel (that have been enabled by 
+  using [xcube](https://xcube.readthedocs.io/) in the backend):
+  - Initalising the "ESA CCI Open Data Portal" data store
+    is now accellerated by a magnitude.
+  - Local caching of remote data sources when opening datasets 
+    is now much faster and more reliable.
+  - Ability to add more data stores has been greatly improved.
 
 ### Changes 2.2.3
 
