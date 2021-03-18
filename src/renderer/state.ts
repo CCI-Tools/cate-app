@@ -96,15 +96,23 @@ export interface DatasetDescriptor {
     time_range?: [string | null, string | null];
     time_period?: string;
     variables?: VariableDescriptor[];
+    abstract?: string;
+    catalog_url?: string;
+    catalogue_url?: string;
+    cci_project?: string;
+    info_url?: string;
+    licences?: [string];
+    title?: string;
+    uuid?: string;
 
     [attr_name: string]: any;
 }
 
 export interface VariableDescriptor {
     name: string;
-    units: string;
-    long_name: string;
-    standard_name: string;
+    units?: string;
+    long_name?: string;
+    standard_name?: string;
 }
 
 // TODO: (forman) use this in the future instead of DatasetDescriptor/VariableDescriptor
