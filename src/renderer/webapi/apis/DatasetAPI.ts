@@ -1,50 +1,7 @@
-import { DataSourceState, DataStoreState, DimSizes } from '../../state';
+import { DatasetDescriptor, DataSourceState, DataStoreState, DimSizes } from '../../state';
 import { JobProgress, JobPromise } from '../Job';
 import { WebAPIClient } from '../WebAPIClient';
 
-
-function responseToTemporalCoverage(response: any): [string, string] | null {
-    if (response && response.temporal_coverage_start && response.temporal_coverage_end) {
-        return [response.temporal_coverage_start, response.temporal_coverage_end];
-    }
-    return null;
-}
-
-function addVerificationFlagsForTesting(dataSources: DataSourceState[]): DataSourceState[] {
-    return dataSources.map((ds, i) => {
-        // console.debug(`dataSources[${i}]:`, ds);
-        return ds;
-        /*
-        if (i === 0) {
-            return {
-                ...ds,
-                typeSpecifier: 'dataset',
-                verificationFlags: null
-            }
-        } else if (i === 1) {
-            return {
-                ...ds,
-                typeSpecifier: 'dataset',
-                verificationFlags: ['open']
-            }
-        } else if (i === 2) {
-            return {
-                ...ds,
-                typeSpecifier: 'dataset',
-                verificationFlags: ['open', 'map']
-            }
-        } else if (i === 3) {
-            return {
-                ...ds,
-                typeSpecifier: 'dataset',
-                verificationFlags: ['open', 'map', 'cache']
-            }
-        } else {
-            return ds;
-        }
-         */
-    });
-}
 
 export class DatasetAPI {
     private readonly webAPIClient: WebAPIClient;
@@ -59,19 +16,18 @@ export class DatasetAPI {
 
     getDataSources(dataStoreId: string,
                    onProgress: (progress: JobProgress) => void): JobPromise<DataSourceState[]> {
-        return this.webAPIClient
-                   .call('get_data_sources',
-                         [dataStoreId],
-                         onProgress,
-                         addVerificationFlagsForTesting);
+        return this.webAPIClient.call('get_data_sources',
+                                      [dataStoreId],
+                                      onProgress,
+                                      DatasetAPI.responseToDataSources);
     }
 
-    getDataSourceTemporalCoverage(dataStoreId: string, dataSourceId: string,
-                                  onProgress: (progress: JobProgress) => void): JobPromise<[string, string] | null> {
-        return this.webAPIClient.call('get_data_source_temporal_coverage',
+    getDataSourceMetaInfo(dataStoreId: string, dataSourceId: string,
+                          onProgress: (progress: JobProgress) => void): JobPromise<DatasetDescriptor> {
+        return this.webAPIClient.call('get_data_source_meta_info',
                                       [dataStoreId, dataSourceId],
-                                      onProgress, responseToTemporalCoverage
-        );
+                                      onProgress,
+                                      DatasetAPI.responseToMetaInfo);
     }
 
     addLocalDataSource(dataSourceId: string, filePathPattern: string,
@@ -94,4 +50,23 @@ export class DatasetAPI {
                        indexers: DimSizes): JobPromise<{ [varName: string]: number } | null> {
         return this.webAPIClient.call('extract_pixel_values', [baseDir, source, point, indexers]);
     }
+
+    static responseToDataSources(dataSources: any[]): DataSourceState[] {
+        // noinspection JSUnusedLocalSymbols
+        return dataSources.map((dataSource, i): DataSourceState => {
+            console.debug(`dataSources[${i}]:`, dataSource);
+            return {
+                id: dataSource['id'],
+                title: dataSource['title'],
+                typeSpecifier: dataSource['type_specifier'] || 'dataset',
+                verificationFlags: dataSource['verification_flags'],
+                metaInfoStatus: 'init',
+            };
+        });
+    }
+
+    static responseToMetaInfo(response: any): DatasetDescriptor {
+        return response as DatasetDescriptor;
+    }
 }
+

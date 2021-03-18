@@ -104,7 +104,7 @@ export interface DatasetDescriptor {
     licences?: [string];
     title?: string;
     uuid?: string;
-
+    // Anything else:
     [attr_name: string]: any;
 }
 
@@ -154,8 +154,10 @@ export interface DataSourceState {
     title?: string;
     // TODO: (forman) replace by descriptor in the future
     metaInfo?: DatasetDescriptor;
+    metaInfoStatus: 'init' | 'loading' | 'ok' | 'error';
     // TODO: (forman) use this in the future instead of metaInfo
-    descriptor?: DatasetDescriptor2 | GeoDataFrameDescriptor2;
+    // descriptor?: DatasetDescriptor2 | GeoDataFrameDescriptor2;
+    // descriptorStatus: 'init' | 'loading' | 'ok' | 'error';
     typeSpecifier?: string | null;
     verificationFlags?: DataSourceVerificationFlags[] | null;
     temporalCoverage?: [string, string] | null;

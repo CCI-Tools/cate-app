@@ -440,12 +440,15 @@ export const selectedDataSourceSelector = createSelector<State, DataSourceState 
     }
 );
 
-export const selectedDataSourceTemporalCoverageSelector = createSelector<State, [string, string] | null,
+export const selectedDataSourceTemporalCoverageSelector = createSelector<State,
+    [string | null, string | null] | null,
     DataSourceState
     | null>(
     selectedDataSourceSelector,
-    (selectedDataSource: DataSourceState): [string, string] | null => {
-        return selectedDataSource ? selectedDataSource.temporalCoverage : null;
+    (selectedDataSource: DataSourceState): [string | null, string | null] | null => {
+        return (selectedDataSource
+                && selectedDataSource.metaInfo
+                && selectedDataSource.metaInfo.time_range) || null;
     }
 );
 

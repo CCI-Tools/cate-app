@@ -111,17 +111,16 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action): Dat
                 return action.payload.dataSources.slice();
             });
         }
-        case actions.UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE: {
+        case actions.UPDATE_DATA_SOURCE_META_INFO: {
             return updateDataStores(state, action, dataStore => {
                 const newDataSources = [...dataStore.dataSources];
-                const dataSourceId = action.payload.dataSourceId;
-                const temporalCoverage = action.payload.temporalCoverage;
+                const {dataSourceId, metaInfo, metaInfoStatus} = action.payload;
                 const dataSourceIndex = newDataSources.findIndex(dataSource => dataSource.id === dataSourceId);
                 if (dataSourceIndex < 0) {
                     throw Error('illegal data source ID: ' + dataSourceId);
                 }
                 const oldDataSource = newDataSources[dataSourceIndex];
-                newDataSources[dataSourceIndex] = {...oldDataSource, temporalCoverage};
+                newDataSources[dataSourceIndex] = {...oldDataSource, metaInfo, metaInfoStatus};
                 return newDataSources;
             });
         }

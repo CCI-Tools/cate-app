@@ -41,7 +41,7 @@ import * as selectors from './selectors';
 import {
     BackendConfigState,
     ColorMapCategoryState,
-    ControlState,
+    ControlState, DatasetDescriptor,
     DataSourceState,
     DataStoreState,
     GeographicPosition,
@@ -67,6 +67,7 @@ import {
 } from './state';
 import {
     AUTO_LAYER_ID,
+    findDataSource,
     findResourceByName,
     genSimpleId,
     getCsvUrl,
@@ -885,7 +886,7 @@ export function setSelectedPlacemarkId(selectedPlacemarkId: string | null): Acti
 
 export const UPDATE_DATA_STORES = 'UPDATE_DATA_STORES';
 export const UPDATE_DATA_SOURCES = 'UPDATE_DATA_SOURCES';
-export const UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE = 'UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE';
+export const UPDATE_DATA_SOURCE_META_INFO = 'UPDATE_DATA_SOURCE_META_INFO';
 
 /**
  * Asynchronously load the available Cate data stores.
@@ -987,33 +988,54 @@ export function setSelectedDataStoreIdImpl(selectedDataStoreId: string | null) {
     return updateSessionState({selectedDataStoreId});
 }
 
-export function setSelectedDataSourceId(selectedDataSourceId: string | null) {
-    return updateSessionState({selectedDataSourceId});
+export function setSelectedDataSourceId(selectedDataSourceId: string): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        dispatch(updateSessionState({selectedDataSourceId}));
+        const dataStoreId = getState().session.selectedDataStoreId;
+        if (dataStoreId && selectedDataSourceId) {
+            dispatch(loadDataSourceMetaInfo(dataStoreId, selectedDataSourceId));
+        }
+    }
 }
 
 export function setDataSourceFilterExpr(dataSourceFilterExpr: string) {
     return updateSessionState({dataSourceFilterExpr});
 }
 
-export function loadTemporalCoverage(dataStoreId: string, dataSourceId: string): ThunkAction {
+export function loadDataSourceMetaInfo(dataStoreId: string, dataSourceId: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
+        const dataStores = getState().data.dataStores;
+        if (!dataStores) {
+            return;
+        }
+        const dataSource = findDataSource(dataStores, dataStoreId, dataSourceId);
+        if (!dataSource || dataSource.metaInfoStatus !== 'init') {
+            return;
+        }
+
+        dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, undefined, 'loading'));
 
         function call(onProgress) {
-            return selectors.datasetAPISelector(getState()).getDataSourceTemporalCoverage(dataStoreId, dataSourceId, onProgress);
+            return selectors.datasetAPISelector(getState()).getDataSourceMetaInfo(dataStoreId, dataSourceId, onProgress);
         }
 
-        function action(temporalCoverage) {
-            dispatch(updateDataSourceTemporalCoverage(dataStoreId, dataSourceId, temporalCoverage));
+        function action(metaInfo: DatasetDescriptor) {
+            dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, metaInfo, 'ok'));
         }
 
-        callAPI({title: `Load temporal coverage for ${dataSourceId}`, dispatch, call, action});
+        function planB() {
+            dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, undefined, 'error'));
+        }
+
+        callAPI({title: `Loading meta data for ${dataSourceId}`, dispatch, call, action, planB});
     };
 }
 
-export function updateDataSourceTemporalCoverage(dataStoreId: string,
-                                                 dataSourceId: string,
-                                                 temporalCoverage: [string, string] | null): Action {
-    return {type: UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE, payload: {dataStoreId, dataSourceId, temporalCoverage}};
+export function updateDataSourceMetaInfo(dataStoreId: string,
+                                         dataSourceId: string,
+                                         metaInfo: DatasetDescriptor | undefined,
+                                         metaInfoStatus: 'loading' | 'ok' | 'error' = 'ok'): Action {
+    return {type: UPDATE_DATA_SOURCE_META_INFO, payload: {dataStoreId, dataSourceId, metaInfo, metaInfoStatus}};
 }
 
 export function openDataset(dataSourceId: string, args: any, updateLocalDataSources: boolean): ThunkAction {

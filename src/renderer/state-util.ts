@@ -251,6 +251,20 @@ export function findOperation(operations: OperationState[], name: string): Opera
     return operations && operations.find(op => op.qualifiedName === name || op.name === name);
 }
 
+export function findDataSource(dataStores: DataStoreState[],
+                               dataStoreId: string,
+                               dataSourceId: string): DataSourceState | null {
+    const dataStore = dataStores && dataStores.find(dataStore => dataStore.id === dataStoreId);
+    if (dataStore) {
+        const dataSource = dataStore.dataSources
+                           && dataStore.dataSources.find(dataSource => dataSource.id === dataSourceId);
+        if (dataSource) {
+            return dataSource;
+        }
+    }
+    return null;
+}
+
 export function findVariableIndexCoordinates(resources: ResourceState[], ref: VariableDataRefState): any[] {
     const resource = findResourceById(resources, ref.resId);
     if (!resource) {
