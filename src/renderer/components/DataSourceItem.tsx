@@ -36,20 +36,7 @@ interface DataSourceItemProps {
 const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSourceIDs}) => {
     const metaInfo = dataSource.metaInfo;
 
-    // TODO: get rid of render logic here
-    const ecvId = ((metaInfo && metaInfo.cci_project) || '').toLowerCase();
-    const ecvMetaItem = ECV_META.ecvs[ecvId];
-    let backgroundColor, label;
-    if (ecvMetaItem) {
-        backgroundColor = ECV_META.colors[ecvMetaItem.color] || ecvMetaItem.color;
-        label = ecvMetaItem.label;
-    }
-    if (!backgroundColor) {
-        backgroundColor = ECV_META.colors["default"] || "#0BB7A0";
-    }
-    if (!label) {
-        label = ecvId.substr(0, 3).toUpperCase() || '?';
-    }
+    const {backgroundColor, label} = dataSourceToTextIconProps(dataSource);
     const icon = <div style={{...TEXT_ICON_STYLE, backgroundColor}}>{label}</div>;
 
     const title = dataSource.title || (metaInfo && metaInfo.title);
@@ -82,3 +69,34 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
 
 
 export default DataSourceItem;
+
+
+function dataSourceToTextIconProps(dataSource: DataSourceState) {
+    let ecvId;
+    let label;
+    if (dataSource.title) {
+        ecvId = dataSource.title.split(' ', 1)[0].toLowerCase();
+        label = dataSource.title.substr(0, 3).toUpperCase();
+    }
+    if (!ecvId || !ECV_META.ecvs[ecvId]) {
+        // This is a CCI-store specific hack
+        const idParts = dataSource.id.split('.', 2);
+        if (idParts.length > 1) {
+            ecvId = idParts[1].toLowerCase();
+        }
+    }
+    const ecvMetaItem = ecvId && ECV_META.ecvs[ecvId];
+    let backgroundColor;
+    if (ecvMetaItem) {
+        backgroundColor = ECV_META.colors[ecvMetaItem.color] || ecvMetaItem.color;
+        label = ecvMetaItem.label || label;
+    }
+    if (!backgroundColor) {
+        backgroundColor = ECV_META.colors["default"] || "#0BB7A0";
+    }
+    if (!label) {
+        label = (ecvId && ecvId.substr(0, 3).toUpperCase()) || '?';
+    }
+    return {backgroundColor, label};
+}
+
