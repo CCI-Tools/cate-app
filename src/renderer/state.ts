@@ -67,6 +67,12 @@ export interface WebAPIServiceInfo {
     hostOS?: HostOS;
 }
 
+export interface HubStatus {
+    status: "ok" | "offline";
+    message?: string;
+    deployment: "development" | "production";
+}
+
 export interface DataStoreNotice {
     id: string;
     title: string;
@@ -727,6 +733,7 @@ export interface CommunicationState {
     webAPIStatus: WebAPIStatus | null;
     webAPIClient: WebAPIClient | null;
     userProfile: KeycloakProfile | null;
+    hubStatus: HubStatus | null;
     // A map that stores the current state of any tasks (e.g. data fetch jobs from remote API) given a jobId
     tasks: { [jobId: number]: TaskState; };
 }

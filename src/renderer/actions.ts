@@ -44,7 +44,7 @@ import {
     ControlState, DatasetDescriptor,
     DataSourceState,
     DataStoreState,
-    GeographicPosition,
+    GeographicPosition, HubStatus,
     ImageStatisticsState,
     LayerState,
     MessageState,
@@ -138,6 +138,7 @@ export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
 export const SET_WEBAPI_CLIENT = 'SET_WEBAPI_CLIENT';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
 export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
+export const UPDATE_HUB_STATUS = 'UPDATE_HUB_STATUS';
 export const UPDATE_DIALOG_STATE = 'UPDATE_DIALOG_STATE';
 export const UPDATE_TASK_STATE = 'UPDATE_TASK_STATE';
 export const REMOVE_TASK_STATE = 'REMOVE_TASK_STATE';
@@ -352,6 +353,10 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             showToast({type: 'warning', text: formatMessage('Warning from Cate service', event)});
         };
     };
+}
+
+export function updateHubStatus(hubStatus: HubStatus): Action  {
+    return { type: UPDATE_HUB_STATUS, payload: hubStatus};
 }
 
 export function updateInitialState(initialState: Object): Action {

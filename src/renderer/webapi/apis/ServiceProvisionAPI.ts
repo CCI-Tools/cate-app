@@ -89,8 +89,7 @@ export class ServiceProvisionAPI {
     }
 }
 
-
-function getEndpointUrl(): string {
+export function getEndpointUrl(): string {
     if (process.env.REACT_APP_CATEHUB_ENDPOINT) {
         return process.env.REACT_APP_CATEHUB_ENDPOINT;
     } else if (window.location.host.indexOf('stage') >= 0) {

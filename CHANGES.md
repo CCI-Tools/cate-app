@@ -8,6 +8,9 @@
     is now much faster and more reliable.
   - Ability to add more data stores has been greatly improved.
 
+* We now obtain Cate Hub's status information from a dedicated GitHub 
+  repository [cate-status](https://github.com/CCI-Tools/cate-status).
+  
 ### Changes 2.2.3
 
 * Fixed a problem that prevented using Matomo Analytics service.

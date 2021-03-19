@@ -841,6 +841,12 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             const webAPIServiceInfo = action.payload.webAPIServiceInfo;
             return {...state, webAPIServiceInfo};
         }
+        case actions.UPDATE_HUB_STATUS: {
+            return {
+                ...state,
+                hubStatus: action.payload
+            }
+        }
         case actions.UPDATE_TASK_STATE:
             return {
                 ...state,

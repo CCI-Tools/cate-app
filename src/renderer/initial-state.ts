@@ -143,6 +143,7 @@ export const INITIAL_COMMUNICATION_STATE: CommunicationState = {
     webAPIStatus: null,
     webAPIServiceInfo: null,
     webAPIClient: null,
+    hubStatus: null,
     userProfile: null,
     tasks: {},
 };
