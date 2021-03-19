@@ -30,7 +30,10 @@ const AppRouter: React.FC<IAppRouterProps> = ({hubStatus}) => {
                 </Route>
                 <Route path="/hub">
                     {
-                        (hubStatus === null || hubStatus.status !== 'ok')
+                        // It should read
+                        //   (hubStatus === null || hubStatus.status !== 'ok')
+                        // but this will always bring us back to "/" after login :(
+                        (hubStatus !== null && hubStatus.status !== 'ok')
                         ? (<Redirect to="/"/>)
                         : (<AppMainPageForHub/>)
                     }
