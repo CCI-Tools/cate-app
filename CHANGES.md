@@ -11,6 +11,11 @@
 * We now obtain Cate Hub's status information from a dedicated GitHub 
   repository [cate-status](https://github.com/CCI-Tools/cate-status).
   
+* Adapted to changed cate-hub API. (An API response no longer has 
+  `status` and `result` properties, instead a response _is_ the result
+  and the response status is represented by the HTTP response code.)
+
+
 ### Changes 2.2.3
 
 * Fixed a problem that prevented using Matomo Analytics service.
