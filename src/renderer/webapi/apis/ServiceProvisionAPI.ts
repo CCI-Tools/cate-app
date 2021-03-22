@@ -82,10 +82,8 @@ export class ServiceProvisionAPI {
             throw HttpError.fromResponse(response);
         }
         const jsonObject = await response.json();
-        if (jsonObject.status !== 'ok') {
-            throw new Error(jsonObject.message);
-        }
-        return jsonObject.result as T;
+
+        return jsonObject as T;
     }
 }
 
