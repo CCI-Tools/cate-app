@@ -14,7 +14,7 @@
 // "./service-worker.js" file changes). Therefore we use a version number here,
 // so we can force updates.
 //
-const CATE_PWA_VERSION = "2.3.0-dev.1";
+const CATE_PWA_VERSION = "2.3.0-dev.4";
 
 console.debug(`Cate PWA version ${CATE_PWA_VERSION}`);
 

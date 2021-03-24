@@ -2,15 +2,23 @@
 
 * Optimisations in the DATA SOURCES panel (that have been enabled by 
   using [xcube](https://xcube.readthedocs.io/) in the backend):
-  - Initalising the "ESA CCI Open Data Portal" data store
+  - Initalising the "CCI Open Data Portal" data store
     is now accellerated by a magnitude.
   - Local caching of remote data sources when opening datasets 
     is now much faster and more reliable.
+  - Added new experimental store "CCI Zarr Store" that offers
+    selected CCI datasets that have been converted to Zarr format 
+    and are read from JASMIN object storage.
   - Ability to add more data stores has been greatly improved.
 
 * We now obtain Cate Hub's status information from a dedicated GitHub 
   repository [cate-status](https://github.com/CCI-Tools/cate-status).
   
+* Adapted to changed cate-hub API. (An API response no longer has 
+  `status` and `result` properties, instead a response _is_ the result
+  and the response status is represented by the HTTP response code.)
+
+
 ### Changes 2.2.3
 
 * Fixed a problem that prevented using Matomo Analytics service.

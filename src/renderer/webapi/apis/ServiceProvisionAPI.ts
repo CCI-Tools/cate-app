@@ -34,6 +34,9 @@ interface CountResult {
     running_pods: number;
 }
 
+/**
+ * Represents the cate-hub API.
+ */
 export class ServiceProvisionAPI {
 
     /**
@@ -81,9 +84,7 @@ export class ServiceProvisionAPI {
         if (!response.ok) {
             throw HttpError.fromResponse(response);
         }
-        const jsonObject = await response.json();
-
-        return jsonObject as T;
+        return response.json();
     }
 }
 
