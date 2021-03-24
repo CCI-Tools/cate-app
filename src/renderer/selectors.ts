@@ -452,9 +452,15 @@ export const selectedDataSourceTemporalCoverageSelector = createSelector<State,
     }
 );
 
-export const canCacheDataSourceSelector = createSelector<State, boolean, DataSourceState | null>(
+export const canCacheDataSourceSelector = createSelector<State, boolean, string | null, DataSourceState | null>(
+    selectedDataStoreIdSelector,
     selectedDataSourceSelector,
-    (selectedDataSource: DataSourceState | null): boolean => {
+    (selectedDataStoreId, selectedDataSource): boolean => {
+        if (selectedDataStoreId === null
+            || selectedDataStoreId === 'local'
+            || selectedDataStoreId === 'cci-zarr-store') {
+            return false;
+        }
         return selectedDataSource ? canCacheDataSource(selectedDataSource) : false;
     }
 );
