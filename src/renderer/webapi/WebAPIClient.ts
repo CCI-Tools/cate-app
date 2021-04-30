@@ -85,7 +85,12 @@ export type JobResponseTransformer<JobResponse> = (any) => JobResponse;
  * This is non JSON-RCP, which only allows for either the "response" or an "error" object.
  */
 export interface WebAPIClient {
+    /**
+     * Test if the connection is open and active.
+     */
+    readonly isOpen: boolean;
     readonly url: string;
+
     onOpen: (event) => void;
     onClose: (event) => void;
     onError: (event) => void;
@@ -142,16 +147,14 @@ class WebAPIClientImpl implements WebAPIClient {
     onError: (event) => void;
     onWarning: (event) => void;
 
-    readonly socket: WebSocketMin;
+    private readonly socket: WebSocketMin;
     private currentMessageId = 0;
-    private activeJobs: JobImpl<any>[];
-    private isOpen: boolean;
+    private readonly activeJobs: JobImpl<any>[];
 
     constructor(url: string, firstMessageId = 0, socket?: WebSocketMin) {
         this.url = url;
         this.currentMessageId = firstMessageId;
         this.activeJobs = [];
-        this.isOpen = false;
         this.socket = socket ? socket : new WebSocket(url);
         this.socket.onopen = (event) => {
             if (this.onOpen) {
@@ -172,6 +175,10 @@ class WebAPIClientImpl implements WebAPIClient {
             // this.dispatchEvent('debug', `WebAPIClient message received: ${event.data}`);
             this.processMessage(event.data);
         }
+    }
+
+    get isOpen(): boolean {
+        return this.socket.readyState === WebSocket.OPEN;
     }
 
     call<JobResponse>(method: string,

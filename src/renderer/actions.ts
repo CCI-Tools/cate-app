@@ -314,15 +314,6 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
 
         const webAPIClient = newWebAPIClient(selectors.apiWebSocketsUrlSelector(getState()));
 
-        webAPIClient.onOpen = () => {
-            dispatch(setWebAPIClient(webAPIClient));
-            dispatch(loadBackendConfig());
-            dispatch(loadColorMaps());
-            dispatch(loadPreferences());
-            dispatch(loadDataStores());
-            dispatch(loadOperations());
-        };
-
         const formatMessage = (message: string, event: any): string => {
             if (event.message) {
                 return `${message} (${event.message})`;
@@ -331,12 +322,39 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             }
         };
 
+        /**
+         * Called to inform backend we are still alive.
+         * Hopefully avoids closing WebSocket connection.
+         */
+        const keepAlive = () => {
+            if (webAPIClient.isOpen) {
+                console.debug("calling keep_alive()");
+                webAPIClient.call('keep_alive', [])
+            }
+        };
+
+        let keepAliveTimer = null;
+
+        webAPIClient.onOpen = () => {
+            dispatch(setWebAPIClient(webAPIClient));
+            dispatch(loadBackendConfig());
+            dispatch(loadColorMaps());
+            dispatch(loadPreferences());
+            dispatch(loadDataStores());
+            dispatch(loadOperations());
+            keepAliveTimer = setInterval(keepAlive, 2500);
+        };
+
         webAPIClient.onClose = (event) => {
+            if (keepAliveTimer !== null) {
+                clearInterval(keepAliveTimer);
+            }
             const webAPIStatus = getState().communication.webAPIStatus;
             if (webAPIStatus === 'shuttingDown' || webAPIStatus === 'loggingOut') {
                 // When we are logging off, the webAPIClient is expected to close.
                 return;
             }
+            // When we end up here, the connection closed unintentionally.
             console.error('webAPIClient.onClose:', event);
             dispatch(setWebAPIStatus('closed'));
             showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
@@ -355,8 +373,8 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
     };
 }
 
-export function updateHubStatus(hubStatus: HubStatus): Action  {
-    return { type: UPDATE_HUB_STATUS, payload: hubStatus};
+export function updateHubStatus(hubStatus: HubStatus): Action {
+    return {type: UPDATE_HUB_STATUS, payload: hubStatus};
 }
 
 export function updateInitialState(initialState: Object): Action {

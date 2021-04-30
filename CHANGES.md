@@ -1,4 +1,10 @@
-### Changes 2.3.0 (in development)
+### Changes 3.0 (in development)
+
+* Cate App 3.0 now requires the Web API service of the `cate 3.0+` 
+  Python package.
+
+* In order to keep alive the connection to the Web API service,
+  Cate App now sends a keepalive signal every 2.5 seconds. (#150)
 
 * Optimisations in the DATA SOURCES panel (that have been enabled by 
   using [xcube](https://xcube.readthedocs.io/) in the backend):
