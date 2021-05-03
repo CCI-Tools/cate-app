@@ -122,7 +122,7 @@ describe('Actions', () => {
                 ]);
         });
 
-        it('updateDataSourceTemporalCoverage', () => {
+        it('updateDataSourceMetaInfo', () => {
             dispatch(actions.updateDataStores(
                 [
                     {id: 'local-1'},
@@ -133,9 +133,10 @@ describe('Actions', () => {
                                                    {id: 'fileset-1'},
                                                    {id: 'fileset-2'}
                                                ] as any));
-            dispatch(actions.updateDataSourceTemporalCoverage('local-2',
-                                                              'fileset-1',
-                                                              ['2010-01-01', '2014-12-30']));
+            dispatch(actions.updateDataSourceMetaInfo('local-2',
+                                                      'fileset-1',
+                                                      {'data_id': 'x', 'type_specifier': 'y'},
+                                                      'ok'));
             expect(getState().data.dataStores).to.deep.equal(
                 [
                     {id: 'local-1'},
@@ -143,7 +144,8 @@ describe('Actions', () => {
                         id: 'local-2', dataSources: [
                             {
                                 id: 'fileset-1',
-                                temporalCoverage: ['2010-01-01', '2014-12-30']
+                                metaInfo: {'data_id': 'x', 'type_specifier': 'y'},
+                                metaInfoStatus: 'ok',
                             },
                             {id: 'fileset-2'}
                         ]

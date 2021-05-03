@@ -9,12 +9,9 @@ import GdprBanner from './GdprBanner';
 import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
 import { State } from '../state';
-
 import cateIcon from '../resources/cate-icon-512.png';
 import VersionTags from './VersionTags';
 
-
-const maintenanceReason: string | undefined = process.env.REACT_APP_CATEHUB_MAINTENANCE;
 
 const CENTER_DIV_STYLE: CSSProperties = {
     display: 'flex',
@@ -40,14 +37,24 @@ interface IDispatch {
 }
 
 interface IAppModePageProps {
+    hubOk?: boolean;
+    hubMessage?: string | null;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppModePageProps {
-    return {};
+    const hubStatus = state.communication.hubStatus;
+    return {
+        hubOk: !!hubStatus && hubStatus.status === 'ok',
+        hubMessage: hubStatus && hubStatus.message,
+    };
 }
 
-const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
+const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (
+    {
+        hubOk,
+        hubMessage
+    }) => {
 
     const history = useHistory();
     const [, keycloakInitialized] = useKeycloak();
@@ -96,21 +103,24 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
                     <img src={cateIcon} width={128} height={128} alt={'Cate icon'}/>
                 </div>
 
-                {maintenanceReason ? (
-                    <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 320}}>
-                        <Icon icon="warning-sign" intent={Intent.WARNING}/>&nbsp;{maintenanceReason}
+                {hubOk && (
+                    <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 360}}>
+                        Please select a Cate service provision mode
                     </div>
-                ) : (
-                     <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 320}}>
-                         Please select a Cate service provision mode
-                     </div>
-                 )}
+                )}
+
+                {hubMessage && (
+                    <div style={{marginTop: 12, alignContent: 'center', textAlign: 'center', maxWidth: 360}}>
+                        <Icon icon="warning-sign" intent={Intent.WARNING}/>&nbsp;{hubMessage}
+                    </div>
+                )}
+
                 <Button className={'bp3-large'}
                         intent={Intent.PRIMARY}
                         style={{marginTop: 18}}
                         onClick={setCateHubMode}
-                        disabled={!keycloakInitialized || !termsAndConditionsAgreed || Boolean(maintenanceReason)}
-                        rightIcon={maintenanceReason ? null : !keycloakInitialized && <Spinner size={16}/>}
+                        disabled={!keycloakInitialized || !termsAndConditionsAgreed || !hubOk}
+                        rightIcon={hubOk ? null : !keycloakInitialized && <Spinner size={16}/>}
                 >
                     <Tooltip content={<div>Obtain a new Cate service instance<br/>in the cloud (CateHub
                         Software-as-a-Service).<br/>Requires login information.</div>}>
@@ -121,7 +131,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = () => {
                     <Checkbox
                         checked={termsAndConditionsAgreed}
                         onChange={handleTermsAndConditionsAgreedChange}
-                        disabled={Boolean(maintenanceReason)}
+                        disabled={!hubOk}
                     >
                         I agree to the&nbsp;<TermsAndConditions/>
                     </Checkbox>

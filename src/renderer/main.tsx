@@ -1,12 +1,5 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {
-    BrowserRouter as Router,
-    // HashRouter as Router,
-    Switch,
-    Redirect,
-    Route,
-} from "react-router-dom";
 import { Provider as StoreProvider } from 'react-redux';
 import { applyMiddleware, createStore, Middleware, Store } from 'redux';
 import { createLogger } from 'redux-logger';
@@ -15,16 +8,14 @@ import Keycloak, { KeycloakInitOptions, KeycloakConfig } from 'keycloak-js'
 import { KeycloakProvider } from '@react-keycloak/web'
 
 import * as actions from './actions'
-import AppMainPageForHub from './containers/AppMainPageForHub'
-import AppMainPageForSA from './containers/AppMainPageForSA'
-import AppModePage from './containers/AppModePage';
+import AppRouter from './containers/AppRouter';
 import { stateReducer } from './reducers';
 import { State } from './state';
 import { isElectron } from './electron';
+import { getEndpointUrl } from './webapi/apis/ServiceProvisionAPI';
 
 
 const keycloak = Keycloak(getKeycloakConfig());
-const maintenanceReason: string | undefined = process.env.REACT_APP_CATEHUB_MAINTENANCE;
 
 const keycloakProviderInitConfig: KeycloakInitOptions = {
     onLoad: 'check-sso',
@@ -63,40 +54,36 @@ export function main() {
         console.debug('onKeycloakTokens', tokens);
     }
 
+    // Fetch hub status from GitHub
+    const deployment = getEndpointUrl().includes('stage') ? 'development' : 'production';
+    fetch(`https://raw.githubusercontent.com/CCI-Tools/cate-status/main/${deployment}.json`,
+          {mode: 'cors'})
+        .then(response =>
+                  response.json())
+        .then(hubStatus =>
+                  store.dispatch(actions.updateHubStatus(
+                      {...hubStatus, deployment})))
+        .catch(e => console.error(e));
+
     ReactDOM.render(
         (
-            <Router>
-                <KeycloakProvider
-                    keycloak={keycloak}
-                    initConfig={keycloakProviderInitConfig}
-                    onEvent={onKeycloakEvent}
-                    onTokens={onKeycloakTokens}
-                >
-                    <StoreProvider store={store}>
-                        <Switch>
-                            <Route exact path="/">
-                                <AppModePage/>
-                            </Route>
-                            <Route path="/hub">
-                                {
-                                    maintenanceReason
-                                    ? (<Redirect to="/"/>)
-                                    : (<AppMainPageForHub/>)
-                                }
-                            </Route>
-                            <Route path="/sa">
-                                <AppMainPageForSA/>
-                            </Route>
-                        </Switch>
-                    </StoreProvider>
-                </KeycloakProvider>
-            </Router>
+            <KeycloakProvider
+                keycloak={keycloak}
+                initConfig={keycloakProviderInitConfig}
+                onEvent={onKeycloakEvent}
+                onTokens={onKeycloakTokens}
+            >
+                <StoreProvider store={store}>
+                    <AppRouter/>
+                </StoreProvider>
+            </KeycloakProvider>
         ),
         document.getElementById('root')
     );
 
     if (!isElectron()) {
-        // Dektop-PWA app install, see https://web.dev/customize-install/
+        //
+        // Desktop-PWA app install, see https://web.dev/customize-install/
         //
         window.addEventListener('beforeinstallprompt', (event: Event) => {
             // Update UI notify the user they can install the PWA
@@ -115,4 +102,3 @@ function getKeycloakConfig(): KeycloakConfig {
     }
     return {realm, url, clientId};
 }
-

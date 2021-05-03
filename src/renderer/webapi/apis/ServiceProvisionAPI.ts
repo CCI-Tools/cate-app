@@ -34,6 +34,9 @@ interface CountResult {
     running_pods: number;
 }
 
+/**
+ * Represents the cate-hub API.
+ */
 export class ServiceProvisionAPI {
 
     /**
@@ -81,16 +84,11 @@ export class ServiceProvisionAPI {
         if (!response.ok) {
             throw HttpError.fromResponse(response);
         }
-        const jsonObject = await response.json();
-        if (jsonObject.status !== 'ok') {
-            throw new Error(jsonObject.message);
-        }
-        return jsonObject.result as T;
+        return response.json();
     }
 }
 
-
-function getEndpointUrl(): string {
+export function getEndpointUrl(): string {
     if (process.env.REACT_APP_CATEHUB_ENDPOINT) {
         return process.env.REACT_APP_CATEHUB_ENDPOINT;
     } else if (window.location.host.indexOf('stage') >= 0) {

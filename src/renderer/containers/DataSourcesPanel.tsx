@@ -97,7 +97,7 @@ interface IDataSourcesPanelDispatch {
 
     updateSessionState(sessionState: any): void;
 
-    loadTemporalCoverage(dataStoreId: string, dataSourceId: string): void;
+    loadDataSourceMetaInfo(dataStoreId: string, dataSourceId: string): void;
 
     showDialog(dialogId: string): void;
 
@@ -111,7 +111,6 @@ const mapDispatchToProps = {
     setSessionState: actions.setSessionProperty,
     setControlState: actions.setControlProperty,
     updateSessionState: actions.updateSessionState,
-    loadTemporalCoverage: actions.loadTemporalCoverage,
     showDialog: actions.showDialog,
     hideDialog: actions.hideDialog,
 };
@@ -260,14 +259,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
     }
 
     private handleShowOpenDatasetDialog() {
-        this.maybeLoadTemporalCoverage();
         this.props.showDialog('openDatasetDialog');
-    }
-
-    private maybeLoadTemporalCoverage() {
-        if (!this.props.selectedDataSource.temporalCoverage) {
-            this.props.loadTemporalCoverage(this.props.selectedDataStore.id, this.props.selectedDataSource.id);
-        }
     }
 
     private handleDataStoreSelected(event) {

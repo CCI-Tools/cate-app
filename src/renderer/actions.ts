@@ -41,10 +41,11 @@ import * as selectors from './selectors';
 import {
     BackendConfigState,
     ColorMapCategoryState,
-    ControlState,
+    ControlState, DatasetDescriptor,
     DataSourceState,
     DataStoreState,
-    GeographicPosition,
+    GeographicPosition, 
+    HubStatus,
     ImageStatisticsState,
     LayerState,
     MessageState,
@@ -67,6 +68,7 @@ import {
 } from './state';
 import {
     AUTO_LAYER_ID,
+    findDataSource,
     findResourceByName,
     genSimpleId,
     getCsvUrl,
@@ -137,6 +139,7 @@ export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
 export const SET_WEBAPI_CLIENT = 'SET_WEBAPI_CLIENT';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
 export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
+export const UPDATE_HUB_STATUS = 'UPDATE_HUB_STATUS';
 export const UPDATE_DIALOG_STATE = 'UPDATE_DIALOG_STATE';
 export const UPDATE_TASK_STATE = 'UPDATE_TASK_STATE';
 export const REMOVE_TASK_STATE = 'REMOVE_TASK_STATE';
@@ -312,15 +315,6 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
 
         const webAPIClient = newWebAPIClient(selectors.apiWebSocketsUrlSelector(getState()));
 
-        webAPIClient.onOpen = () => {
-            dispatch(setWebAPIClient(webAPIClient));
-            dispatch(loadBackendConfig());
-            dispatch(loadColorMaps());
-            dispatch(loadPreferences());
-            dispatch(loadDataStores());
-            dispatch(loadOperations());
-        };
-
         const formatMessage = (message: string, event: any): string => {
             if (event.message) {
                 return `${message} (${event.message})`;
@@ -329,12 +323,39 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             }
         };
 
+        /**
+         * Called to inform backend we are still alive.
+         * Hopefully avoids closing WebSocket connection.
+         */
+        const keepAlive = () => {
+            if (webAPIClient.isOpen) {
+                console.debug("calling keep_alive()");
+                webAPIClient.call('keep_alive', [])
+            }
+        };
+
+        let keepAliveTimer = null;
+
+        webAPIClient.onOpen = () => {
+            dispatch(setWebAPIClient(webAPIClient));
+            dispatch(loadBackendConfig());
+            dispatch(loadColorMaps());
+            dispatch(loadPreferences());
+            dispatch(loadDataStores());
+            dispatch(loadOperations());
+            keepAliveTimer = setInterval(keepAlive, 2500);
+        };
+
         webAPIClient.onClose = (event) => {
+            if (keepAliveTimer !== null) {
+                clearInterval(keepAliveTimer);
+            }
             const webAPIStatus = getState().communication.webAPIStatus;
             if (webAPIStatus === 'shuttingDown' || webAPIStatus === 'loggingOut') {
                 // When we are logging off, the webAPIClient is expected to close.
                 return;
             }
+            // When we end up here, the connection closed unintentionally.
             console.error('webAPIClient.onClose:', event);
             dispatch(setWebAPIStatus('closed'));
             showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
@@ -351,6 +372,10 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             showToast({type: 'warning', text: formatMessage('Warning from Cate service', event)});
         };
     };
+}
+
+export function updateHubStatus(hubStatus: HubStatus): Action {
+    return {type: UPDATE_HUB_STATUS, payload: hubStatus};
 }
 
 export function updateInitialState(initialState: Object): Action {
@@ -885,7 +910,7 @@ export function setSelectedPlacemarkId(selectedPlacemarkId: string | null): Acti
 
 export const UPDATE_DATA_STORES = 'UPDATE_DATA_STORES';
 export const UPDATE_DATA_SOURCES = 'UPDATE_DATA_SOURCES';
-export const UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE = 'UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE';
+export const UPDATE_DATA_SOURCE_META_INFO = 'UPDATE_DATA_SOURCE_META_INFO';
 
 /**
  * Asynchronously load the available Cate data stores.
@@ -987,33 +1012,54 @@ export function setSelectedDataStoreIdImpl(selectedDataStoreId: string | null) {
     return updateSessionState({selectedDataStoreId});
 }
 
-export function setSelectedDataSourceId(selectedDataSourceId: string | null) {
-    return updateSessionState({selectedDataSourceId});
+export function setSelectedDataSourceId(selectedDataSourceId: string): ThunkAction {
+    return (dispatch: Dispatch, getState: GetState) => {
+        dispatch(updateSessionState({selectedDataSourceId}));
+        const dataStoreId = getState().session.selectedDataStoreId;
+        if (dataStoreId && selectedDataSourceId) {
+            dispatch(loadDataSourceMetaInfo(dataStoreId, selectedDataSourceId));
+        }
+    }
 }
 
 export function setDataSourceFilterExpr(dataSourceFilterExpr: string) {
     return updateSessionState({dataSourceFilterExpr});
 }
 
-export function loadTemporalCoverage(dataStoreId: string, dataSourceId: string): ThunkAction {
+export function loadDataSourceMetaInfo(dataStoreId: string, dataSourceId: string): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
+        const dataStores = getState().data.dataStores;
+        if (!dataStores) {
+            return;
+        }
+        const dataSource = findDataSource(dataStores, dataStoreId, dataSourceId);
+        if (!dataSource || dataSource.metaInfoStatus !== 'init') {
+            return;
+        }
+
+        dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, undefined, 'loading'));
 
         function call(onProgress) {
-            return selectors.datasetAPISelector(getState()).getDataSourceTemporalCoverage(dataStoreId, dataSourceId, onProgress);
+            return selectors.datasetAPISelector(getState()).getDataSourceMetaInfo(dataStoreId, dataSourceId, onProgress);
         }
 
-        function action(temporalCoverage) {
-            dispatch(updateDataSourceTemporalCoverage(dataStoreId, dataSourceId, temporalCoverage));
+        function action(metaInfo: DatasetDescriptor) {
+            dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, metaInfo, 'ok'));
         }
 
-        callAPI({title: `Load temporal coverage for ${dataSourceId}`, dispatch, call, action});
+        function planB() {
+            dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, undefined, 'error'));
+        }
+
+        callAPI({title: `Loading meta data for ${dataSourceId}`, dispatch, call, action, planB});
     };
 }
 
-export function updateDataSourceTemporalCoverage(dataStoreId: string,
-                                                 dataSourceId: string,
-                                                 temporalCoverage: [string, string] | null): Action {
-    return {type: UPDATE_DATA_SOURCE_TEMPORAL_COVERAGE, payload: {dataStoreId, dataSourceId, temporalCoverage}};
+export function updateDataSourceMetaInfo(dataStoreId: string,
+                                         dataSourceId: string,
+                                         metaInfo: DatasetDescriptor | undefined,
+                                         metaInfoStatus: 'loading' | 'ok' | 'error' = 'ok'): Action {
+    return {type: UPDATE_DATA_SOURCE_META_INFO, payload: {dataStoreId, dataSourceId, metaInfo, metaInfoStatus}};
 }
 
 export function openDataset(dataSourceId: string, args: any, updateLocalDataSources: boolean): ThunkAction {
@@ -2712,4 +2758,3 @@ function readDroppedFile(file: File, dispatch: Dispatch) {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
 }
-

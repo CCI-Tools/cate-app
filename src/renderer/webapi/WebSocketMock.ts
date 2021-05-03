@@ -4,6 +4,8 @@
  * @author Norman Fomferra
  */
 export interface WebSocketMin {
+    readonly readyState: number;
+
     onclose: (this: this, ev: CloseEvent) => any;
     onerror: (this: this, ev: ErrorEvent) => any;
     onmessage: (this: this, ev: MessageEvent) => any;
@@ -52,6 +54,7 @@ export class WebSocketMock implements WebSocketMin {
     onclose: (this: this, ev: any) => any;
     readonly messageLog: string[] = [];
     readonly serviceObj: any;
+    readyState: number;
 
     // <<<< WebSocketMin implementation
     ////////////////////////////////////////////
@@ -68,6 +71,7 @@ export class WebSocketMock implements WebSocketMin {
         }
         this.serviceObj = serviceObj;
         this.asyncCalls = asyncCalls;
+        this.readyState = WebSocket.CONNECTING;
     }
 
     send(data: string) {
@@ -77,6 +81,7 @@ export class WebSocketMock implements WebSocketMin {
 
     close(code?: number, reason?: string): void {
         this.onclose({code, reason});
+        this.readyState = WebSocket.CLOSED;
     }
 
     emulateIncomingMessages(...messages: Object[]) {
@@ -95,14 +100,19 @@ export class WebSocketMock implements WebSocketMin {
 
     emulateOpen(event) {
         this.onopen(event);
+        this.readyState = WebSocket.OPEN;
     }
 
     emulateError(event) {
+        this.readyState = WebSocket.CLOSING;
         this.onerror(event);
+        this.readyState = WebSocket.CLOSED;
     }
 
     emulateClose(event) {
+        this.readyState = WebSocket.CLOSING;
         this.onclose(event);
+        this.readyState = WebSocket.CLOSED;
     }
 
     private maybeUseServiceObj(messageText) {

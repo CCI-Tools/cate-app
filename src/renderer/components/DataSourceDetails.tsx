@@ -23,20 +23,24 @@ const DataSourceDetails: React.FC<IDataSourceDetailsProps> = ({dataSource}) => {
     if (!dataSource) {
         return null;
     }
+
     let metaInfoKeys;
-    if (dataSource.metaInfo) {
-        metaInfoKeys = Object.keys(dataSource.metaInfo).filter(key => key !== 'variables');
-    }
     let variables;
-    if (dataSource.metaInfo.variables) {
-        variables = dataSource.metaInfo.variables;
+
+    const metaInfo = dataSource.metaInfo;
+
+    if (metaInfo) {
+        metaInfoKeys = Object.keys(metaInfo).filter(key => key !== 'variables');
+        if (metaInfo.variables) {
+            variables = metaInfo.variables;
+        }
     }
 
     const details: DetailPart[] = [
         renderAbstract(dataSource),
         renderVariablesTable(variables),
-        renderMetaInfoTable(dataSource.metaInfo, metaInfoKeys),
-        renderMetaInfoLicences(dataSource.metaInfo),
+        renderMetaInfoTable(metaInfo, metaInfoKeys),
+        renderMetaInfoLicences(metaInfo),
     ];
 
     return (
@@ -84,18 +88,26 @@ function renderAbstract(dataSource: DataSourceState): DetailPart {
                 </div>
             );
         }
-        if (dataSource.temporalCoverage) {
+        if (dataSource.metaInfo && dataSource.metaInfo.time_range) {
+            let [start, end] = dataSource.metaInfo.time_range;
+            if (!start && !end) {
+                start = end = 'unknown';
+            } else if (!start) {
+                start = 'unknown';
+            } else if (!end) {
+                end = 'today';
+            }
             temporalCoverage = (
                 <div><h5>Temporal coverage</h5>
                     <table>
                         <tbody>
                         <tr>
                             <td>Start</td>
-                            <td className="user-selectable">{dataSource.temporalCoverage[0]}</td>
+                            <td className="user-selectable">{start}</td>
                         </tr>
                         <tr>
                             <td>End</td>
-                            <td className="user-selectable">{dataSource.temporalCoverage[1]}</td>
+                            <td className="user-selectable">{end}</td>
                         </tr>
                         </tbody>
                     </table>
