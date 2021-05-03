@@ -44,7 +44,8 @@ import {
     ControlState, DatasetDescriptor,
     DataSourceState,
     DataStoreState,
-    GeographicPosition, HubStatus,
+    GeographicPosition, 
+    HubStatus,
     ImageStatisticsState,
     LayerState,
     MessageState,
@@ -2757,4 +2758,3 @@ function readDroppedFile(file: File, dispatch: Dispatch) {
         console.warn('Dropped file of unrecognized type: ', file.name);
     }
 }
-
