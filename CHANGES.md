@@ -5,6 +5,12 @@
 
 * In order to keep alive the connection to the Web API service,
   Cate App now sends a keepalive signal every 2.5 seconds. (#150)
+  
+* For faster opening of datasets, the value of the currently selected
+  data store `data_store_id` is now passed to the `open_dataset` 
+  operation.
+
+* Fixed a bug with user preferences not being saved correctly. (#146)
 
 * Optimisations in the DATA SOURCES panel (that have been enabled by 
   using [xcube](https://xcube.readthedocs.io/) in the backend):
