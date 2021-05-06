@@ -92,6 +92,7 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
         };
         this.props.dispatch(actions.hideDialog(OpenDatasetDialog.DIALOG_ID, dialogState));
         this.props.dispatch(actions.openDataset(
+            this.props.dataStore.id,
             this.props.dataSource.id,
             DataAccessComponent.optionsToOperationArguments(this.state.options),
             this.isRemoteDataStore && isCacheDataSourceSelected

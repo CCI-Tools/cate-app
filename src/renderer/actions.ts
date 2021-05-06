@@ -1062,12 +1062,13 @@ export function updateDataSourceMetaInfo(dataStoreId: string,
     return {type: UPDATE_DATA_SOURCE_META_INFO, payload: {dataStoreId, dataSourceId, metaInfo, metaInfoStatus}};
 }
 
-export function openDataset(dataSourceId: string, args: any, updateLocalDataSources: boolean): ThunkAction {
+export function openDataset(dataStoreId: string, dataSourceId: string, args: any, updateLocalDataSources: boolean): ThunkAction {
     return (dispatch: Dispatch) => {
 
         const opName = 'open_dataset';
         const opArgs = {
             ds_id: dataSourceId,
+            data_store_id: dataStoreId,
             ...args
         };
 
