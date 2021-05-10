@@ -15,6 +15,7 @@ import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
 import { LabelWithType } from '../components/LabelWithType';
 import { ListBox, ListBoxSelectionMode } from '../components/ListBox';
 import { Card } from '@blueprintjs/core';
+import Markdown from '../components/Markdown';
 import OperationStepDialog from './OperationStepDialog';
 import { OperationInputState, OperationOutputState, OperationState, State, WorkspaceState } from '../state';
 import * as actions from '../actions';
@@ -23,7 +24,6 @@ import { ScrollablePanelContent } from '../components/ScrollableContent';
 import { NO_OPERATIONS_FOUND } from '../messages';
 import { ToolButton } from '../components/ToolButton';
 import { NEW_OPERATION_STEP_DIALOG_ID } from './operation-step-dialog-ids';
-import { TextWithLinks } from '../components/TextWithLinks';
 
 
 interface IOperationsPanelProps {
@@ -298,7 +298,7 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
             if (operation.description) {
                 description = (
                     <p className="user-selectable">
-                        <TextWithLinks>{operation.description}</TextWithLinks>
+                        <Markdown source={operation.description}/>
                     </p>);
             }
 
@@ -309,10 +309,8 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
             if (operation.outputs && operation.outputs.length) {
                 const outputElems = operation.outputs.map(output => (
                     <li key={output.name}>
-                        <LabelWithType label={output.name} dataType={output.dataType} units={output.units}/>
-                        <span className="user-selectable">
-                            <TextWithLinks>{OperationsPanel.getOutputDescriptionText(output)}</TextWithLinks>
-                        </span>
+                        <LabelWithType label={output.name} em dataType={output.dataType} units={output.units}/>
+                        <Markdown source={OperationsPanel.getOutputDescriptionText(output)}/>
                     </li>
                 ));
                 outputs = (
@@ -329,10 +327,8 @@ class OperationsPanel extends React.Component<IOperationsPanelProps & DispatchPr
             if (operation.inputs && operation.inputs.length) {
                 const inputElems = operation.inputs.map(input => (
                     <li key={input.name}>
-                        <LabelWithType label={input.name} dataType={input.dataType} units={input.units}/>
-                        <span className="user-selectable">
-                            <TextWithLinks>{OperationsPanel.getInputDescriptionText(input)}</TextWithLinks>
-                        </span>
+                        <LabelWithType label={input.name} em dataType={input.dataType} units={input.units}/>
+                        <Markdown source={OperationsPanel.getInputDescriptionText(input)}/>
                     </li>
                 ));
                 inputs = (

@@ -4,9 +4,16 @@ import { Cell, Column, Table, TruncatedFormat } from '@blueprintjs/table';
 
 import { DataSourceState } from '../state';
 import DataSourceLinks from './DataSourceLinks';
+import Markdown from './Markdown';
 import { ScrollablePanelContent } from './ScrollableContent';
-import { TextWithLinks } from './TextWithLinks';
 
+
+const COVERAGE_PANEL_STYLE: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around'
+};
 
 interface DetailPart {
     title: string;
@@ -61,7 +68,8 @@ function renderAbstract(dataSource: DataSourceState): DetailPart {
     let temporalCoverage;
     let summary;
     if (metaInfo) {
-        if (metaInfo.bbox_miny && metaInfo.bbox_maxy && metaInfo.bbox_minx && metaInfo.bbox_maxx) {
+        if (Array.isArray(metaInfo.bbox)) {
+            const [x_min, y_min, x_max, y_max] = metaInfo.bbox;
             spatialCoverage = (
                 <div>
                     <h5>Spatial coverage</h5>
@@ -69,17 +77,17 @@ function renderAbstract(dataSource: DataSourceState): DetailPart {
                         <tbody>
                         <tr>
                             <td/>
-                            <td className="user-selectable">{metaInfo.bbox_maxy}&#176;</td>
+                            <td className="user-selectable">{y_max}&#176;</td>
                             <td/>
                         </tr>
                         <tr>
-                            <td className="user-selectable">{metaInfo.bbox_minx}&#176;</td>
+                            <td className="user-selectable">{x_min}&#176;</td>
                             <td/>
-                            <td className="user-selectable">{metaInfo.bbox_maxx}&#176;</td>
+                            <td className="user-selectable">{x_max}&#176;</td>
                         </tr>
                         <tr>
                             <td/>
-                            <td className="user-selectable">{metaInfo.bbox_miny}&#176;</td>
+                            <td className="user-selectable">{y_min}&#176;</td>
                             <td/>
                         </tr>
                         </tbody>
@@ -118,7 +126,7 @@ function renderAbstract(dataSource: DataSourceState): DetailPart {
         if (metaInfo.abstract) {
             summary = (
                 <div><h5>Summary</h5>
-                    <p className="user-selectable"><TextWithLinks>{metaInfo.abstract}</TextWithLinks></p>
+                    <Markdown source={metaInfo.abstract}/>
                 </div>
             );
         }
@@ -130,8 +138,10 @@ function renderAbstract(dataSource: DataSourceState): DetailPart {
             <ScrollablePanelContent>
                 <Card>
                     <DataSourceLinks dataSource={dataSource}/>
-                    {spatialCoverage}
-                    {temporalCoverage}
+                    <div style={COVERAGE_PANEL_STYLE}>
+                        {spatialCoverage}
+                        {temporalCoverage}
+                    </div>
                     {summary}
                 </Card>
             </ScrollablePanelContent>
@@ -225,7 +235,7 @@ function renderMetaInfoLicences(metaInfo: any): DetailPart {
     if (metaInfo && metaInfo.licences) {
         element = (
             <div>
-                <p className="user-selectable"><TextWithLinks>{metaInfo.licences}</TextWithLinks></p>
+                <Markdown source={metaInfo.licences}/>
             </div>
         );
     } else {

@@ -27,9 +27,14 @@
   repository [cate-status](https://github.com/CCI-Tools/cate-status).
   
 * Adapted to changed cate-hub API. (An API response no longer has 
-  `status` and `result` properties, instead a response _is_ the result
+  `status` and `result` properties, instead a response _is_ the result,
   and the response status is represented by the HTTP response code.)
 
+* Improved rendering of text in many places by making it user-selectable 
+  and interpreting it as markdown:
+    - Data source abstract in the DATA SOURCES details panel:
+    - Operation description in OPERATIONS panel.
+    
 
 ### Changes 2.2.3
 

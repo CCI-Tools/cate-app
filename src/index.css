@@ -38,7 +38,7 @@ body, #root {
  * A class used to mark elements that are user-selectable
  */
 .user-selectable {
-    user-select: auto;
+    user-select: text;
 }
 
 /*
