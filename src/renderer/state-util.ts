@@ -96,7 +96,7 @@ export function getDataSourceUrls(dataSource: DataSourceState): DataSourceUrls {
         if (!catalogUrl && dataSource.id.includes("esacci") && metaInfo.uuid) {
             catalogUrl = `https://catalogue.ceda.ac.uk/uuid/${metaInfo.uuid}`;
         }
-        infoUrl = metaInfo.info_url || metaInfo.url;
+        infoUrl = metaInfo.info_url;
     }
     return {catalogUrl, infoUrl};
 }

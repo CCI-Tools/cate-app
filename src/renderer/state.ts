@@ -111,7 +111,7 @@ export interface DatasetDescriptor {
     title?: string;
     uuid?: string;
     // Anything else:
-    [attr_name: string]: any;
+    // [attr_name: string]: any;
 }
 
 export interface VariableDescriptor {

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { CSSProperties } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { connect } from 'react-redux';
 import {
     ButtonGroup,
@@ -9,7 +8,6 @@ import {
     Checkbox,
     Classes,
     Collapse,
-    Colors,
     HTMLSelect,
     IconName,
     InputGroup,
@@ -27,6 +25,7 @@ import { ContentWithDetailsPanel } from '../components/ContentWithDetailsPanel';
 import DataSourceDetails from '../components/DataSourceDetails';
 import DataSourcesList from '../components/DataSourcesList';
 import DataSourceOpenHint from '../components/DataSourceOpenHint';
+import Markdown from '../components/Markdown';
 import { ToolButton } from '../components/ToolButton';
 import { DATA_SOURCES_LOADING, NO_DATA_SOURCES_FOUND, NO_DATA_STORES_FOUND, NO_LOCAL_DATA_SOURCES } from '../messages';
 
@@ -334,7 +333,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             dataStoreDescriptionElement = (
                 <Collapse isOpen={showDataStoreDescription}>
                     <Card>
-                        {this.renderMarkdown(selectedDataStore.description)}
+                        <Markdown source={selectedDataStore.description}/>
                     </Card>
                 </Collapse>
             );
@@ -351,7 +350,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
                             icon={notice.icon as IconName}
                             intent={notice.intent in INTENTS ? INTENTS[notice.intent] : Intent.NONE}
                         >
-                            {this.renderMarkdown(notice.content)}
+                            <Markdown source={notice.content}/>
                         </Callout>
                     </div>
                 );
@@ -426,47 +425,6 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
             }
         }
     }
-
-    //noinspection JSMethodCanBeStatic
-    private renderMarkdown(source: string) {
-        return <ReactMarkdown renderers={MARKDOWN_RENDERERS} source={source}/>
-    }
 }
-
-/**
- * Allow Markdown text elements to be user-selectable.
- */
-class MarkdownText extends React.PureComponent<any> {
-    render() {
-        return <span className="user-selectable">{this.props.value}</span>
-    }
-}
-
-/**
- * Allow Markdown inline code elements to be user-selectable.
- */
-class MarkdownInlineCode extends React.PureComponent<any> {
-    static readonly SPAN_STYLE = {
-        fontFamily: 'Source Code Pro, Consolas, monospace',
-        color: Colors.LIGHT_GRAY1,
-    };
-
-    render() {
-        return <span className="user-selectable" style={MarkdownInlineCode.SPAN_STYLE}>{this.props.value}</span>
-    }
-}
-
-/**
- * Allow Markdown code elements to be user-selectable.
- */
-class MarkdownCode extends React.PureComponent<any> {
-
-    render() {
-        return <pre className="user-selectable">{this.props.value}</pre>
-    }
-}
-
-const MARKDOWN_RENDERERS = {text: MarkdownText, inlineCode: MarkdownInlineCode, code: MarkdownCode};
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataSourcesPanel as any);
