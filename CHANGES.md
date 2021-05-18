@@ -14,14 +14,15 @@
 
 * Optimisations in the DATA SOURCES panel (that have been enabled by 
   using [xcube](https://xcube.readthedocs.io/) in the backend):
-  - Initalising the "CCI Open Data Portal" data store
-    is now accellerated by a magnitude.
+  - Initialising the "CCI Open Data Portal" data store
+    is now accelerated by a magnitude.
   - Local caching of remote data sources when opening datasets 
     is now much faster and more reliable.
   - Added new experimental store "CCI Zarr Store" that offers
     selected CCI datasets that have been converted to Zarr format 
     and are read from JASMIN object storage.
   - Ability to add more data stores has been greatly improved.
+  - Fixed icons and labels for some new CCI ECVs.
 
 * We now obtain Cate Hub's status information from a dedicated GitHub 
   repository [cate-status](https://github.com/CCI-Tools/cate-status).

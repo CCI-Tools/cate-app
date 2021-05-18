@@ -20,6 +20,11 @@
       "color": "ecv_blue",
       "label": "OZ"
     },
+    "biomass": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "BIO"
+    },
     "fire": {
       "group": "terrestrial",
       "color": "ecv_orange",
@@ -35,10 +40,20 @@
       "color": "ecv_orange",
       "label": "LC"
     },
+    "permafrost": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "PF"
+    },
     "soilmoisture": {
       "group": "terrestrial",
       "color": "ecv_orange",
       "label": "SM"
+    },
+    "snow": {
+      "group": "terrestrial",
+      "color": "ecv_orange",
+      "label": "SNW"
     },
     "ghrsst": {
       "group": "ocean",
