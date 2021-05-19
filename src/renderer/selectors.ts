@@ -471,6 +471,31 @@ export const canMapDataSourceSelector = createSelector<State, boolean, DataSourc
         return selectedDataSource ? canMapDataSource(selectedDataSource) : false;
     }
 );
+export const canConstrainDataSourceTimeSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        // TODO (forman): implement me! (check time data vars/dims)
+        return true;
+    }
+);
+export const canConstrainDataSourceRegionSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        // TODO (forman): implement me! (check spatial data vars/dims)
+        return selectedDataSource ? canMapDataSource(selectedDataSource) : false;
+    }
+);
+export const canConstrainDataSourceVariablesSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        if (selectedDataSource
+            && selectedDataSource.metaInfo
+            && selectedDataSource.metaInfo.variables) {
+            return selectedDataSource.metaInfo.variables.length > 1;
+        }
+        return false;
+    }
+);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Workspace, resource, step, and variable selectors

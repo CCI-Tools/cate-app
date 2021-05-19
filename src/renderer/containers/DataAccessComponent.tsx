@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { Checkbox, Collapse, InputGroup, Label, Tooltip } from '@blueprintjs/core';
+import * as React from 'react';
 
 import * as types from '../../common/cate-types';
 import { formatDateAsISODateString } from '../../common/format';
@@ -37,7 +37,9 @@ export interface IDataAccessComponentProps {
     dataSource: DataSourceState | null;
     isLocalDataSource: boolean;
     temporalCoverage: TimeRangeValue | null;
-    canMap: boolean;
+    canConstrainRegion: boolean;
+    canConstrainTime: boolean;
+    canConstrainVariables: boolean;
     canCache: boolean;
 }
 
@@ -125,75 +127,72 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         if (!this.props.dataSource) {
             return null;
         }
-        const temporalCoverage = this.props.temporalCoverage;
-        const minDate = temporalCoverage && temporalCoverage[0] ? new Date(temporalCoverage[0]) : new Date('1980-01-01');
-        const maxDate = temporalCoverage && temporalCoverage[1] ? new Date(temporalCoverage[1]) : new Date(Date.now());
-        let temporalCoverageText;
-        if (temporalCoverage) {
-            temporalCoverageText = <div>Data availability: {temporalCoverage.join(', ')}</div>;
-        }
-
         const options = this.props.options;
-        const hasTimeConstraint = options.hasTimeConstraint;
-        const dateRange = hasTimeConstraint ? options.dateRange : null;
 
-        const hasRegionConstraint = options.hasRegionConstraint;
-        const region = hasRegionConstraint ? options.region || GLOBAL : options.region;
+        // TODO (forman): turn following into components
 
-        const hasVariablesConstraint = options.hasVariablesConstraint;
-        const isLocalDataSource = this.props.isLocalDataSource;
-        const isRemoteDataSource = !isLocalDataSource;
-        const isMakeLocalSelected = isRemoteDataSource && options.isCacheDataSourceSelected;
+        let timeConstraintsPanel;
+        if (this.props.canConstrainTime) {
+            const temporalCoverage = this.props.temporalCoverage;
+            const minDate = temporalCoverage && temporalCoverage[0] ? new Date(temporalCoverage[0]) : new Date('1980-01-01');
+            const maxDate = temporalCoverage && temporalCoverage[1] ? new Date(temporalCoverage[1]) : new Date(Date.now());
+            let temporalCoverageText;
+            if (temporalCoverage) {
+                temporalCoverageText = <div>Data availability: {temporalCoverage.join(', ')}</div>;
 
-        const res = DataAccessComponent.dataSourceToResource(this.props.dataSource);
-
-        return (
-            <div>
-                {isLocalDataSource
-                 ? (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>)
-                 : (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>)
-                }
-
+            }
+            const hasTimeConstraint = options.hasTimeConstraint;
+            const dateRange = hasTimeConstraint ? options.dateRange : null;
+            timeConstraintsPanel = (<div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                <Checkbox
+                    disabled={!temporalCoverage}
+                    checked={hasTimeConstraint}
+                    label="Time constraint"
+                    onChange={this.onHasTimeConstraintChange}
+                />
+                <Collapse isOpen={hasTimeConstraint}>
+                    <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                        <DateRangeField
+                            nullable={true}
+                            min={minDate}
+                            max={maxDate}
+                            value={dateRange}
+                            onChange={this.onDateRangeChange}
+                        />
+                        {temporalCoverageText}
+                    </div>
+                </Collapse>
+            </div>);
+        }
+        let regionConstraintsPanel;
+        if (this.props.canConstrainRegion) {
+            const hasRegionConstraint = options.hasRegionConstraint;
+            const region = hasRegionConstraint ? options.region || GLOBAL : options.region;
+            regionConstraintsPanel = (
                 <div style={DataAccessComponent.SUB_PANEL_STYLE}>
                     <Checkbox
-                        disabled={!temporalCoverage}
-                        checked={hasTimeConstraint}
-                        label="Time constraint"
-                        onChange={this.onHasTimeConstraintChange}
+                        checked={hasRegionConstraint}
+                        label="Region constraint"
+                        onChange={this.onHasRegionConstraintChange}
                     />
-                    <Collapse isOpen={hasTimeConstraint}>
+                    <Collapse isOpen={hasRegionConstraint}>
                         <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                            <DateRangeField
-                                nullable={true}
-                                min={minDate}
-                                max={maxDate}
-                                value={dateRange}
-                                onChange={this.onDateRangeChange}
+                            <Region
+                                value={region}
+                                disabled={!hasRegionConstraint}
+                                onChange={this.onRegionChange}
                             />
-                            {temporalCoverageText}
                         </div>
                     </Collapse>
                 </div>
+            );
+        }
 
-                {this.props.canMap && (
-                    <div style={DataAccessComponent.SUB_PANEL_STYLE}>
-                        <Checkbox
-                            checked={hasRegionConstraint}
-                            label="Region constraint"
-                            onChange={this.onHasRegionConstraintChange}
-                        />
-                        <Collapse isOpen={hasRegionConstraint}>
-                            <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                                <Region
-                                    value={region}
-                                    disabled={!hasRegionConstraint}
-                                    onChange={this.onRegionChange}
-                                />
-                            </div>
-                        </Collapse>
-                    </div>
-                )}
-
+        let variablesConstraintPanel;
+        if (this.props.canConstrainVariables) {
+            const hasVariablesConstraint = options.hasVariablesConstraint;
+            const res = DataAccessComponent.dataSourceToResource(this.props.dataSource);
+            variablesConstraintPanel = (
                 <div style={DataAccessComponent.SUB_PANEL_STYLE}>
                     <Checkbox
                         checked={hasVariablesConstraint}
@@ -210,34 +209,51 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                         </div>
                     </Collapse>
                 </div>
+            );
+        }
 
-                {this.props.canCache && (
-                    <div style={DataAccessComponent.SUB_PANEL_STYLE}>
-                        <Tooltip content={"If unchecked, remote data will be accessed " +
-                                          "using an available protocol, e.g. OPeNDAP."}>
-                            <Checkbox
-                                checked={isMakeLocalSelected}
-                                label="Cache data source (allocates space on disk)"
-                                onChange={this.onMakeLocalSelectedChange}
-                            />
-                        </Tooltip>
-                        <Collapse isOpen={isMakeLocalSelected}>
-                            <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                                <Label>
-                                    Unique identifier for the new local data source
-                                    <span className="bp3-text-muted"> (optional)</span>
-                                    <InputGroup
-                                        style={{width: '100%'}}
-                                        type="text"
-                                        value={options.cachedDataSourceId}
-                                        onChange={this.onMakeLocalDataSourceIdChange}
-                                    />
-                                </Label>
-                            </div>
-                        </Collapse>
-                    </div>
-                )}
-                {/*{openDatasetResourceNamePanel}*/}
+        let cacheConfigPanel;
+        if (this.props.canCache && !this.props.isLocalDataSource) {
+            const isMakeLocalSelected = options.isCacheDataSourceSelected;
+            cacheConfigPanel = (<div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                    <Tooltip content={"If unchecked, remote data will be accessed " +
+                                      "using an available protocol, e.g. OPeNDAP."}>
+                        <Checkbox
+                            checked={isMakeLocalSelected}
+                            label="Cache data source (allocates space on disk)"
+                            onChange={this.onMakeLocalSelectedChange}
+                        />
+                    </Tooltip>
+                    <Collapse isOpen={isMakeLocalSelected}>
+                        <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                            <Label>
+                                Unique identifier for the new local data source
+                                <span className="bp3-text-muted"> (optional)</span>
+                                <InputGroup
+                                    style={{width: '100%'}}
+                                    type="text"
+                                    value={options.cachedDataSourceId}
+                                    onChange={this.onMakeLocalDataSourceIdChange}
+                                />
+                            </Label>
+                        </div>
+                    </Collapse>
+                </div>
+            );
+        }
+
+        return (
+            <div>
+                {this.props.isLocalDataSource
+                 ? (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>)
+                 : (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>)
+                }
+
+                {timeConstraintsPanel}
+                {regionConstraintsPanel}
+                {variablesConstraintPanel}
+                {cacheConfigPanel}
+                {/*{resourceNamePanel}*/}
             </div>
         );
     }
