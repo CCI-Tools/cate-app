@@ -39,7 +39,7 @@ import {
     WorldViewDataState
 } from './state';
 import { JobStatusEnum, WebAPIClient } from './webapi';
-import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi/apis';
+import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi';
 import { PanelContainerLayout } from './components/PanelContainer';
 import {
     EXTERNAL_OBJECT_STORE,
@@ -471,29 +471,42 @@ export const canMapDataSourceSelector = createSelector<State, boolean, DataSourc
         return selectedDataSource ? canMapDataSource(selectedDataSource) : false;
     }
 );
+
 export const canConstrainDataSourceTimeSelector = createSelector<State, boolean, DataSourceState | null>(
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
-        // TODO (forman): implement me! (check time data vars/dims)
-        return true;
+        return (selectedDataSource
+                && !!selectedDataSource.metaInfo
+                && !!selectedDataSource.metaInfo.data_vars
+                && !!selectedDataSource.metaInfo.data_vars.find(v => v.dims && v.dims.find(d => d === 'time'))
+                && !!selectedDataSource.metaInfo.coords
+                && !!selectedDataSource.metaInfo.coords.find(v => v.name === 'time'));
     }
 );
+
 export const canConstrainDataSourceRegionSelector = createSelector<State, boolean, DataSourceState | null>(
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
-        // TODO (forman): implement me! (check spatial data vars/dims)
-        return selectedDataSource ? canMapDataSource(selectedDataSource) : false;
+        if (selectedDataSource && canMapDataSource(selectedDataSource)) {
+            return true;
+        }
+        return (selectedDataSource
+                && !!selectedDataSource.metaInfo
+                && !!selectedDataSource.metaInfo.data_vars
+                && !!selectedDataSource.metaInfo.data_vars.find(v => v.dims && v.dims.slice(v.dims.length - 2) === ['lat', 'lon'])
+                && !!selectedDataSource.metaInfo.coords
+                && !!selectedDataSource.metaInfo.coords.find(v => v.name === 'lat')
+                && !!selectedDataSource.metaInfo.coords.find(v => v.name === 'lon'));
     }
 );
+
 export const canConstrainDataSourceVariablesSelector = createSelector<State, boolean, DataSourceState | null>(
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
-        if (selectedDataSource
-            && selectedDataSource.metaInfo
-            && selectedDataSource.metaInfo.variables) {
-            return selectedDataSource.metaInfo.variables.length > 1;
-        }
-        return false;
+        return selectedDataSource
+               && selectedDataSource.metaInfo
+               && selectedDataSource.metaInfo.data_vars
+               && selectedDataSource.metaInfo.data_vars.length > 1;
     }
 );
 

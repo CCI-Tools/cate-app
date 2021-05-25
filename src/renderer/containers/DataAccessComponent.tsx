@@ -112,11 +112,11 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
     private static dataSourceToResource(dataSource: DataSourceState): ResourceState {
         if (dataSource) {
             const metaInfo = dataSource.metaInfo;
-            if (metaInfo && metaInfo.variables && metaInfo.variables.length) {
+            if (metaInfo && metaInfo.data_vars && metaInfo.data_vars.length) {
                 return {
                     name: dataSource.id,
                     dataType: types.DATASET_TYPE,
-                    variables: metaInfo.variables.map(v => DataAccessComponent.dataSourceVarToVariable(v)),
+                    variables: metaInfo.data_vars.map(v => DataAccessComponent.dataSourceVarToVariable(v)),
                 } as ResourceState;
             }
         }

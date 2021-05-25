@@ -101,7 +101,8 @@ export interface DatasetDescriptor {
     spatial_res?: number;
     time_range?: [string | null, string | null];
     time_period?: string;
-    variables?: VariableDescriptor[];
+    data_vars?: VariableDescriptor[];
+    coords?: VariableDescriptor[];
     abstract?: string;
     catalog_url?: string;
     catalogue_url?: string;
@@ -119,6 +120,7 @@ export interface VariableDescriptor {
     units?: string;
     long_name?: string;
     standard_name?: string;
+    dims?: string[];
 }
 
 // TODO: (forman) use this in the future instead of DatasetDescriptor/VariableDescriptor
