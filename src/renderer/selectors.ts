@@ -5,9 +5,9 @@ import { requireElectron } from './electron';
 import {
     canCacheDataSource,
     canMapDataSource,
-    canOpenDataSource,
+    canOpenDataSource, canConstrainDataSourceRegion, canConstrainDataSourceTime,
     DEFAULT_BASE_MAP,
-    DEFAULT_BASE_MAP_ID
+    DEFAULT_BASE_MAP_ID, canConstrainDataSourceVariables
 } from './state-util';
 import {
     BaseMapState,
@@ -475,38 +475,21 @@ export const canMapDataSourceSelector = createSelector<State, boolean, DataSourc
 export const canConstrainDataSourceTimeSelector = createSelector<State, boolean, DataSourceState | null>(
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
-        return (selectedDataSource
-                && !!selectedDataSource.metaInfo
-                && !!selectedDataSource.metaInfo.data_vars
-                && !!selectedDataSource.metaInfo.data_vars.find(v => v.dims && v.dims.find(d => d === 'time'))
-                && !!selectedDataSource.metaInfo.coords
-                && !!selectedDataSource.metaInfo.coords.find(v => v.name === 'time'));
+        return selectedDataSource && canConstrainDataSourceTime(selectedDataSource);
     }
 );
 
 export const canConstrainDataSourceRegionSelector = createSelector<State, boolean, DataSourceState | null>(
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
-        if (selectedDataSource && canMapDataSource(selectedDataSource)) {
-            return true;
-        }
-        return (selectedDataSource
-                && !!selectedDataSource.metaInfo
-                && !!selectedDataSource.metaInfo.data_vars
-                && !!selectedDataSource.metaInfo.data_vars.find(v => v.dims && v.dims.slice(v.dims.length - 2) === ['lat', 'lon'])
-                && !!selectedDataSource.metaInfo.coords
-                && !!selectedDataSource.metaInfo.coords.find(v => v.name === 'lat')
-                && !!selectedDataSource.metaInfo.coords.find(v => v.name === 'lon'));
+        return selectedDataSource && canConstrainDataSourceRegion(selectedDataSource);
     }
 );
 
 export const canConstrainDataSourceVariablesSelector = createSelector<State, boolean, DataSourceState | null>(
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
-        return selectedDataSource
-               && selectedDataSource.metaInfo
-               && selectedDataSource.metaInfo.data_vars
-               && selectedDataSource.metaInfo.data_vars.length > 1;
+        return selectedDataSource && canConstrainDataSourceVariables(selectedDataSource);
     }
 );
 

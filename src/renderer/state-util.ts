@@ -2,7 +2,12 @@ import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
 
 import {
-    AnimationViewDataState, BaseMapState, DataSourceState, DataSourceVerificationFlags, DataStoreState,
+    AnimationViewDataState,
+    BaseMapState,
+    DatasetDescriptor,
+    DataSourceState,
+    DataSourceCapability,
+    DataStoreState,
     DimSizes,
     FigureViewDataState,
     LayerState,
@@ -15,7 +20,7 @@ import {
     SavedLayers,
     SPLIT_MODE_OFF,
     TableViewDataState,
-    VariableDataRefState,
+    VariableDataRefState, VariableDescriptor,
     VariableImageLayerState,
     VariableRefState,
     VariableState,
@@ -101,22 +106,66 @@ export function getDataSourceUrls(dataSource: DataSourceState): DataSourceUrls {
     return {catalogUrl, infoUrl};
 }
 
+/**
+ * Compute capabilities for data source.
+ * This function is actually invoked for any data source NOT originating from CCI ODP data store.
+ * @param dsd a data source's DatasetDescriptor
+ */
+export function computeDataSourceCapabilities(dsd: DatasetDescriptor): DataSourceCapability[] {
+    const canSubsetTime = isCoord1DInDataset(dsd, 'time');
+    const canSubsetRegion = isCoord1DInDataset(dsd, 'lon')
+                            && isCoord1DInDataset(dsd, 'lat');
+    if (canSubsetTime && canSubsetRegion) {
+        return ["open", "open_time", "open_region"];
+    } else if (canSubsetTime) {
+        return ["open", "open_time"]
+    } else if (canSubsetRegion) {
+        return ["open", "open_region"]
+    }
+    return ["open"];
+}
+
+function isCoord1DInDataset(dsd: DatasetDescriptor, name: string): boolean {
+    return !!(dsd.coords && dsd.coords.find(c => isCoord1D(c, name)));
+}
+
+function isCoord1D(c: VariableDescriptor, name: string): boolean {
+    return c.name === name
+           && !!c.dims
+           && c.dims.length === 1
+           && !!c.dims.find(d => d === name);
+}
+
 export function canOpenDataSource(dataSource: DataSourceState) {
-    return _checkDataSource(dataSource, 'open', 'map', 'cache');
+    return _checkDataSource(dataSource, 'open', 'open_region', 'open_time', 'cache');
 }
 
 export function canCacheDataSource(dataSource: DataSourceState) {
     return _checkDataSource(dataSource, 'cache');
 }
 
-export function canMapDataSource(dataSource: DataSourceState) {
-    return _checkDataSource(dataSource, 'map');
+export function canConstrainDataSourceTime(dataSource: DataSourceState) {
+    return _checkDataSource(dataSource, 'open_time');
 }
 
-function _checkDataSource(dataSource: DataSourceState, ...flags: DataSourceVerificationFlags[]): boolean {
-    if (Array.isArray(dataSource.verificationFlags)) {
-        // dataSource.verificationFlags have been introduced for ESA CCI datasets only
-        const s = new Set<string>(dataSource.verificationFlags);
+export function canConstrainDataSourceRegion(dataSource: DataSourceState) {
+    return _checkDataSource(dataSource, 'open_region');
+}
+
+export function canMapDataSource(dataSource: DataSourceState) {
+    return _checkDataSource(dataSource, 'open_region');
+}
+
+export function canConstrainDataSourceVariables(dataSource: DataSourceState) {
+    return dataSource.metaInfo
+           && dataSource.metaInfo.data_vars
+           && dataSource.metaInfo.data_vars.length > 1;
+}
+
+function _checkDataSource(dataSource: DataSourceState, ...flags: DataSourceCapability[]): boolean {
+    if (Array.isArray(dataSource.capabilities)) {
+        // dataSource.capabilities have been introduced for ESA CCI datasets only
+        const s = new Set<string>(dataSource.capabilities);
         for (let flag of flags) {
             if (s.has(flag)) {
                 return true;

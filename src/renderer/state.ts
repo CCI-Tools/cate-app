@@ -90,7 +90,7 @@ export interface DataStoreState {
     dataSources?: DataSourceState[] | null;
 }
 
-export type DataSourceVerificationFlags = "open" | "cache" | "map";
+export type DataSourceCapability = "open" | "cache" | "open_time" | "open_region";
 
 
 export interface DatasetDescriptor {
@@ -154,6 +154,7 @@ export interface VariableDescriptor2 {
     chunks?: number[] | null;
     attrs?: { [attr_name: string]: any } | null;
 }
+
 // }}}}}}}}}}}}
 
 
@@ -167,7 +168,7 @@ export interface DataSourceState {
     // descriptor?: DatasetDescriptor2 | GeoDataFrameDescriptor2;
     // descriptorStatus: 'init' | 'loading' | 'ok' | 'error';
     typeSpecifier?: string | null;
-    verificationFlags?: DataSourceVerificationFlags[] | null;
+    capabilities?: DataSourceCapability[] | null;
     temporalCoverage?: [string, string] | null;
 }
 

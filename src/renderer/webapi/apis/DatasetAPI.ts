@@ -59,7 +59,7 @@ export class DatasetAPI {
                 id: dataSource['id'],
                 title: dataSource['title'],
                 typeSpecifier: dataSource['type_specifier'] || 'dataset',
-                verificationFlags: dataSource['verification_flags'],
+                capabilities: dataSource['verification_flags'],
                 metaInfoStatus: 'init',
             };
         });
