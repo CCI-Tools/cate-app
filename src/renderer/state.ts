@@ -90,7 +90,11 @@ export interface DataStoreState {
     dataSources?: DataSourceState[] | null;
 }
 
-export type DataSourceCapability = "open" | "cache" | "open_time" | "open_region";
+export type DataSourceCapability =
+    "open"
+    | "write_zarr"
+    | "constrain_time"
+    | "constrain_region";
 
 
 export interface DatasetDescriptor {

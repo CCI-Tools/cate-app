@@ -3,11 +3,14 @@ import * as Cesium from 'cesium';
 
 import { requireElectron } from './electron';
 import {
+    canOpenDataSource,
     canCacheDataSource,
     canMapDataSource,
-    canOpenDataSource, canConstrainDataSourceRegion, canConstrainDataSourceTime,
+    canConstrainDataSourceRegion,
+    canConstrainDataSourceTime,
+    canConstrainDataSourceVariables,
     DEFAULT_BASE_MAP,
-    DEFAULT_BASE_MAP_ID, canConstrainDataSourceVariables
+    DEFAULT_BASE_MAP_ID,
 } from './state-util';
 import {
     BaseMapState,
