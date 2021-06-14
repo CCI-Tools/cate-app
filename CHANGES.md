@@ -22,6 +22,8 @@
     selected CCI datasets that have been converted to Zarr format 
     and are read from JASMIN object storage.
   - Ability to add more data stores has been greatly improved.
+  - Enhanced the "Open Dataset" dialog by messages that tell
+    why a certain constraint is not (yet) available.
   - Fixed icons and labels for some new CCI ECVs.
 
 * We now obtain Cate Hub's status information from a dedicated GitHub 

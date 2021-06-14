@@ -1,4 +1,14 @@
-import { Checkbox, Collapse, InputGroup, Label, Tooltip } from '@blueprintjs/core';
+import {
+    Card,
+    Checkbox,
+    Collapse,
+    InputGroup,
+    Intent,
+    Label,
+    Tooltip,
+    Icon,
+} from '@blueprintjs/core';
+import { IconNames } from '@blueprintjs/icons';
 import * as React from 'react';
 
 import * as types from '../../common/cate-types';
@@ -9,7 +19,6 @@ import LongIdLabel from '../components/LongIdLabel';
 import { GLOBAL, Region, RegionValue } from '../components/Region';
 import { DataSourceState, ResourceState, VariableState } from '../state';
 import { VarNameValueEditor } from './editor/VarNameValueEditor';
-
 
 type TimeRangeValue = [string, string];
 
@@ -43,6 +52,21 @@ export interface IDataAccessComponentProps {
     canCache: boolean;
 }
 
+
+const WARNINGS_PANEL_STYLE: React.CSSProperties = {
+    marginTop: 8,
+    marginBottom: 8,
+};
+
+
+const WARNING_ICON = (<Icon icon={IconNames.WARNING_SIGN} intent={Intent.WARNING}/>);
+const ERROR_ICON = (<Icon icon={IconNames.ERROR} intent={Intent.DANGER}/>);
+const ISSUE_ICON = (<Icon icon={IconNames.ISSUE} intent={Intent.PRIMARY}/>);
+
+const TIME_RANGE_STYLE: React.CSSProperties = {
+    marginTop: 4,
+    marginBottom: 4,
+};
 
 /**
  * A components that yields IDataAccessComponentOptions as value.
@@ -129,88 +153,92 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
         }
         const options = this.props.options;
 
-        // TODO (forman): turn following into components
+        // TODO (forman): turn timeConstraintsPanel,
+        //      regionConstraintsPanel,
+        //      variablesConstraintPanel into components
 
-        let timeConstraintsPanel;
-        if (this.props.canConstrainTime) {
-            const temporalCoverage = this.props.temporalCoverage;
-            const minDate = temporalCoverage && temporalCoverage[0] ? new Date(temporalCoverage[0]) : new Date('1980-01-01');
-            const maxDate = temporalCoverage && temporalCoverage[1] ? new Date(temporalCoverage[1]) : new Date(Date.now());
-            let temporalCoverageText;
-            if (temporalCoverage) {
-                temporalCoverageText = <div>Data availability: {temporalCoverage.join(', ')}</div>;
-
+        let minDate = new Date('1970-01-01');
+        let maxDate = new Date(Date.now());
+        const temporalCoverage = this.props.temporalCoverage;
+        if (temporalCoverage) {
+            if (temporalCoverage[0]) {
+                minDate = new Date(temporalCoverage[0]);
             }
-            const hasTimeConstraint = options.hasTimeConstraint;
-            const dateRange = hasTimeConstraint ? options.dateRange : null;
-            timeConstraintsPanel = (<div style={DataAccessComponent.SUB_PANEL_STYLE}>
+            if (temporalCoverage[1]) {
+                maxDate = new Date(temporalCoverage[1]);
+            }
+        }
+
+        const temporalCoverageText = temporalCoverage && (
+            <div style={TIME_RANGE_STYLE}>{`Available time range: ${temporalCoverage.join(', ')}`}</div>
+        );
+
+        const hasTimeConstraint = options.hasTimeConstraint;
+        const dateRange = hasTimeConstraint ? options.dateRange : null;
+        const timeConstraintsPanel = (<div style={DataAccessComponent.SUB_PANEL_STYLE}>
+            <Checkbox
+                disabled={!temporalCoverage || !this.props.canConstrainTime}
+                checked={hasTimeConstraint}
+                label="Time constraint"
+                onChange={this.onHasTimeConstraintChange}
+            />
+            <Collapse isOpen={hasTimeConstraint}>
+                <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                    <DateRangeField
+                        nullable={true}
+                        min={minDate}
+                        max={maxDate}
+                        value={dateRange}
+                        onChange={this.onDateRangeChange}
+                    />
+                    {temporalCoverageText}
+                </div>
+            </Collapse>
+        </div>);
+
+        const hasRegionConstraint = options.hasRegionConstraint;
+        const region = hasRegionConstraint ? options.region || GLOBAL : options.region;
+        const regionConstraintsPanel = (
+            <div style={DataAccessComponent.SUB_PANEL_STYLE}>
                 <Checkbox
-                    disabled={!temporalCoverage}
-                    checked={hasTimeConstraint}
-                    label="Time constraint"
-                    onChange={this.onHasTimeConstraintChange}
+                    disabled={!this.props.canConstrainRegion}
+                    checked={hasRegionConstraint}
+                    label="Region constraint"
+                    onChange={this.onHasRegionConstraintChange}
                 />
-                <Collapse isOpen={hasTimeConstraint}>
+                <Collapse isOpen={this.props.canConstrainRegion && hasRegionConstraint}>
                     <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                        <DateRangeField
-                            nullable={true}
-                            min={minDate}
-                            max={maxDate}
-                            value={dateRange}
-                            onChange={this.onDateRangeChange}
+                        <Region
+                            value={region}
+                            disabled={!hasRegionConstraint}
+                            onChange={this.onRegionChange}
                         />
-                        {temporalCoverageText}
                     </div>
                 </Collapse>
-            </div>);
-        }
-        let regionConstraintsPanel;
-        if (this.props.canConstrainRegion) {
-            const hasRegionConstraint = options.hasRegionConstraint;
-            const region = hasRegionConstraint ? options.region || GLOBAL : options.region;
-            regionConstraintsPanel = (
-                <div style={DataAccessComponent.SUB_PANEL_STYLE}>
-                    <Checkbox
-                        checked={hasRegionConstraint}
-                        label="Region constraint"
-                        onChange={this.onHasRegionConstraintChange}
-                    />
-                    <Collapse isOpen={hasRegionConstraint}>
-                        <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                            <Region
-                                value={region}
-                                disabled={!hasRegionConstraint}
-                                onChange={this.onRegionChange}
-                            />
-                        </div>
-                    </Collapse>
-                </div>
-            );
-        }
+            </div>
+        );
 
-        let variablesConstraintPanel;
-        if (this.props.canConstrainVariables) {
-            const hasVariablesConstraint = options.hasVariablesConstraint;
-            const res = DataAccessComponent.dataSourceToResource(this.props.dataSource);
-            variablesConstraintPanel = (
-                <div style={DataAccessComponent.SUB_PANEL_STYLE}>
-                    <Checkbox
-                        checked={hasVariablesConstraint}
-                        label="Variables constraint"
-                        onChange={this.onHasVariablesConstraintChange}
-                    />
-                    <Collapse isOpen={hasVariablesConstraint}>
-                        <div style={DataAccessComponent.OPTION_DIV_STYLE}>
-                            <VarNameValueEditor input={DataAccessComponent.VAR_NAMES_INPUT}
-                                                value={options.variableNames}
-                                                onChange={this.onVariableNamesChange}
-                                                resource={res}
-                                                multi={true}/>
-                        </div>
-                    </Collapse>
-                </div>
-            );
-        }
+        const hasVariablesConstraint = options.hasVariablesConstraint;
+        const res = DataAccessComponent.dataSourceToResource(this.props.dataSource);
+        const variablesConstraintPanel = (
+            <div style={DataAccessComponent.SUB_PANEL_STYLE}>
+                <Checkbox
+                    disabled={!this.props.canConstrainVariables}
+                    checked={hasVariablesConstraint}
+                    label="Variables constraint"
+                    onChange={this.onHasVariablesConstraintChange}
+                />
+                <Collapse isOpen={hasVariablesConstraint}>
+                    <div style={DataAccessComponent.OPTION_DIV_STYLE}>
+                        <VarNameValueEditor input={DataAccessComponent.VAR_NAMES_INPUT}
+                                            value={options.variableNames}
+                                            onChange={this.onVariableNamesChange}
+                                            resource={res}
+                                            multi={true}/>
+                    </div>
+                </Collapse>
+            </div>
+        );
 
         let cacheConfigPanel;
         if (this.props.canCache && !this.props.isLocalDataSource) {
@@ -242,18 +270,51 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
             );
         }
 
+        const messages: Array<[React.ReactNode, React.ReactNode]> = [];
+        if (this.props.dataSource.metaInfoStatus === 'ok') {
+            if (!this.props.canConstrainTime) {
+                messages.push([WARNING_ICON, "This dataset has no (recognised) temporal coverage."]);
+            }
+            if (!this.props.canConstrainRegion) {
+                messages.push([WARNING_ICON,
+                               <span>This dataset has no (recognised) spatial coverage
+                                   and hence it will not show up
+                                   in the <strong>World View</strong></span>]);
+            }
+            if (!this.props.canConstrainVariables) {
+                messages.push([WARNING_ICON, "This datasets has no (recognised) variables."]);
+            }
+        } else if (this.props.dataSource.metaInfoStatus === 'loading') {
+            messages.push([ISSUE_ICON, "Please wait while metadata still is being loaded..."]);
+        } else if (this.props.dataSource.metaInfoStatus === 'error') {
+            messages.push([ERROR_ICON, "Failed to load dataset metadata."]);
+        }
+
+        let messagesPanel;
+        if (messages.length > 0) {
+            messagesPanel = (
+                <Card style={WARNINGS_PANEL_STYLE}>
+                    {
+                        messages.map(([i, t]) =>
+                                         <div>{i}&nbsp;&nbsp;{t}</div>)
+                    }
+                </Card>);
+        }
+
         return (
             <div>
-                {this.props.isLocalDataSource
-                 ? (<LongIdLabel label='File data source:' longId={this.props.dataSource.title}/>)
-                 : (<LongIdLabel label='Remote data source:' longId={this.props.dataSource.title}/>)
-                }
-
+                <LongIdLabel
+                    label={this.props.isLocalDataSource
+                           ? 'Data source (local):'
+                           : 'Data source:'}
+                    longId={this.props.dataSource.title}
+                />
                 {timeConstraintsPanel}
                 {regionConstraintsPanel}
                 {variablesConstraintPanel}
                 {cacheConfigPanel}
                 {/*{resourceNamePanel}*/}
+                {messagesPanel}
             </div>
         );
     }
