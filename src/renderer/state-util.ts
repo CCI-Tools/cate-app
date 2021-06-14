@@ -2,7 +2,12 @@ import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
 
 import {
-    AnimationViewDataState, BaseMapState, DataSourceState, DataSourceVerificationFlags, DataStoreState,
+    AnimationViewDataState,
+    BaseMapState,
+    DatasetDescriptor,
+    DataSourceState,
+    DataSourceCapability,
+    DataStoreState,
     DimSizes,
     FigureViewDataState,
     LayerState,
@@ -15,7 +20,7 @@ import {
     SavedLayers,
     SPLIT_MODE_OFF,
     TableViewDataState,
-    VariableDataRefState,
+    VariableDataRefState, VariableDescriptor,
     VariableImageLayerState,
     VariableRefState,
     VariableState,
@@ -101,35 +106,84 @@ export function getDataSourceUrls(dataSource: DataSourceState): DataSourceUrls {
     return {catalogUrl, infoUrl};
 }
 
+/**
+ * Compute capabilities for data source.
+ * This function is actually invoked for any data source NOT originating from CCI ODP data store.
+ * @param dsd a data source's DatasetDescriptor
+ */
+export function computeDataSourceCapabilities(dsd: DatasetDescriptor): DataSourceCapability[] {
+    const canConstrainTime = isCoord1DInDataset(dsd, 'time');
+    const canConstrainRegion = isCoord1DInDataset(dsd, 'lon')
+                            && isCoord1DInDataset(dsd, 'lat');
+    if (canConstrainTime && canConstrainRegion) {
+        return ["open", "constrain_time", "constrain_region"];
+    } else if (canConstrainTime) {
+        return ["open", "constrain_time"];
+    } else if (canConstrainRegion) {
+        return ["open", "constrain_region"];
+    }
+    if (isString(dsd.type_specifier)) {
+        // dataSource.typeSpecifier have been introduced for ESA CCI datasets only
+        if (dsd.type_specifier.startsWith("dataset")) {
+            // TODO: check if this is a valid assumption:
+            // if (dsd.type_specifier.includes('cube')) {
+            //     return ["open", "constrain_time", "constrain_region"];
+            // }
+            return ["open"];
+        }
+    }
+    return [];
+}
+
+function isCoord1DInDataset(dsd: DatasetDescriptor, name: string): boolean {
+    return !!(dsd.coords && dsd.coords.find(c => isCoord1D(c, name)));
+}
+
+function isCoord1D(c: VariableDescriptor, name: string): boolean {
+    return c.name === name
+           && !!c.dims
+           && c.dims.length === 1
+           && !!c.dims.find(d => d === name);
+}
+
 export function canOpenDataSource(dataSource: DataSourceState) {
-    return _checkDataSource(dataSource, 'open', 'map', 'cache');
+    return _checkDataSourceCapability(dataSource, 'open', 'constrain_region', 'constrain_time', 'write_zarr');
 }
 
 export function canCacheDataSource(dataSource: DataSourceState) {
-    return _checkDataSource(dataSource, 'cache');
+    return _checkDataSourceCapability(dataSource, 'write_zarr');
+}
+
+export function canConstrainDataSourceTime(dataSource: DataSourceState) {
+    return _checkDataSourceCapability(dataSource, 'constrain_time');
+}
+
+export function canConstrainDataSourceRegion(dataSource: DataSourceState) {
+    return _checkDataSourceCapability(dataSource, 'constrain_region');
 }
 
 export function canMapDataSource(dataSource: DataSourceState) {
-    return _checkDataSource(dataSource, 'map');
+    return _checkDataSourceCapability(dataSource, 'constrain_region');
 }
 
-function _checkDataSource(dataSource: DataSourceState, ...flags: DataSourceVerificationFlags[]): boolean {
-    if (Array.isArray(dataSource.verificationFlags)) {
-        // dataSource.verificationFlags have been introduced for ESA CCI datasets only
-        const s = new Set<string>(dataSource.verificationFlags);
-        for (let flag of flags) {
-            if (s.has(flag)) {
+export function canConstrainDataSourceVariables(dataSource: DataSourceState) {
+    return dataSource.metaInfo
+           && dataSource.metaInfo.data_vars
+           && dataSource.metaInfo.data_vars.length > 1;
+}
+
+function _checkDataSourceCapability(dataSource: DataSourceState,
+                                    ...capabilities: DataSourceCapability[]): boolean | undefined {
+    if (Array.isArray(dataSource.capabilities)) {
+        // dataSource.capabilities have been introduced for ESA CCI datasets only
+        const s = new Set<string>(dataSource.capabilities);
+        for (let capability of capabilities) {
+            if (s.has(capability)) {
                 return true;
             }
         }
         return false;
     }
-    if (isString(dataSource.typeSpecifier)) {
-        // dataSource.typeSpecifier have been introduced for ESA CCI datasets only
-        return dataSource.typeSpecifier.startsWith("dataset");
-    }
-    // We assume, we can open all other (non ESA CCI) datasets
-    return true;
 }
 
 

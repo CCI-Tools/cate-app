@@ -16,7 +16,9 @@ interface IOpenDatasetDialogProps {
     dataStore: DataStoreState | null;
     dataSource: DataSourceState | null;
     temporalCoverage: TimeRangeValue | null;
-    canMap: boolean;
+    canConstrainTime: boolean;
+    canConstrainRegion: boolean;
+    canConstrainVariables: boolean;
     canCache: boolean;
     options: IDataAccessComponentOptions;
 }
@@ -32,7 +34,9 @@ function mapStateToProps(state: State): IOpenDatasetDialogProps {
         dataStore: selectors.selectedDataStoreSelector(state),
         dataSource: selectors.selectedDataSourceSelector(state),
         temporalCoverage: selectors.selectedDataSourceTemporalCoverageSelector(state),
-        canMap: selectors.canMapDataSourceSelector(state),
+        canConstrainTime: selectors.canConstrainDataSourceTimeSelector(state),
+        canConstrainRegion: selectors.canConstrainDataSourceRegionSelector(state),
+        canConstrainVariables: selectors.canConstrainDataSourceVariablesSelector(state),
         canCache: selectors.canCacheDataSourceSelector(state),
         options: (dialogState as any).options as IDataAccessComponentOptions,
     };
@@ -57,8 +61,8 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
 
     static mapPropsToState(nextProps: IOpenDatasetDialogProps): IOpenDatasetDialogState {
         let options: IDataAccessComponentOptions = nextProps.options
-                      || DataAccessComponent.defaultOptions(isLocalDataStore(nextProps.dataStore),
-                                                            nextProps.temporalCoverage);
+                                                   || DataAccessComponent.defaultOptions(isLocalDataStore(nextProps.dataStore),
+                                                                                         nextProps.temporalCoverage);
         const isCacheDataSourceSelected = nextProps.canCache && options.isCacheDataSourceSelected;
         options = DataAccessComponent.ensureDateRangeIsValidated(options, nextProps.temporalCoverage);
         options = {...options, isCacheDataSourceSelected}
@@ -149,12 +153,13 @@ class OpenDatasetDialog extends React.Component<IOpenDatasetDialogProps & Dispat
                 dataSource={this.props.dataSource}
                 isLocalDataSource={this.isLocalDataStore}
                 temporalCoverage={this.props.temporalCoverage}
+                canConstrainTime={this.props.canConstrainTime}
+                canConstrainRegion={this.props.canConstrainRegion}
+                canConstrainVariables={this.props.canConstrainVariables}
                 canCache={this.props.canCache}
-                canMap={this.props.canMap}
             />
         );
     }
-
 }
 
 export default connect(mapStateToProps)(OpenDatasetDialog);

@@ -46,6 +46,7 @@ import {
 } from './state';
 import {
     AUTO_LAYER_ID,
+    computeDataSourceCapabilities,
     getFigureViewTitle,
     getPlacemarkTitleAndIndex,
     isImageLayer,
@@ -120,7 +121,16 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action): Dat
                     throw Error('illegal data source ID: ' + dataSourceId);
                 }
                 const oldDataSource = newDataSources[dataSourceIndex];
-                newDataSources[dataSourceIndex] = {...oldDataSource, metaInfo, metaInfoStatus};
+                let capabilities = oldDataSource.capabilities;
+                if (!capabilities) {
+                    capabilities = computeDataSourceCapabilities(metaInfo);
+                }
+                newDataSources[dataSourceIndex] = {
+                    ...oldDataSource,
+                    metaInfo,
+                    metaInfoStatus,
+                    capabilities,
+                };
                 return newDataSources;
             });
         }

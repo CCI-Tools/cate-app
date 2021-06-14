@@ -35,11 +35,13 @@ const DataSourceDetails: React.FC<IDataSourceDetailsProps> = ({dataSource}) => {
     let variables;
 
     const metaInfo = dataSource.metaInfo;
+    console.log('metaInfo', metaInfo);
 
     if (metaInfo) {
-        metaInfoKeys = Object.keys(metaInfo).filter(key => key !== 'variables');
-        if (metaInfo.variables) {
-            variables = metaInfo.variables;
+        metaInfoKeys = Object.keys(metaInfo).filter(key => key !== 'data_vars'
+                                                           && key !== 'coords');
+        if (metaInfo.data_vars) {
+            variables = metaInfo.data_vars;
         }
     }
 

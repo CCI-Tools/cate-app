@@ -3,11 +3,14 @@ import * as Cesium from 'cesium';
 
 import { requireElectron } from './electron';
 import {
+    canOpenDataSource,
     canCacheDataSource,
     canMapDataSource,
-    canOpenDataSource,
+    canConstrainDataSourceRegion,
+    canConstrainDataSourceTime,
+    canConstrainDataSourceVariables,
     DEFAULT_BASE_MAP,
-    DEFAULT_BASE_MAP_ID
+    DEFAULT_BASE_MAP_ID,
 } from './state-util';
 import {
     BaseMapState,
@@ -39,7 +42,7 @@ import {
     WorldViewDataState
 } from './state';
 import { JobStatusEnum, WebAPIClient } from './webapi';
-import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi/apis';
+import { BackendConfigAPI, ColorMapsAPI, DatasetAPI, OperationAPI, WorkspaceAPI, FileSystemAPI } from './webapi';
 import { PanelContainerLayout } from './components/PanelContainer';
 import {
     EXTERNAL_OBJECT_STORE,
@@ -469,6 +472,27 @@ export const canMapDataSourceSelector = createSelector<State, boolean, DataSourc
     selectedDataSourceSelector,
     (selectedDataSource: DataSourceState | null): boolean => {
         return selectedDataSource ? canMapDataSource(selectedDataSource) : false;
+    }
+);
+
+export const canConstrainDataSourceTimeSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        return selectedDataSource && canConstrainDataSourceTime(selectedDataSource);
+    }
+);
+
+export const canConstrainDataSourceRegionSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        return selectedDataSource && canConstrainDataSourceRegion(selectedDataSource);
+    }
+);
+
+export const canConstrainDataSourceVariablesSelector = createSelector<State, boolean, DataSourceState | null>(
+    selectedDataSourceSelector,
+    (selectedDataSource: DataSourceState | null): boolean => {
+        return selectedDataSource && canConstrainDataSourceVariables(selectedDataSource);
     }
 );
 

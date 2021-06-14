@@ -90,7 +90,11 @@ export interface DataStoreState {
     dataSources?: DataSourceState[] | null;
 }
 
-export type DataSourceVerificationFlags = "open" | "cache" | "map";
+export type DataSourceCapability =
+    "open"
+    | "write_zarr"
+    | "constrain_time"
+    | "constrain_region";
 
 
 export interface DatasetDescriptor {
@@ -101,7 +105,8 @@ export interface DatasetDescriptor {
     spatial_res?: number;
     time_range?: [string | null, string | null];
     time_period?: string;
-    variables?: VariableDescriptor[];
+    data_vars?: VariableDescriptor[];
+    coords?: VariableDescriptor[];
     abstract?: string;
     catalog_url?: string;
     catalogue_url?: string;
@@ -119,6 +124,7 @@ export interface VariableDescriptor {
     units?: string;
     long_name?: string;
     standard_name?: string;
+    dims?: string[];
 }
 
 // TODO: (forman) use this in the future instead of DatasetDescriptor/VariableDescriptor
@@ -152,6 +158,7 @@ export interface VariableDescriptor2 {
     chunks?: number[] | null;
     attrs?: { [attr_name: string]: any } | null;
 }
+
 // }}}}}}}}}}}}
 
 
@@ -165,7 +172,7 @@ export interface DataSourceState {
     // descriptor?: DatasetDescriptor2 | GeoDataFrameDescriptor2;
     // descriptorStatus: 'init' | 'loading' | 'ok' | 'error';
     typeSpecifier?: string | null;
-    verificationFlags?: DataSourceVerificationFlags[] | null;
+    capabilities?: DataSourceCapability[] | null;
     temporalCoverage?: [string, string] | null;
 }
 
