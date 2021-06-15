@@ -38,6 +38,9 @@
     - Data source abstract in the DATA SOURCES details panel:
     - Operation description in OPERATIONS panel.
     
+* Simplified `Dockerfile` which now uses a 2-stage build.
+* No longer require `.env.production` and `.env.local` files
+  because all settings now have reasonable defaults.
 
 ### Changes 2.2.3
 
