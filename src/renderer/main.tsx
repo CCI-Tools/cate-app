@@ -12,7 +12,7 @@ import AppRouter from './containers/AppRouter';
 import { stateReducer } from './reducers';
 import { State } from './state';
 import { isElectron } from './electron';
-import { getEndpointUrl } from './webapi/apis/ServiceProvisionAPI';
+import { CONFIG } from '../config';
 
 
 const keycloak = Keycloak(getKeycloakConfig());
@@ -55,7 +55,7 @@ export function main() {
     }
 
     // Fetch hub status from GitHub
-    const deployment = getEndpointUrl().includes('stage') ? 'development' : 'production';
+    const deployment = CONFIG.webApi.endpointUrl.includes('stage') ? 'development' : 'production';
     fetch(`https://raw.githubusercontent.com/CCI-Tools/cate-status/main/${deployment}.json`,
           {mode: 'cors'})
         .then(response =>
@@ -94,11 +94,9 @@ export function main() {
 }
 
 function getKeycloakConfig(): KeycloakConfig {
-    const realm = process.env.REACT_APP_KEYCLOAK_REALM;
-    const url = process.env.REACT_APP_KEYCLOAK_URL;
-    const clientId = process.env.REACT_APP_KEYCLOAK_CLIENT_ID;
+    const {url, realm, clientId} = CONFIG.auth;
     if (!realm || !url || !clientId) {
-        throw new Error('Missing or incomplete KeyCloak configuration in .env');
+        throw new Error('Missing or incomplete KeyCloak configuration');
     }
     return {realm, url, clientId};
 }

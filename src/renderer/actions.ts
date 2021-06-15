@@ -5,6 +5,7 @@ import { DirectGeometryObject } from 'geojson';
 import { History } from 'history';
 import { KeycloakInstance, KeycloakProfile } from 'keycloak-js';
 import * as redux from 'redux';
+
 import * as assert from '../common/assert';
 import { isAssignableFrom, VAR_NAME_LIKE_TYPE, VAR_NAMES_LIKE_TYPE } from '../common/cate-types';
 import { SimpleStyle } from '../common/geojson-simple-style';
@@ -12,7 +13,6 @@ import { updateObject } from '../common/objutil';
 import { isDefined, isNumber } from '../common/types';
 import { getEntityByEntityId } from './components/cesium/cesium-util';
 import { GeometryToolType } from './components/cesium/geometry-tool';
-
 import desktopActions from './components/desktop/actions';
 import { FileNode, getFileNode } from './components/desktop/fs/FileNode';
 import {
@@ -37,14 +37,14 @@ import { FILE_UPLOAD_DIALOG_ID } from './containers/FileUploadDialog';
 import { reloadEntityWithOriginalGeometry } from './containers/globe-view-layers';
 import { requireElectron } from './electron';
 import * as selectors from './selectors';
-
 import {
     BackendConfigState,
     ColorMapCategoryState,
-    ControlState, DatasetDescriptor,
+    ControlState,
+    DatasetDescriptor,
     DataSourceState,
     DataStoreState,
-    GeographicPosition, 
+    GeographicPosition,
     HubStatus,
     ImageStatisticsState,
     LayerState,
@@ -97,8 +97,10 @@ import {
     WebAPIClient
 } from './webapi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
-import { ServiceStatus, ServiceProvisionAPI } from './webapi/apis/ServiceProvisionAPI';
+import { ServiceProvisionAPI, ServiceStatus } from './webapi/apis/ServiceProvisionAPI';
 import { HttpError } from './webapi/HttpError';
+import { CONFIG } from '../config';
+
 
 const electron = requireElectron();
 
@@ -148,10 +150,9 @@ export const UPDATE_SESSION_STATE = 'UPDATE_SESSION_STATE';
 export const INVOKE_CTX_OPERATION = 'INVOKE_CTX_OPERATION';
 export const SET_USER_PROFILE = 'SET_USER_PROFILE';
 
-const MAX_NUM_USERS = process.env.REACT_APP_MAX_NUM_USERS ? parseInt(process.env.REACT_APP_MAX_NUM_USERS) : 50;
+
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
-
 
 export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): ThunkAction {
     return async (dispatch: Dispatch) => {
@@ -180,7 +181,7 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
             handleFetchError(error, 'Failed fetching server status.');
             return;
         }
-        if (serviceCount >= MAX_NUM_USERS) {
+        if (serviceCount >= CONFIG.webApi.maxNumUsers) {
             showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
             dispatch(setWebAPIStatus('error'));
             return;
