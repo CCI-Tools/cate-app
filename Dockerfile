@@ -1,20 +1,17 @@
-FROM node:stretch-slim as build-deps
-
 LABEL maintainer="helge.dzierzon@brockmann-consult.de"
 LABEL name="Cate App"
 LABEL version="3.0.0-dev.1"
 
-RUN apt-get -y update && apt-get install -y git apt-utils wget vim
-
-ADD . /usr/src/app
+FROM node:12.5.0-alpine as build
 WORKDIR /usr/src/app
-
-RUN ! test -f ".env.production" && cp ".env" ".env.production"
-# ADD .env.production /usr/src/app
-
-RUN yarn install --network-concurrency 1 --network-timeout 1000000
-
+COPY package.json yarn.lock  ./
+RUN yarn install
+COPY . ./
 RUN yarn build
-RUN yarn global add serve
 
-CMD ["bash", "-c", "serve -l 80 -d -s build"]
+FROM nginx:stable-alpine
+COPY --from=build /usr/src/app/build /usr/share/nginx/html
+# Once further nginx configuration needed, do this:
+# COPY nginx.conf /usr/share/nginx/
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

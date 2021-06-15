@@ -11,7 +11,7 @@ import deepEqual from 'deep-equal';
 import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
-import { CATE_APP_VERSION } from '../../version';
+import { CATE_APP_VERSION } from '../../config';
 
 
 interface IPreferencesDialogProps {
