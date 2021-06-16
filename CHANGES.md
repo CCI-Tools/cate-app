@@ -45,6 +45,9 @@
   * Removed phrase "please check .cate/webapi.log" from some
     error messages, because users have no longer access to 
     log files.
+  * Renamed "About" tab in Preferences Dialog into "System". 
+    There we now also display the versions of Cate's core Python 
+    package dependencies.
 
 ### Changes 2.2.3
 

@@ -65,6 +65,7 @@ export interface WebAPIServiceInfo {
     timestamp: string;
     userRootMode: boolean;
     hostOS?: HostOS;
+    dependencies?: {[packageName: string]: string};
 }
 
 export interface HubStatus {
@@ -934,6 +935,9 @@ export interface SessionState {
     placemarkListHeight: number;
     showPlacemarkDetails: boolean;
     defaultPlacemarkStyle: SimpleStyle;
+
+    // Preferences
+    showDependencies?: boolean;
 
     // EU GDPR
     cookieConsentObtained: boolean;
