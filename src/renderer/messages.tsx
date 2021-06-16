@@ -6,7 +6,7 @@ export const ICON_CIRCLE: IconName = 'circle';
 export const ICON_DISABLE: IconName = 'disable';
 
 export const CONFIG_ERROR_MESSAGE = (
-    <span>This is very likely a configuration error, please check <code>.cate/webapi.log</code> file.</span>
+    <span>This is very likely a configuration error.</span>
 );
 
 export const NO_WORKSPACE = (

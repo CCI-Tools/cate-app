@@ -35,7 +35,6 @@ const DataSourceDetails: React.FC<IDataSourceDetailsProps> = ({dataSource}) => {
     let variables;
 
     const metaInfo = dataSource.metaInfo;
-    console.log('metaInfo', metaInfo);
 
     if (metaInfo) {
         metaInfoKeys = Object.keys(metaInfo).filter(key => key !== 'data_vars'
@@ -182,7 +181,8 @@ function renderVariablesTable(variables?: any[]): DetailPart {
         };
 
         const getCellClipboardData = (row: number, col: number) => {
-            console.log('getCellClipboardData: ', row, col);
+            // TODO: implement me
+            console.error('not implemented: getCellClipboardData: ', row, col);
         };
 
         element = (
@@ -214,7 +214,8 @@ function renderMetaInfoTable(metaInfo?: any, metaInfoKeys?: string[]): DetailPar
         };
 
         const getCellClipboardData = (row: number, col: number) => {
-            console.log('getCellClipboardData: ', row, col);
+            // TODO: implement me
+            console.error('not implemented: getCellClipboardData: ', row, col);
         };
 
         element = (
