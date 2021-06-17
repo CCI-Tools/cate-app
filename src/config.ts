@@ -7,8 +7,8 @@ export const CATE_APP_VERSION = "3.0.0-dev.3";
 const DEFAULT_API_ENDPOINT_PRODUCTION = 'https://catehub.climate.esa.int/api/v2';
 const DEFAULT_API_ENDPOINT_STAGE = 'https://stage.catehub.climate.esa.int/api/v2';
 
-const MANAG_API_PATH = '/user/{username}/webapis';
-const CLOSE_API_PATH = '/user/{username}/webapis';
+const MANAG_API_PATH = '/users/{username}/webapis';
+const CLOSE_API_PATH = '/users/{username}/webapis';
 const COUNT_API_PATH = '/webapis';
 
 const DEFAULT_MAX_NUM_USERS = 50;
