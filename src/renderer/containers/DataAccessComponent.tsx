@@ -279,13 +279,13 @@ export class DataAccessComponent extends React.Component<IDataAccessComponentPro
                 messages.push([WARNING_ICON,
                                <span>This dataset has no (recognised) spatial coverage
                                    and hence it will not show up
-                                   in the <strong>World View</strong></span>]);
+                                   in the <strong>World View</strong>.</span>]);
             }
             if (!this.props.canConstrainVariables) {
                 messages.push([WARNING_ICON, "This datasets has no (recognised) variables."]);
             }
         } else if (this.props.dataSource.metaInfoStatus === 'loading') {
-            messages.push([ISSUE_ICON, "Please wait while metadata still is being loaded..."]);
+            messages.push([ISSUE_ICON, "Please wait while dataset metadata is loaded..."]);
         } else if (this.props.dataSource.metaInfoStatus === 'error') {
             messages.push([ERROR_ICON, "Failed to load dataset metadata."]);
         }

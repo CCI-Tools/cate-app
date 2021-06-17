@@ -14,14 +14,15 @@ export class ServiceInfoAPI {
                 }
                 return response.json() as Promise<any>;
             })
-            .then((resonse: any) => {
-                const webAPIServiceInfo = resonse.content;
+            .then((response: any) => {
+                const webAPIServiceInfo = response.content;
                 return {
                     name: webAPIServiceInfo.name,
                     version: webAPIServiceInfo.version,
                     timestamp: webAPIServiceInfo.timestamp,
                     userRootMode: webAPIServiceInfo.user_root_mode,
-                    hostOS: webAPIServiceInfo.host_os
+                    hostOS: webAPIServiceInfo.host_os,
+                    dependencies: webAPIServiceInfo.dependencies
                 };
             });
     }
