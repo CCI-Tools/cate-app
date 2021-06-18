@@ -121,16 +121,19 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action): Dat
                     throw Error('illegal data source ID: ' + dataSourceId);
                 }
                 const oldDataSource = newDataSources[dataSourceIndex];
-                let capabilities = oldDataSource.capabilities;
-                if (!capabilities) {
-                    capabilities = computeDataSourceCapabilities(metaInfo);
-                }
-                newDataSources[dataSourceIndex] = {
+                let newDataSource = {
                     ...oldDataSource,
                     metaInfo,
                     metaInfoStatus,
-                    capabilities,
                 };
+                let capabilities = newDataSource.capabilities;
+                if (!capabilities && metaInfoStatus === 'ok') {
+                    capabilities = computeDataSourceCapabilities(newDataSource);
+                }
+                if (capabilities !== newDataSource.capabilities) {
+                    newDataSource = {...newDataSource, capabilities}
+                }
+                newDataSources[dataSourceIndex] = newDataSource;
                 return newDataSources;
             });
         }

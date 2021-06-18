@@ -109,12 +109,20 @@ export function getDataSourceUrls(dataSource: DataSourceState): DataSourceUrls {
 /**
  * Compute capabilities for data source.
  * This function is actually invoked for any data source NOT originating from CCI ODP data store.
- * @param dsd a data source's DatasetDescriptor
+ * @param dataSource a data source
  */
-export function computeDataSourceCapabilities(dsd: DatasetDescriptor): DataSourceCapability[] {
+export function computeDataSourceCapabilities(dataSource: DataSourceState): DataSourceCapability[] {
+    const dsd = dataSource.metaInfo;
+    if (!dsd) {
+        if ((dataSource.typeSpecifier && dataSource.typeSpecifier.startsWith('dataset'))
+            || dataSource.id.endsWith('.zarr')) {
+            return ["open"];
+        }
+        return [];
+    }
     const canConstrainTime = isCoord1DInDataset(dsd, 'time');
     const canConstrainRegion = isCoord1DInDataset(dsd, 'lon')
-                            && isCoord1DInDataset(dsd, 'lat');
+                               && isCoord1DInDataset(dsd, 'lat');
     if (canConstrainTime && canConstrainRegion) {
         return ["open", "constrain_time", "constrain_region"];
     } else if (canConstrainTime) {

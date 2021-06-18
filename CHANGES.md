@@ -25,6 +25,10 @@
   - Enhanced the "Open Dataset" dialog by messages that tell
     why a certain constraint is not (yet) available.
   - Fixed icons and labels for some new CCI ECVs.
+  - Cate now utilizes dataset capabilities such as the ability
+    to create spatial or temporal subsets in the "Open Data Source"
+    dialog. In case a dataset has no such capabilities, we compute
+    them from the dataset's metadata, if possible.
 
 * We now obtain Cate Hub's status information from a dedicated GitHub 
   repository [cate-status](https://github.com/CCI-Tools/cate-status).
