@@ -100,5 +100,12 @@
     "esa_teal": "#0BB7A0",
     "esa_teal_55": "#78D4C7",
     "default": "#0BB7A0"
+  },
+  "mappings": {
+    "icesheets_antarctica_gmb": "icesheets",
+    "icesheets_greenland_gmb": "icesheets",
+    "l3c_cloud": "cloud",
+    "l3c_snow": "snow",
+    "l4_ghrsst": "sst"
   }
 }

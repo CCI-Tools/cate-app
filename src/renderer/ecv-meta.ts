@@ -4,6 +4,7 @@
 export interface EcvMeta {
     ecvs: { [ecvId: string]: EcvMetaItem },
     colors: { [colorId: string]: string };
+    mappings: { [ecvId: string]: string };
 }
 
 /**

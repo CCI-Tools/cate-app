@@ -1,4 +1,4 @@
-version: 3.0.0-dev.5-{build}
+version: 3.0.0-dev.6-{build}
 image: Ubuntu
 stack: node 12
 install:

@@ -111,36 +111,30 @@ export function getDataSourceUrls(dataSource: DataSourceState): DataSourceUrls {
  * This function is actually invoked for any data source NOT originating from CCI ODP data store.
  * @param dataSource a data source
  */
-export function computeDataSourceCapabilities(dataSource: DataSourceState): DataSourceCapability[] {
+export function computeDataSourceCapabilities(dataSource: DataSourceState): DataSourceCapability[] | undefined {
     const dsd = dataSource.metaInfo;
-    if (!dsd) {
-        if ((dataSource.typeSpecifier && dataSource.typeSpecifier.startsWith('dataset'))
-            || dataSource.id.endsWith('.zarr')) {
-            return ["open"];
+    if (dsd) {
+        const canConstrainTime = isCoord1DInDataset(dsd, 'time');
+        const canConstrainRegion = isCoord1DInDataset(dsd, 'lon')
+                                   && isCoord1DInDataset(dsd, 'lat');
+        if (canConstrainTime && canConstrainRegion) {
+            return ["open", "constrain_time", "constrain_region"];
+        } else if (canConstrainTime) {
+            return ["open", "constrain_time"];
+        } else if (canConstrainRegion) {
+            return ["open", "constrain_region"];
         }
-        return [];
-    }
-    const canConstrainTime = isCoord1DInDataset(dsd, 'time');
-    const canConstrainRegion = isCoord1DInDataset(dsd, 'lon')
-                               && isCoord1DInDataset(dsd, 'lat');
-    if (canConstrainTime && canConstrainRegion) {
-        return ["open", "constrain_time", "constrain_region"];
-    } else if (canConstrainTime) {
-        return ["open", "constrain_time"];
-    } else if (canConstrainRegion) {
-        return ["open", "constrain_region"];
-    }
-    if (isString(dsd.type_specifier)) {
-        // dataSource.typeSpecifier have been introduced for ESA CCI datasets only
-        if (dsd.type_specifier.startsWith("dataset")) {
-            // TODO: check if this is a valid assumption:
-            // if (dsd.type_specifier.includes('cube')) {
-            //     return ["open", "constrain_time", "constrain_region"];
-            // }
-            return ["open"];
+        if (isString(dsd.type_specifier)) {
+            // dataSource.typeSpecifier have been introduced for ESA CCI datasets only
+            if (dsd.type_specifier.startsWith("dataset")) {
+                // TODO: check if this is a valid assumption:
+                // if (dsd.type_specifier.includes('cube')) {
+                //     return ["open", "constrain_time", "constrain_region"];
+                // }
+                return ["open"];
+            }
         }
     }
-    return [];
 }
 
 function isCoord1DInDataset(dsd: DatasetDescriptor, name: string): boolean {
@@ -155,23 +149,28 @@ function isCoord1D(c: VariableDescriptor, name: string): boolean {
 }
 
 export function canOpenDataSource(dataSource: DataSourceState) {
-    return _checkDataSourceCapability(dataSource, 'open', 'constrain_region', 'constrain_time', 'write_zarr');
+    return _checkDataSourceCapability(dataSource,
+                                      'open', 'constrain_region', 'constrain_time', 'write_zarr');
 }
 
 export function canCacheDataSource(dataSource: DataSourceState) {
-    return _checkDataSourceCapability(dataSource, 'write_zarr');
+    return _checkDataSourceCapability(dataSource,
+                                      'write_zarr');
 }
 
 export function canConstrainDataSourceTime(dataSource: DataSourceState) {
-    return _checkDataSourceCapability(dataSource, 'constrain_time');
+    return _checkDataSourceCapability(dataSource,
+                                      'constrain_time');
 }
 
 export function canConstrainDataSourceRegion(dataSource: DataSourceState) {
-    return _checkDataSourceCapability(dataSource, 'constrain_region');
+    return _checkDataSourceCapability(dataSource,
+                                      'constrain_region');
 }
 
 export function canMapDataSource(dataSource: DataSourceState) {
-    return _checkDataSourceCapability(dataSource, 'constrain_region');
+    return _checkDataSourceCapability(dataSource,
+                                      'constrain_region');
 }
 
 export function canConstrainDataSourceVariables(dataSource: DataSourceState) {
@@ -181,19 +180,25 @@ export function canConstrainDataSourceVariables(dataSource: DataSourceState) {
 }
 
 function _checkDataSourceCapability(dataSource: DataSourceState,
-                                    ...capabilities: DataSourceCapability[]): boolean | undefined {
-    if (Array.isArray(dataSource.capabilities)) {
-        // dataSource.capabilities have been introduced for ESA CCI datasets only
-        const s = new Set<string>(dataSource.capabilities);
-        for (let capability of capabilities) {
-            if (s.has(capability)) {
+                                    ...requiredCapabilities: DataSourceCapability[]): boolean | undefined {
+    let capabilities = dataSource.capabilities;
+    if (!capabilities) {
+        if ((dataSource.typeSpecifier && dataSource.typeSpecifier.startsWith('dataset'))
+            || dataSource.id.endsWith('.zarr')) {
+            // dataSource.capabilities have been introduced for ESA CCI datasets only
+            capabilities = ["open"];
+        }
+    }
+    if (Array.isArray(capabilities)) {
+        const availableCapabilities = new Set<string>(capabilities);
+        for (let requiredCapability of requiredCapabilities) {
+            if (availableCapabilities.has(requiredCapability)) {
                 return true;
             }
         }
         return false;
     }
 }
-
 
 export function getTileUrl(baseUrl: string, baseDir: string, layer: VariableImageLayerState): string {
     return baseUrl + `ws/res/tile/${encodeURIComponent(baseDir)}/${layer.resId}/{z}/{y}/{x}.png?`

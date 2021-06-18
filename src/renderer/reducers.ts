@@ -127,7 +127,7 @@ const dataReducer = (state: DataState = INITIAL_DATA_STATE, action: Action): Dat
                     metaInfoStatus,
                 };
                 let capabilities = newDataSource.capabilities;
-                if (!capabilities && metaInfoStatus === 'ok') {
+                if (!capabilities && metaInfo && metaInfoStatus === 'ok') {
                     capabilities = computeDataSourceCapabilities(newDataSource);
                 }
                 if (capabilities !== newDataSource.capabilities) {

@@ -39,7 +39,10 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
     const {backgroundColor, label} = dataSourceToTextIconProps(dataSource);
     const icon = <div style={{...TEXT_ICON_STYLE, backgroundColor}}>{label}</div>;
 
-    const title = dataSource.title || (metaInfo && metaInfo.title);
+    let title = dataSource.title || (metaInfo && metaInfo.title);
+    if (!title || title === dataSource.id) {
+        title = dataSourceToTitle(dataSource);
+    }
 
     const isNotVerified = !canOpenDataSource(dataSource);
     let warnIcon;
@@ -71,19 +74,43 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
 export default DataSourceItem;
 
 
+function dataSourceToTitle(dataSource: DataSourceState) {
+    const title = dataSource.id
+                            .replace(/\./g, ' ')
+                            .replace(/-/g, ' ')
+                            .replace(/_/g, '-');
+    if (title.startsWith('esacci ')) {
+        return title.substr('esacci '.length);
+    }  else if (title.startsWith('ESACCI ')) {
+        return title.substr('ESACCI '.length);
+    }
+    return title;
+}
+
 function dataSourceToTextIconProps(dataSource: DataSourceState) {
     let ecvId;
     let label;
-    if (dataSource.title) {
-        ecvId = dataSource.title.split(' ', 1)[0].toLowerCase();
-        label = dataSource.title.substr(0, 3).toUpperCase();
-    }
-    if (!ecvId || !ECV_META.ecvs[ecvId]) {
-        // This is a CCI-store specific hack
-        const idParts = dataSource.id.split('.', 2);
+    const id = dataSource.id.toLowerCase();
+
+    // The following are CCI specific hacks
+    if (id.startsWith('esacci.')) {
+        const idParts = id.split('.', 2);
         if (idParts.length > 1) {
-            ecvId = idParts[1].toLowerCase();
+            ecvId = idParts[1];
         }
+    }
+    if (!ecvId && id.startsWith('esacci-')) {
+        const idParts = id.split('-', 2);
+        if (idParts.length > 1) {
+            ecvId = idParts[1];
+        }
+    }
+    if (!ecvId) {
+        ecvId = id;
+    }
+    let actualEcvId = ECV_META.mappings[ecvId];
+    if (actualEcvId) {
+        ecvId = actualEcvId;
     }
     const ecvMetaItem = ecvId && ECV_META.ecvs[ecvId];
     let backgroundColor;

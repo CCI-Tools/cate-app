@@ -12,7 +12,7 @@ FROM nginx:stable-alpine
 
 LABEL maintainer="helge.dzierzon@brockmann-consult.de"
 LABEL name="Cate App"
-LABEL version="3.0.0-dev.5"
+LABEL version="3.0.0-dev.6"
 
 COPY --from=build /usr/src/app/build /usr/share/nginx/html
 # Once further nginx configuration needed, do this:
