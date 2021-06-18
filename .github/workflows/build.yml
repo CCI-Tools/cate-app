@@ -9,6 +9,8 @@ jobs:
   build-docker-image:
     runs-on: ubuntu-latest
     name: build-docker-image
+    env:
+      APP_NAME: cate-app
     steps:
       - name: git-checkout
         uses: actions/checkout@v2
@@ -24,7 +26,7 @@ jobs:
         name: build-push-docker-image-latest
         if: ${{ github.event_name == 'push' && steps.release.outputs.tag == 'master'  }}
         with:
-          image: ccitools/cate-app
+          image: ccitools/${{ env.APP_NAME }}
           tags: master, latest
           registry: quay.io
           username: ${{ secrets.QUAY_DOCKER_REPO_USERNAME }}
@@ -33,7 +35,7 @@ jobs:
         name: build-push-docker-image
         if: ${{ github.event_name == 'release' }}
         with:
-          image: ccitools/cate
+          image: ccitools/${{ env.APP_NAME }}
           tags: ${{ steps.release.outputs.tag }}
           registry: quay.io
           username: ${{ secrets.QUAY_DOCKER_REPO_USERNAME }}
