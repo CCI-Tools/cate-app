@@ -4,6 +4,7 @@
 //
 export const CATE_APP_VERSION = "3.0.0-dev.6";
 
+const DEFAULT_API_ENDPOINT_DEV = 'https://dev.catehub.brockmann-consult.de/api/v2/';
 const DEFAULT_API_ENDPOINT_PRODUCTION = 'https://catehub.climate.esa.int/api/v2';
 const DEFAULT_API_ENDPOINT_STAGE = 'https://stage.catehub.climate.esa.int/api/v2';
 
@@ -64,6 +65,8 @@ function getEndpointUrl(): string {
     if (!url) {
         if (window.location.host.indexOf('stage') >= 0) {
             url = DEFAULT_API_ENDPOINT_STAGE;
+        } else if (window.location.host.indexOf('dev') >= 0) {
+            url = DEFAULT_API_ENDPOINT_DEV;
         } else {
             url = DEFAULT_API_ENDPOINT_PRODUCTION;
         }
