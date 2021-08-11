@@ -1,4 +1,4 @@
-### Changes 3.0 (in development)
+### Changes 3.0.0
 
 * Cate App 3.0 now requires the Web API service of the `cate 3.0+` 
   Python package.
