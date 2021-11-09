@@ -1,3 +1,9 @@
+### Changes 3.0.1
+
+* Implemented a workaround for an issue that prevented user logins 
+  once a certain server-side degree of capacity utilisation was 
+  reached. (#156)
+
 ### Changes 3.0.0
 
 * Cate App 3.0 now requires the Web API service of the `cate 3.0+` 
