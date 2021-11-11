@@ -58,7 +58,7 @@ export class DatasetAPI {
             return {
                 id: dataSource['id'],
                 title: dataSource['title'],
-                typeSpecifier: dataSource['type_specifier'] || 'dataset',
+                dataType: dataSource['data_type'] || 'dataset',
                 capabilities: dataSource['verification_flags'],
                 metaInfoStatus: 'init',
             };

@@ -51,8 +51,8 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
     }
 
     let typeSpec;
-    if (dataSource.typeSpecifier) {
-        typeSpec = <span style={TYPE_SPEC_STYLE}>{dataSource.typeSpecifier}</span>;
+    if (dataSource.dataType) {
+        typeSpec = <span style={TYPE_SPEC_STYLE}>{dataSource.dataType}</span>;
     }
 
     return (
