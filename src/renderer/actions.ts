@@ -1057,7 +1057,7 @@ export function loadDataSourceMetaInfo(dataStoreId: string, dataSourceId: string
             dispatch(updateDataSourceMetaInfo(dataStoreId, dataSourceId, undefined, 'error'));
         }
 
-        callAPI({title: `Loading meta data for ${dataSourceId}`, dispatch, call, action, planB});
+        callAPI({title: `Loading metadata for ${dataSourceId}`, dispatch, call, action, planB});
     };
 }
 
