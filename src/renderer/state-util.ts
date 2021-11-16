@@ -124,13 +124,8 @@ export function computeDataSourceCapabilities(dataSource: DataSourceState): Data
         } else if (canConstrainRegion) {
             return ["open", "constrain_region"];
         }
-        if (isString(dsd.type_specifier)) {
-            // dataSource.typeSpecifier have been introduced for ESA CCI datasets only
-            if (dsd.type_specifier.startsWith("dataset")) {
-                // TODO: check if this is a valid assumption:
-                // if (dsd.type_specifier.includes('cube')) {
-                //     return ["open", "constrain_time", "constrain_region"];
-                // }
+        if (isString(dsd.data_type)) {
+            if (dsd.data_type === "dataset") {
                 return ["open"];
             }
         }
@@ -183,7 +178,7 @@ function _checkDataSourceCapability(dataSource: DataSourceState,
                                     ...requiredCapabilities: DataSourceCapability[]): boolean | undefined {
     let capabilities = dataSource.capabilities;
     if (!capabilities) {
-        if ((dataSource.typeSpecifier && dataSource.typeSpecifier.startsWith('dataset'))
+        if ((dataSource.dataType && dataSource.dataType === 'dataset')
             || dataSource.id.endsWith('.zarr')) {
             // dataSource.capabilities have been introduced for ESA CCI datasets only
             capabilities = ["open"];

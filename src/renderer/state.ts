@@ -100,7 +100,7 @@ export type DataSourceCapability =
 
 export interface DatasetDescriptor {
     data_id: string;
-    type_specifier: string;
+    data_type: string;
     crs?: string;
     bbox?: [number, number, number, number];
     spatial_res?: number;
@@ -133,7 +133,7 @@ export interface VariableDescriptor {
 
 export interface DataDescriptor2 {
     data_id: string;
-    type_specifier: string;
+    data_type: string;
     crs?: string | null;
     bbox?: [number, number, number, number] | null;
     time_range?: [string | null, string | null] | null;
@@ -172,7 +172,7 @@ export interface DataSourceState {
     // TODO: (forman) use this in the future instead of metaInfo
     // descriptor?: DatasetDescriptor2 | GeoDataFrameDescriptor2;
     // descriptorStatus: 'init' | 'loading' | 'ok' | 'error';
-    typeSpecifier?: string | null;
+    dataType?: string | null;
     capabilities?: DataSourceCapability[] | null;
     temporalCoverage?: [string, string] | null;
 }
