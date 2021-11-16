@@ -135,7 +135,7 @@ describe('Actions', () => {
                                                ] as any));
             dispatch(actions.updateDataSourceMetaInfo('local-2',
                                                       'fileset-1',
-                                                      {'data_id': 'x', 'type_specifier': 'y'},
+                                                      {'data_id': 'x', 'data_type': 'y'},
                                                       'ok'));
             expect(getState().data.dataStores).to.deep.equal(
                 [
@@ -144,7 +144,7 @@ describe('Actions', () => {
                         id: 'local-2', dataSources: [
                             {
                                 id: 'fileset-1',
-                                metaInfo: {'data_id': 'x', 'type_specifier': 'y'},
+                                metaInfo: {'data_id': 'x', 'data_type': 'y'},
                                 metaInfoStatus: 'ok',
                             },
                             {id: 'fileset-2'}

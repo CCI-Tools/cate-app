@@ -14,7 +14,7 @@ const ECV_META: EcvMeta = _ecvMeta;
 const ITEM_STYLE: CSSProperties = {display: 'flex', alignItems: 'flex-start'};
 const ID_STYLE: CSSProperties = {color: Colors.BLUE5, fontSize: '0.8em'};
 const WARN_ICON_STYLE: CSSProperties = {marginRight: 4};
-const TYPE_SPEC_STYLE: CSSProperties = {color: Colors.GREEN4, fontSize: '0.8em', marginLeft: 4};
+const DATA_TYPE_STYLE: CSSProperties = {color: Colors.GREEN4, fontSize: '0.8em', marginLeft: 4};
 const TEXT_ICON_STYLE: CSSProperties = {
     width: 32,
     height: 32,
@@ -51,8 +51,8 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
     }
 
     let typeSpec;
-    if (dataSource.typeSpecifier) {
-        typeSpec = <span style={TYPE_SPEC_STYLE}>{dataSource.typeSpecifier}</span>;
+    if (dataSource.dataType) {
+        typeSpec = <span style={DATA_TYPE_STYLE}>{dataSource.dataType}</span>;
     }
 
     return (
