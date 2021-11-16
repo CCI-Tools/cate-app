@@ -55,7 +55,7 @@ export function main() {
     }
 
     // Fetch hub status from GitHub
-    const deployment = CONFIG.webApi.endpointUrl.includes('stage') ? 'development' : 'production';
+    const deployment = CONFIG.webApi.endpointUrl.includes('stage') || CONFIG.webApi.endpointUrl.includes('dev') ? 'development' : 'production';
     fetch(`https://raw.githubusercontent.com/CCI-Tools/cate-status/main/${deployment}.json`,
           {mode: 'cors'})
         .then(response =>
