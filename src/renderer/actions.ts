@@ -99,8 +99,7 @@ import {
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
 import { ServiceProvisionAPI, ServiceStatus } from './webapi/apis/ServiceProvisionAPI';
 import { HttpError } from './webapi/HttpError';
-// See comment for workaround for #156 below
-// import { CONFIG } from '../config';
+import { CONFIG } from '../config';
 
 
 const electron = requireElectron();
@@ -175,22 +174,19 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
 
         const serviceProvisionAPI = new ServiceProvisionAPI();
 
-        // TODO (forman): reactivate this code block once we have
-        //                correct server-side fix for #156!
-        //
-        // let serviceCount;
-        // try {
-        //     serviceCount = await serviceProvisionAPI.getServiceCount();
-        // } catch (error) {
-        //     dispatch(setWebAPIStatus('error'));
-        //     handleFetchError(error, 'Failed fetching server status.');
-        //     return;
-        // }
-        // if (serviceCount >= CONFIG.webApi.maxNumUsers) {
-        //     showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
-        //     dispatch(setWebAPIStatus('error'));
-        //     return;
-        // }
+        let serviceCount;
+        try {
+            serviceCount = await serviceProvisionAPI.getServiceCount();
+        } catch (error) {
+            dispatch(setWebAPIStatus('error'));
+            handleFetchError(error, 'Failed fetching server status.');
+            return;
+        }
+        if (serviceCount >= CONFIG.webApi.maxNumUsers) {
+            showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
+            dispatch(setWebAPIStatus('error'));
+            return;
+        }
 
         dispatch(setWebAPIStatus('launching'));
         let serviceURL;

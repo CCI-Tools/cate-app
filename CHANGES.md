@@ -3,6 +3,9 @@
 * Adapted to Cate Web API 3.1.x which changed in an 
   incompatible way. Dataset descriptors now have a `data_type` 
   field instead of a `type_specifier` field in 3.0.x.
+* Revert workaround from previous release that prevented user logins 
+  once a certain server-side degree of capacity utilisation was 
+  reached. (#156)  
 
 ### Changes 3.0.1
 
