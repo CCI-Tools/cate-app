@@ -1,4 +1,4 @@
-### Changes 3.1.0 (in development)
+### Changes 3.1.0
 
 * Adapted to Cate Web API 3.1.x which changed in an 
   incompatible way. Dataset descriptors now have a `data_type` 
