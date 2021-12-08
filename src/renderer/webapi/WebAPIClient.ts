@@ -55,6 +55,7 @@ export const ERROR_CODE_INVALID_RESPONSE = -32004;
 export const ERROR_CODE_CANCELLED = 999;
 
 const CANCEL_METHOD = '__cancel__';
+const DEBUG = false;
 
 
 export type JobResponseTransformer<JobResponse> = (any) => JobResponse;
@@ -142,9 +143,9 @@ export function newWebAPIClient(url: string, firstMessageId = 0, socket?: WebSoc
 class WebAPIClientImpl implements WebAPIClient {
 
     readonly url: string;
-    onOpen: (event) => void;
-    onClose: (event) => void;
-    onError: (event) => void;
+    onOpen: (event: Event) => void;
+    onClose: (event: CloseEvent) => void;
+    onError: (event: ErrorEvent) => void;
     onWarning: (event) => void;
 
     private readonly socket: WebSocketMin;
@@ -156,23 +157,34 @@ class WebAPIClientImpl implements WebAPIClient {
         this.currentMessageId = firstMessageId;
         this.activeJobs = [];
         this.socket = socket ? socket : new WebSocket(url);
-        this.socket.onopen = (event) => {
+        this.socket.onopen = (event: Event) => {
+            if (DEBUG && process.env.NODE_ENV === 'development') {
+                console.debug("WebSocket.onopen:", event);
+            }
             if (this.onOpen) {
                 this.onOpen(event);
             }
         };
-        this.socket.onclose = (event) => {
+        this.socket.onclose = (event: CloseEvent) => {
+            if (DEBUG && process.env.NODE_ENV === 'development') {
+                console.debug("WebSocket.onclose:", event);
+            }
             if (this.onClose) {
                 this.onClose(event);
             }
         };
-        this.socket.onerror = (event) => {
+        this.socket.onerror = (event: ErrorEvent) => {
+            if (DEBUG && process.env.NODE_ENV === 'development') {
+                console.debug("WebSocket.onerror:", event);
+            }
             if (this.onError) {
                 this.onError(event);
             }
         };
-        this.socket.onmessage = (event) => {
-            // this.dispatchEvent('debug', `WebAPIClient message received: ${event.data}`);
+        this.socket.onmessage = (event: MessageEvent) => {
+            if (DEBUG && process.env.NODE_ENV === 'development') {
+                console.debug("WebSocket.onmessage:", event);
+            }
             this.processMessage(event.data);
         }
     }
