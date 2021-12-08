@@ -337,6 +337,7 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
         };
 
         let keepAliveTimer = null;
+        const keepAliveSeconds = 5;
 
         webAPIClient.onOpen = () => {
             dispatch(setWebAPIClient(webAPIClient));
@@ -345,10 +346,10 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             dispatch(loadPreferences());
             dispatch(loadDataStores());
             dispatch(loadOperations());
-            keepAliveTimer = setInterval(keepAlive, 2500);
+            keepAliveTimer = setInterval(keepAlive, keepAliveSeconds * 1000);
         };
 
-        webAPIClient.onClose = (event) => {
+        webAPIClient.onClose = (event: CloseEvent) => {
             if (keepAliveTimer !== null) {
                 clearInterval(keepAliveTimer);
             }
@@ -359,19 +360,36 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             }
             // When we end up here, the connection closed unintentionally.
             console.error('webAPIClient.onClose:', event);
+            const closeDetails = `reason=${event.reason}, code=${event.code}, clean=${event.wasClean}`;
+            showToast(
+                {
+                    type: 'notification',
+                    text: formatMessage(`Connection to Cate service closed: ${closeDetails}`, event)
+                },
+                120 * 1000
+            );
             dispatch(setWebAPIStatus('closed'));
-            showToast({type: 'notification', text: formatMessage('Connection to Cate service closed', event)});
         };
 
-        webAPIClient.onError = (event) => {
+        webAPIClient.onError = (event: ErrorEvent) => {
             console.error('webAPIClient.onError:', event);
             dispatch(setWebAPIStatus('error'));
-            showToast({type: 'error', text: formatMessage('Error connecting to Cate service', event)});
+            showToast(
+                {
+                    type: 'error',
+                    text: formatMessage('Error connecting to Cate service', event)
+                }
+            );
         };
 
-        webAPIClient.onWarning = (event) => {
+        webAPIClient.onWarning = (event: Event) => {
             console.warn('webAPIClient.onWarning:', event);
-            showToast({type: 'warning', text: formatMessage('Warning from Cate service', event)});
+            showToast(
+                {
+                    type: 'warning',
+                    text: formatMessage('Warning from Cate service', event)
+                }
+            );
         };
     };
 }
