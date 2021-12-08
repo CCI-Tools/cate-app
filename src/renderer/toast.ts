@@ -3,7 +3,7 @@ import { MessageState } from './state';
 
 let MessageToaster: IToaster | null = null;
 
-export function showToast(message: MessageState) {
+export function showToast(message: MessageState, timeout?: number) {
 
     if (!MessageToaster) {
         MessageToaster = Toaster.create({
@@ -14,27 +14,28 @@ export function showToast(message: MessageState) {
 
     let icon;
     let intent;
-    let timeout = 5000;
     if (message.type === 'info') {
         icon = 'info-sign';
         intent = Intent.NONE;
-        timeout = 2500;
+        timeout = timeout || 2500;
     } else if (message.type === 'success') {
         icon = 'tick';
         intent = Intent.SUCCESS;
-        timeout = 2500;
+        timeout = timeout || 2500;
     } else if (message.type === 'notification') {
         icon = 'notifications';
         intent = Intent.PRIMARY;
-        timeout = 2500;
+        timeout = timeout || 2500;
     } else if (message.type === 'warning') {
         icon = 'warning-sign';
         intent = Intent.WARNING;
-        timeout = 6000;
+        timeout = timeout || 6000;
     } else if (message.type === 'error') {
         icon = 'error';
         intent = Intent.DANGER;
-        timeout = 6000;
+        timeout = timeout || 10000;
+    } else {
+        timeout = timeout || 5000;
     }
 
     let action: IActionProps & ILinkProps;
