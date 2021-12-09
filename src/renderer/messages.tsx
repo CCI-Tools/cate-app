@@ -50,7 +50,7 @@ export const DATA_SOURCES_LOADING = (
     <NonIdealState
         title="Loading data sources..."
         icon={<div style={{marginTop: 14}}><Spinner intent={Intent.PRIMARY}/></div>}
-        description={<span>Please wait until the list of data sources is being loaded from the server.</span>}/>
+        description={<span>Please wait while the list of data sources is fetched from the server.</span>}/>
 );
 
 export const NO_DATA_SOURCES_FOUND = (
