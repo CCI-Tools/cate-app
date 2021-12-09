@@ -1,5 +1,9 @@
 ### Changes 3.1.1 (in dev)
 
+* Cate App will now display a warning dialog when there is not much 
+  time left until the Cate backend service will automatically shut 
+  down due to service inactivity. (#164)
+
 * Outputting more information to investigate into 
   unintentionally closed WebSocket connections:
   - Allow toasts to stay longer for such errors (2 minutes).
