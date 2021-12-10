@@ -1702,7 +1702,11 @@ export function setCurrentWorkspace(workspace: WorkspaceState): ThunkAction {
         dispatch(setCurrentWorkspaceImpl(workspace));
         const lastWorkspacePath = workspace.baseDir;
         if (getState().session.lastWorkspacePath !== lastWorkspacePath) {
-            dispatch(updateSessionState({lastWorkspacePath}));
+            if (workspace.isScratch) {
+                dispatch(updateSessionState({'lastWorkspacePath': null}));
+            } else {
+                dispatch(updateSessionState({lastWorkspacePath}));
+            }
         }
     }
 }
