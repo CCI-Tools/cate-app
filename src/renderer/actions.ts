@@ -1263,6 +1263,7 @@ export function newWorkspace(workspacePath: string | null): ThunkAction {
             } else {
                 dispatch(setSelectedWorkspaceResourceName(null));
             }
+            dispatch(savePreferences());
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1300,6 +1301,7 @@ export function openWorkspace(workspacePath?: string | null): ThunkAction {
             } else {
                 dispatch(setSelectedWorkspaceResourceName(null));
             }
+            dispatch(savePreferences());
         }
 
         function planB() {
@@ -1717,7 +1719,11 @@ export function setCurrentWorkspace(workspace: WorkspaceState): ThunkAction {
         dispatch(setCurrentWorkspaceImpl(workspace));
         const lastWorkspacePath = workspace.baseDir;
         if (getState().session.lastWorkspacePath !== lastWorkspacePath) {
-            dispatch(updateSessionState({lastWorkspacePath}));
+            if (workspace.isScratch) {
+                dispatch(updateSessionState({'lastWorkspacePath': null}));
+            } else {
+                dispatch(updateSessionState({lastWorkspacePath}));
+            }
         }
     }
 }

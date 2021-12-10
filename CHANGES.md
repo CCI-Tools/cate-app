@@ -16,6 +16,10 @@
   - Allow toasts to stay longer for such errors (2 minutes).
   - Provide more details on the console. 
 
+* No longer attempt to load in scratch workspaces at startup
+  (avoid error message).
+  
+
 ### Changes 3.1.0
 
 * Adapted to Cate Web API 3.1.x which changed in an 
