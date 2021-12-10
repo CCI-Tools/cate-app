@@ -3,7 +3,7 @@ import { connect, Dispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar } from '@blueprintjs/core';
 
-import { State, WebAPIStatus } from '../state';
+import { State, WebAPIServiceInfo, WebAPIStatus } from '../state';
 
 
 interface IDispatch {
@@ -12,15 +12,21 @@ interface IDispatch {
 
 interface IWebAPIStatusBoxProps {
     webAPIStatus: WebAPIStatus | null;
+    webAPIServiceInfo: WebAPIServiceInfo | null;
 }
 
 function mapStateToProps(state: State): IWebAPIStatusBoxProps {
     return {
         webAPIStatus: state.communication.webAPIStatus,
+        webAPIServiceInfo: state.communication.webAPIServiceInfo,
     };
 }
 
-const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) => {
+const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
+    {
+        webAPIStatus,
+        webAPIServiceInfo
+    }) => {
     const history = useHistory();
 
     const reload = () => {
@@ -31,7 +37,7 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
         history.replace("/");
     };
 
-    switch (props.webAPIStatus) {
+    switch (webAPIStatus) {
         case 'open':
             return null;
         case 'login':
@@ -65,8 +71,17 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (props) =>
                 isWaiting={true}
             />);
         case 'closed':
+            const autoStopInfo = webAPIServiceInfo.autoStopInfo;
+            let message: string;
+            if (autoStopInfo
+                && autoStopInfo.inactivityTime >= autoStopInfo.availableTime - 5) {
+                message='Cate service has been shut-down due to inactivity. ' +
+                        'Press "Retry" to relaunch.';
+            } else {
+                message='The connection to the Cate service has been closed unexpectedly.';
+            }
             return (<StatusBox
-                message={'Oops! The connection to the Cate service has been closed unexpectedly.'}
+                message={message}
                 icon="offline"
                 isWaiting={false}
                 onRetry={reload}

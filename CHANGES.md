@@ -3,15 +3,19 @@
 * Added hint in DATA SOURCES panel addressing the case
   where loading seems to take forever.
 
-* Cate App will now display a warning dialog when there is not much 
-  time left until the Cate backend service will automatically shut 
-  down due to service inactivity. (#164)
+* Now displaying a warning dialog when there is not much 
+  time left until the Cate backend service will automatically 
+  shut down due to service inactivity. (#164)
+
+* If connection is closed, there are now two different message boxes.
+  depending on whether the server was automatically shutdown or
+  the connection closed unexpectedly. 
 
 * Outputting more information to investigate into 
   unintentionally closed WebSocket connections:
   - Allow toasts to stay longer for such errors (2 minutes).
   - Provide more details on the console. 
-  
+
 ### Changes 3.1.0
 
 * Adapted to Cate Web API 3.1.x which changed in an 

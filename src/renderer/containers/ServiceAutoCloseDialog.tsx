@@ -5,6 +5,10 @@ import { connect, DispatchProp } from 'react-redux';
 import * as selectors from '../selectors';
 import { ServiceInfoAPI } from '../webapi/apis/ServiceInfoAPI';
 
+// Duration in seconds the ServiceAutoCloseDialog is
+// shown before server auto-shutdown.
+//
+const DIALOG_DURATION = 15 * 60;
 
 interface IServiceAutoCloseDialogProps {
     webAPIServiceInfo: WebAPIServiceInfo | null;
@@ -12,11 +16,9 @@ interface IServiceAutoCloseDialogProps {
 }
 
 function mapStateToProps(state: State): IServiceAutoCloseDialogProps {
-    const webAPIServiceInfo = selectors.webAPIServiceInfoSelector(state);
-    const webAPIServiceURL = selectors.webAPIServiceURLSelector(state);
     return {
-        webAPIServiceInfo,
-        webAPIServiceURL,
+        webAPIServiceInfo: selectors.webAPIServiceInfoSelector(state),
+        webAPIServiceURL: selectors.webAPIServiceURLSelector(state),
     };
 }
 
@@ -35,16 +37,15 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
         return null;
     }
 
-    const availableTime = autoStopInfo.availableTime || (5 * 60);
-    const remainingTimeMin = 1;
-    const remainingTimeMax = Math.min(0.25 * availableTime, 15 * 60);
-
-    const remainingTime = autoStopInfo.remainingTime;
-    if (!remainingTime) {
+    const {availableTime, remainingTime, inactivityTime} = autoStopInfo;
+    if (!availableTime || !remainingTime || !inactivityTime) {
         return null;
     }
 
-    const shouldShow = remainingTime > remainingTimeMin && remainingTime < remainingTimeMax;
+    const remainingTimeMin = 1;
+    const remainingTimeMax = Math.min(DIALOG_DURATION, availableTime);
+    const shouldShow = remainingTime > remainingTimeMin
+                       && remainingTime < remainingTimeMax;
     if (!shouldShow) {
         return null;
     }
@@ -68,13 +69,16 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
         return (
             <div>
                 <p>
-                    The Cate service will close soon due to inactivity!
-                    You will then need to reconnect manually.
-                    Your unsaved changes will be lost.
+                    The Cate service will shutdown soon due to inactivity
+                    since {formatSeconds(inactivityTime)}.
+                    After shutdown you will need to reconnect/login first.
+                    Unsaved changes will be lost.
                 </p>
                 <p>
                     The remaining time is <strong>{formatSeconds(remainingTime)}</strong>.
-                    You are inactive since <strong>{formatSeconds(autoStopInfo.inactivityTime)}</strong>.
+                </p>
+                <p>
+                    Press "Keep Alive" to prevent the shutdown.
                 </p>
             </div>
         );
