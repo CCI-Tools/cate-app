@@ -8,7 +8,7 @@ import { ServiceInfoAPI } from '../webapi/apis/ServiceInfoAPI';
 // Duration in seconds the ServiceAutoCloseDialog is
 // shown before server auto-shutdown.
 //
-const DIALOG_DURATION = 15 * 60;
+const DIALOG_DURATION = (process.env.NODE_ENV === 'development' ? 1 : 15) * 60;
 
 interface IServiceAutoCloseDialogProps {
     webAPIServiceInfo: WebAPIServiceInfo | null;
