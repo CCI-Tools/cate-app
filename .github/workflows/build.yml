@@ -93,9 +93,9 @@ jobs:
       - name: cat-result
         working-directory: ./k8s/cate/helm
         run: |
-          head -n 100 values-dev.yaml
-          head -n 100 values-stage.yaml
-          head -n 100 values-prod.yaml
+          head -n 16 values-dev.yaml
+          head -n 16 values-stage.yaml
+          head -n 16 values-prod.yaml
       - name: set-version-tag-cate
         uses: bc-org/gha-update-application-version-tags@main
         with:
