@@ -1,5 +1,8 @@
 ### Changes 3.1.1 (in dev)
 
+* Added hint in DATA SOURCES panel addressing the case
+  where loading seems to take forever.
+
 * Cate App will now display a warning dialog when there is not much 
   time left until the Cate backend service will automatically shut 
   down due to service inactivity. (#164)
