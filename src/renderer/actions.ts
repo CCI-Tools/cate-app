@@ -1248,6 +1248,7 @@ export function newWorkspace(workspacePath: string | null): ThunkAction {
             } else {
                 dispatch(setSelectedWorkspaceResourceName(null));
             }
+            dispatch(savePreferences());
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1285,6 +1286,7 @@ export function openWorkspace(workspacePath?: string | null): ThunkAction {
             } else {
                 dispatch(setSelectedWorkspaceResourceName(null));
             }
+            dispatch(savePreferences());
         }
 
         function planB() {
