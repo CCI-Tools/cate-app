@@ -1,5 +1,8 @@
 ### Changes 3.1.1 (in dev)
 
+* Added hint in DATA SOURCES panel addressing the case
+  where loading seems to take forever.
+
 * Outputting more information to investigate into 
   unintentionally closed WebSocket connections:
   - Allow toasts to stay longer for such errors (2 minutes).
