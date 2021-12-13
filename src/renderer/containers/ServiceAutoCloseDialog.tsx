@@ -69,9 +69,9 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
         return (
             <div>
                 <p>
-                    The Cate service will shutdown soon due to inactivity
+                    The Cate service will shut down soon due to inactivity
                     since {formatSeconds(inactivityTime)}.
-                    After shutdown you will need to reconnect/login first.
+                    After the shutdown you will need to reconnect/login first.
                     Unsaved changes will be lost.
                 </p>
                 <p>
@@ -87,7 +87,7 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
     return (
         <ModalDialog
             isOpen={true}
-            title="Service Shut-down Ahead"
+            title="Service Shutdown Ahead"
             icon="offline"
             noCancelButton={true}
             confirmTitle="Keep Alive"

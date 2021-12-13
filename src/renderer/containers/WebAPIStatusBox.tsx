@@ -75,7 +75,7 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
             let message: string;
             if (autoStopInfo
                 && autoStopInfo.inactivityTime >= autoStopInfo.availableTime - 5) {
-                message='Cate service has been shut-down due to inactivity. ' +
+                message='Cate service has been shut down due to inactivity. ' +
                         'Press "Retry" to try reconnecting.';
             } else {
                 message='The connection to the Cate service has been closed unexpectedly.';
