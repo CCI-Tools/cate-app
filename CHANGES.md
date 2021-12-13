@@ -1,4 +1,4 @@
-### Changes 3.1.1 (in dev)
+### Changes 3.1.1
 
 * Added hint in DATA SOURCES panel addressing the case
   where loading seems to take forever.
