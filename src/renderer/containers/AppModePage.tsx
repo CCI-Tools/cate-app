@@ -1,15 +1,15 @@
+import { Button, Checkbox, Icon, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
+import { useKeycloak } from '@react-keycloak/web'
 import * as React from 'react';
 import { CSSProperties, useEffect, useState } from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { useHistory } from "react-router-dom";
-import { useKeycloak } from '@react-keycloak/web'
-import { Button, Checkbox, Icon, InputGroup, Intent, Spinner, Tooltip } from '@blueprintjs/core';
-import GdprBanner from './GdprBanner';
 
 import { TermsAndConditions } from '../components/TermsAndConditions';
 import { DEFAULT_SERVICE_URL } from '../initial-state';
-import { State } from '../state';
 import cateIcon from '../resources/cate-icon-512.png';
+import { State } from '../state';
+import GdprBanner from './GdprBanner';
 import VersionTags from './VersionTags';
 
 
@@ -135,6 +135,13 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (
                     >
                         I agree to the&nbsp;<TermsAndConditions/>
                     </Checkbox>
+                    <a
+                        href="https://climate.esa.int/en/helpdesk"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        I need support please!
+                    </a>
                 </div>
                 <Button className={'bp3-large'}
                         style={{marginTop: 18}}
