@@ -36,7 +36,9 @@ import {
     VariableImageLayerState,
     VariableLayerBase,
     VariableState,
-    VectorLayerState, WebAPIServiceInfo, WebAPIStatus,
+    VectorLayerState, 
+    WebAPIServiceInfo, 
+    WebAPIStatus,
     WorkflowStepState,
     WorkspaceState,
     WorldViewDataState
