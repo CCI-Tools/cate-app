@@ -66,6 +66,16 @@ export interface WebAPIServiceInfo {
     userRootMode: boolean;
     hostOS?: HostOS;
     dependencies?: {[packageName: string]: string};
+    autoStopInfo?: WebAPIAutoStopInfo;
+}
+
+export interface WebAPIAutoStopInfo {
+    // Configured auto-stop time in seconds
+    availableTime: number;
+    // Duration in seconds of service inactivity
+    inactivityTime: number;
+    // Duration in seconds remaining until service auto-stop
+    remainingTime: number;
 }
 
 export interface HubStatus {

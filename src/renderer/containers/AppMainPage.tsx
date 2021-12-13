@@ -10,6 +10,7 @@ import AppBar from './AppBar';
 import ChooseWorkspaceDialog, { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './ChooseWorkspaceDialog';
 import GlobeView from './GlobeView'
 import FigureView from './FigureView';
+import ServiceAutoCloseDialog from './ServiceAutoCloseDialog';
 import TableView from './TableView';
 import DataSourcesPanel from './DataSourcesPanel';
 import OperationsPanel from './OperationsPanel';
@@ -169,6 +170,7 @@ const _AppMainPage: React.FC<IApplicationPageProps & IDispatch> = (
             <FileUploadDialog/>
             <FileDownloadDialog/>
             <SaveWorkspaceAsDialog/>
+            <ServiceAutoCloseDialog/>
             <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
             <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
             <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>

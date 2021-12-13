@@ -60,7 +60,8 @@ import {
     StyleContext,
     TaskState,
     VariableLayerBase,
-    VariableState,
+    VariableState, 
+    WebAPIAutoStopInfo,
     WebAPIServiceInfo,
     WebAPIStatus,
     WorkspaceState,
@@ -138,6 +139,7 @@ export type ThunkAction = (dispatch: Dispatch, getState: GetState) => any;
 
 export const UPDATE_INITIAL_STATE = 'UPDATE_INITIAL_STATE';
 export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
+export const SET_WEBAPI_AUTO_STOP_INFO = 'SET_WEBAPI_AUTO_STOP_INFO';
 export const SET_WEBAPI_CLIENT = 'SET_WEBAPI_CLIENT';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
 export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
@@ -284,6 +286,10 @@ export function setWebAPIStatus(webAPIStatus: WebAPIStatus): Action {
     return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus}};
 }
 
+export function setWebAPIAutoStopInfo(webAPIAutoStopInfo: WebAPIAutoStopInfo): Action {
+    return {type: SET_WEBAPI_AUTO_STOP_INFO, payload: {webAPIAutoStopInfo}};
+}
+
 export function setWebAPIClient(webAPIClient: WebAPIClient): Action {
     return {type: SET_WEBAPI_CLIENT, payload: {webAPIClient}};
 }
@@ -327,12 +333,22 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
 
         /**
          * Called to inform backend we are still alive.
-         * Hopefully avoids closing WebSocket connection.
+         * Hopefully avoids closing WebSocket connection, see issue #150.
          */
         const keepAlive = () => {
             if (webAPIClient.isOpen) {
-                console.debug("calling keep_alive()");
-                webAPIClient.call('keep_alive', [])
+                webAPIClient
+                    .call('keep_alive', [])
+                    .then((result: any) => {
+                        if (result) {
+                            const info: WebAPIAutoStopInfo = {
+                                availableTime: result.available_time,
+                                inactivityTime: result.inactivity_time,
+                                remainingTime: result.remaining_time,
+                            }
+                            dispatch(setWebAPIAutoStopInfo(info));
+                        }
+                    });
             }
         };
 
