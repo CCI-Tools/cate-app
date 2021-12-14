@@ -360,7 +360,6 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             dispatch(loadBackendConfig());
             dispatch(loadColorMaps());
             dispatch(loadPreferences());
-            dispatch(loadDataStores());
             dispatch(loadOperations());
             keepAliveTimer = setInterval(keepAlive, keepAliveSeconds * 1000);
         };
@@ -490,6 +489,7 @@ export function loadPreferences(): ThunkAction {
             dispatch(loadInitialWorkspace(
                 getState().session.reopenLastWorkspace,
                 getState().session.lastWorkspacePath));
+            dispatch(loadDataStores());
         }
 
         function planB(jobFailure: JobFailure) {
