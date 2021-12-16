@@ -486,10 +486,10 @@ export function loadPreferences(): ThunkAction {
 
         function action(session: Partial<SessionState>) {
             dispatch(updateSessionState(session));
+            dispatch(loadDataStores());
             dispatch(loadInitialWorkspace(
                 getState().session.reopenLastWorkspace,
                 getState().session.lastWorkspacePath));
-            dispatch(loadDataStores());
         }
 
         function planB(jobFailure: JobFailure) {
