@@ -36,7 +36,9 @@ import {
     VariableImageLayerState,
     VariableLayerBase,
     VariableState,
-    VectorLayerState,
+    VectorLayerState, 
+    WebAPIServiceInfo, 
+    WebAPIStatus,
     WorkflowStepState,
     WorkspaceState,
     WorldViewDataState
@@ -81,6 +83,8 @@ export const offlineModeSelector = (state: State): boolean => state.session.offl
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Remote API selectors
 
+export const webAPIServiceInfoSelector = (state: State): WebAPIServiceInfo | null => state.communication.webAPIServiceInfo;
+export const webAPIStatusSelector = (state: State): WebAPIStatus | null => state.communication.webAPIStatus;
 export const webAPIClientSelector = (state: State): WebAPIClient | null => state.communication.webAPIClient;
 export const webAPIServiceURLSelector = (state: State): string => state.communication.webAPIServiceURL;
 

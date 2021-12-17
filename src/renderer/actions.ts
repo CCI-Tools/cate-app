@@ -60,7 +60,8 @@ import {
     StyleContext,
     TaskState,
     VariableLayerBase,
-    VariableState,
+    VariableState, 
+    WebAPIAutoStopInfo,
     WebAPIServiceInfo,
     WebAPIStatus,
     WorkspaceState,
@@ -138,6 +139,7 @@ export type ThunkAction = (dispatch: Dispatch, getState: GetState) => any;
 
 export const UPDATE_INITIAL_STATE = 'UPDATE_INITIAL_STATE';
 export const SET_WEBAPI_STATUS = 'SET_WEBAPI_STATUS';
+export const SET_WEBAPI_AUTO_STOP_INFO = 'SET_WEBAPI_AUTO_STOP_INFO';
 export const SET_WEBAPI_CLIENT = 'SET_WEBAPI_CLIENT';
 export const SET_WEBAPI_SERVICE_URL = 'SET_WEBAPI_SERVICE_URL';
 export const SET_WEBAPI_SERVICE_INFO = 'SET_WEBAPI_SERVICE_INFO';
@@ -284,6 +286,10 @@ export function setWebAPIStatus(webAPIStatus: WebAPIStatus): Action {
     return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus}};
 }
 
+export function setWebAPIAutoStopInfo(webAPIAutoStopInfo: WebAPIAutoStopInfo): Action {
+    return {type: SET_WEBAPI_AUTO_STOP_INFO, payload: {webAPIAutoStopInfo}};
+}
+
 export function setWebAPIClient(webAPIClient: WebAPIClient): Action {
     return {type: SET_WEBAPI_CLIENT, payload: {webAPIClient}};
 }
@@ -327,12 +333,22 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
 
         /**
          * Called to inform backend we are still alive.
-         * Hopefully avoids closing WebSocket connection.
+         * Hopefully avoids closing WebSocket connection, see issue #150.
          */
         const keepAlive = () => {
             if (webAPIClient.isOpen) {
-                console.debug("calling keep_alive()");
-                webAPIClient.call('keep_alive', [])
+                webAPIClient
+                    .call('keep_alive', [])
+                    .then((result: any) => {
+                        if (result) {
+                            const info: WebAPIAutoStopInfo = {
+                                availableTime: result.available_time,
+                                inactivityTime: result.inactivity_time,
+                                remainingTime: result.remaining_time,
+                            }
+                            dispatch(setWebAPIAutoStopInfo(info));
+                        }
+                    });
             }
         };
 
@@ -344,7 +360,6 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
             dispatch(loadBackendConfig());
             dispatch(loadColorMaps());
             dispatch(loadPreferences());
-            dispatch(loadDataStores());
             dispatch(loadOperations());
             keepAliveTimer = setInterval(keepAlive, keepAliveSeconds * 1000);
         };
@@ -471,6 +486,7 @@ export function loadPreferences(): ThunkAction {
 
         function action(session: Partial<SessionState>) {
             dispatch(updateSessionState(session));
+            dispatch(loadDataStores());
             dispatch(loadInitialWorkspace(
                 getState().session.reopenLastWorkspace,
                 getState().session.lastWorkspacePath));
@@ -1248,6 +1264,7 @@ export function newWorkspace(workspacePath: string | null): ThunkAction {
             } else {
                 dispatch(setSelectedWorkspaceResourceName(null));
             }
+            dispatch(savePreferences());
         }
 
         function planB(jobFailure: JobFailure) {
@@ -1285,6 +1302,7 @@ export function openWorkspace(workspacePath?: string | null): ThunkAction {
             } else {
                 dispatch(setSelectedWorkspaceResourceName(null));
             }
+            dispatch(savePreferences());
         }
 
         function planB() {
@@ -1702,7 +1720,11 @@ export function setCurrentWorkspace(workspace: WorkspaceState): ThunkAction {
         dispatch(setCurrentWorkspaceImpl(workspace));
         const lastWorkspacePath = workspace.baseDir;
         if (getState().session.lastWorkspacePath !== lastWorkspacePath) {
-            dispatch(updateSessionState({lastWorkspacePath}));
+            if (workspace.isScratch) {
+                dispatch(updateSessionState({'lastWorkspacePath': null}));
+            } else {
+                dispatch(updateSessionState({lastWorkspacePath}));
+            }
         }
     }
 }
