@@ -5,6 +5,11 @@ on:
   release:
     types: [published]
 
+env:
+  APP_NAME: cate-app
+  ORG_NAME: ccitools
+  REG_NAME: quay.io
+
 jobs:
   build-docker-image:
     runs-on: ubuntu-latest
