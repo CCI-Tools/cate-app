@@ -97,7 +97,7 @@ jobs:
           head -n 16 values-dev.yaml
           head -n 16 values-stage.yaml
           head -n 16 values-prod.yaml
-      - name: set-version-tag-cate
+      - name: set-version-tag-cate-app
         uses: bc-org/gha-update-application-version-tags@main
         with:
           app: ${{ env.APP_NAME }}
