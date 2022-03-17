@@ -1,5 +1,6 @@
 ### Changes 3.1.2 (in development)
 
+* Fixed issue where no data sources were shown right after start. (#56)
 
 ### Changes 3.1.1
 
