@@ -1,7 +1,11 @@
-### Changes 3.1.2 (in development)
+### Changes 3.1.3 (in development)
 
 * Added button "I need support" to start screen
   that refers to the ESA Helpdesk page. (#181) 
+
+### Changes 3.1.2
+
+* Fixed issue where no data sources were shown right after start. (#56)
 
 ### Changes 3.1.1
 
