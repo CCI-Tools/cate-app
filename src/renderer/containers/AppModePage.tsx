@@ -140,7 +140,7 @@ const _AppModePage: React.FC<IAppModePageProps & IDispatch> = (
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        I need support please!
+                        Click here in case you need support
                     </a>
                 </div>
                 <Button className={'bp3-large'}
