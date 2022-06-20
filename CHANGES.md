@@ -1,7 +1,7 @@
 ### Changes 3.1.3 (in development)
 
-* Added button "I need support" to start screen
-  that refers to the ESA Helpdesk page. (#181) 
+* Added button "Click here in case you need support" 
+  to start screen that refers to the ESA Helpdesk page. (#181)
 
 ### Changes 3.1.2
 
