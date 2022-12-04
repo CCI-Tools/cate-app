@@ -60,7 +60,7 @@ import {
     StyleContext,
     TaskState,
     VariableLayerBase,
-    VariableState, 
+    VariableState,
     WebAPIAutoStopInfo,
     WebAPIServiceInfo,
     WebAPIStatus,
@@ -98,7 +98,7 @@ import {
     WebAPIClient
 } from './webapi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
-import { ServiceProvisionAPI, ServiceStatus } from './webapi/apis/ServiceProvisionAPI';
+import { ServiceProvisionAPI, PodStatus } from './webapi/apis/ServiceProvisionAPI';
 import { HttpError } from './webapi/HttpError';
 import { CONFIG } from '../config';
 
@@ -200,12 +200,12 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
             return;
         }
 
-        function isServiceRunning(serviceStatus: ServiceStatus | null) {
+        function isPodRunning(serviceStatus: PodStatus | null) {
             return serviceStatus && serviceStatus.phase === 'Running';
         }
 
-        const serviceStatus = await serviceProvisionAPI.getServiceStatus(userProfile.username, token);
-        if (isServiceRunning(serviceStatus)) {
+        const podStatus = await serviceProvisionAPI.getPodStatus(userProfile.username, token);
+        if (isPodRunning(podStatus)) {
             dispatch(connectWebAPIService(serviceURL));
         } else {
             const handleServiceError = (error: any) => {
@@ -213,16 +213,16 @@ export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): Thunk
                 dispatch(setWebAPIStatus('error'));
             };
 
-            const getServiceStatus = async () => {
+            const getPodStatus = async () => {
                 try {
-                    return await serviceProvisionAPI.getServiceStatus(userProfile.username, token);
+                    return await serviceProvisionAPI.getPodStatus(userProfile.username, token);
                 } catch (error) {
                     return null;
                 }
             };
 
-            invokeUntil(getServiceStatus,
-                        isServiceRunning,
+            invokeUntil(getPodStatus,
+                        isPodRunning,
                         () => dispatch(connectWebAPIService(serviceURL)),
                         handleServiceError,
                         2 * SECOND,
@@ -353,7 +353,7 @@ export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
         };
 
         let keepAliveTimer = null;
-        const keepAliveSeconds = 5;
+        let keepAliveSeconds = (process.env.NODE_ENV === 'development') ? 1 : 5;
 
         webAPIClient.onOpen = () => {
             dispatch(setWebAPIClient(webAPIClient));
@@ -1284,7 +1284,7 @@ export function newWorkspace(workspacePath: string | null): ThunkAction {
 }
 
 /**
- * Asynchronously open the a workspace.
+ * Asynchronously open a workspace.
  *
  * @param workspacePath workspace path
  * @returns a Redux thunk action
@@ -1652,7 +1652,7 @@ export function deleteResourceInteractive(resName: string): ThunkAction {
 }
 
 /**
- * If current workspace is scratch workspace, delegate to "save as" action" otherwise save it.
+ * If current workspace is scratch workspace, delegate to "save as" action otherwise save it.
  *
  * @returns a Redux thunk action
  */
@@ -2099,8 +2099,8 @@ export function updateEntityStyle(view: ViewState<any>, entity: Cesium.Entity, s
         // We cannot dispatch an action with an entity payload, because action logging will no longer work
         // (probably because Cesium Entities are not plain objects and contain numerous references
         // to other complex Cesium objects).
-        // This is why we pass an the entity ID as payload.
-        // However entity IDs are only unique within a Cesium Entity DataSource / Cate Vector Layer,
+        // This is why we pass the entity ID as payload.
+        // However, entity IDs are only unique within a Cesium Entity DataSource / Cate Vector Layer,
         // therefore must pass the layer ID and the entity ID to identify the entity.
         if (layer) {
             // We will only dispatch actions for entities belong to our own layers.
@@ -2667,12 +2667,12 @@ export function handleFetchError(error: any, message: string) {
     showToast({type: 'error', text: message + suffix});
 }
 
-function invokeUntil(callback: () => Promise<any>,
-                     condition: (result: any) => boolean,
-                     onSuccess: (result: any) => any,
-                     onError: (error: any) => any,
-                     interval: number,
-                     timeout: number) {
+function invokeUntil<T>(callback: () => Promise<T>,
+                        condition: (result: T) => boolean,
+                        onSuccess: (result: T) => any,
+                        onError: (error: any) => any,
+                        interval: number,
+                        timeout: number) {
     let startTime = new Date().getTime();
     let func: () => void;
     // Uncomment for debugging

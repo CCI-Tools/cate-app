@@ -1,17 +1,58 @@
 import { HttpError } from '../HttpError';
 import { CONFIG } from '../../../config';
 
+export interface Condition {
+    type: string;
+    status: string;
+    reason: string | null;
+    message: string | null;
+    last_probe_time: string | null;
+    last_transition_time: string;
+}
 
-export interface ServiceStatus {
-    host_ip: string;
-    init_container_statuses?: string | null;
+export interface ContainerStateValue {
+    container_id?: string;
+    exit_code?: number;
+    finished_at?: string;
+    message?: string | null;
+    reason?: string;
+    signal?: string | null;
+    started_at?: string;
+}
+
+export interface ContainerState {
+    running: ContainerStateValue | null;
+    terminated: ContainerStateValue | null;
+    waiting: ContainerStateValue | null;
+}
+
+export interface ContainerStatus {
+    name: string;
+    ready: string;
+    restart_count: number;
+    started: boolean;
+    image: string;
+    image_id: string;
+    container_id: string;
+    state: ContainerState;
+    last_state: ContainerState;
+}
+
+export interface PodStatus {
+    phase: string;
+    host_ip?: string;
+    start_time?: string;
     message?: string | null;
     nominated_node_name?: string | null;
-    phase: string;
-    pod_ip: string;
-    qos_class: string;
+    pod_ip?: string;
+    qos_class?: string;
     reason?: string | null;
-    start_time?: string;
+    pod_i_ps?: Array<{ ip: string }>;
+
+    conditions?: Condition[];
+    container_statuses?: ContainerStatus[];
+    init_container_statuses?: null | ContainerStatus[];
+    ephemeral_container_statuses?: null | ContainerStatus[];
 }
 
 interface StartResult {
@@ -28,12 +69,12 @@ interface CountResult {
 export class ServiceProvisionAPI {
 
     /**
-     * Get status of the user's webapi (RUNNING, PENDING, FAILED, ...
+     * Get status of the user's webapi (RUNNING, PENDING, FAILED, ...).
      * See https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
      */
-    async getServiceStatus(username: string, token: string): Promise<ServiceStatus> {
-        return await this.performServiceOp<ServiceStatus>(CONFIG.webApi.managApiUrl,
-                                                          'GET', username, token);
+    async getPodStatus(username: string, token?: string): Promise<PodStatus> {
+        return await this.performServiceOp<PodStatus>(CONFIG.webApi.managApiUrl,
+                                                      'GET', username, token);
     }
 
     async startService(username: string, token: string): Promise<string> {
