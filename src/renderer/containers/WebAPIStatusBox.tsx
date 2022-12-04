@@ -276,7 +276,7 @@ const ExtendedMessage: React.FC<IExtendedMessageProps> = (
                 <pre className="user-selectable"
                      style={{
                          overflow: 'auto',
-                         width: '36em',
+                         width: '32em',
                          height: '20em'
                      }}
                 >
