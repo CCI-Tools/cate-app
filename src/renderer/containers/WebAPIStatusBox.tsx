@@ -271,7 +271,7 @@ const ExtendedMessage: React.FC<IExtendedMessageProps> = (
                     {showDetails ? 'Hide Details' : 'Show Details'}
                 </Button>
                 <Collapse
-                    isOpen={this.state.showDetails}
+                    isOpen={showDetails}
                 >
                 <pre className="user-selectable"
                      style={{
