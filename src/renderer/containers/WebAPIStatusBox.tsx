@@ -10,17 +10,6 @@ import { showToast } from '../toast';
 import { PodStatus, ServiceProvisionAPI } from "../webapi/apis/ServiceProvisionAPI";
 
 
-const CL_HINT = (
-    <>
-        This error typically occurs if our limited cloud resources are depleted.
-        This is likely due to high server loads caused by running demanding tasks
-        and/or multiple users competing for resources.
-        To mitigate loss of data and time, we recommend that you save your workspace
-        often and enable the setting <strong>Reopen last workspace on startup</strong>
-        in the preferences.
-    </>
-);
-
 interface IDispatch {
     dispatch: Dispatch<State>;
 }
@@ -110,7 +99,6 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
                     onRetry={reload}
                     onCancel={goHome}
                     username={username}
-                    hint={CL_HINT}
                 />);
             }
         case 'error':
@@ -193,7 +181,6 @@ const StatusBox: React.FC<IStatusBoxProps> = ({
 
 interface IErrorBoxProps extends IStatusBoxProps {
     username?: string;
-    hint?: React.ReactNode;
 }
 
 const ErrorBox: React.FC<IErrorBoxProps> = (
@@ -204,7 +191,6 @@ const ErrorBox: React.FC<IErrorBoxProps> = (
         onRetry,
         onCancel,
         username,
-        hint,
     }
 ) => {
     const extendedMessage = (
@@ -213,7 +199,6 @@ const ErrorBox: React.FC<IErrorBoxProps> = (
             {username && (
                 <PodStatusMessage
                     username={username}
-                    hint={hint}
                 />
             )}
         </>
@@ -239,7 +224,6 @@ interface IPodStatusMessageProps {
 const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
     {
         username,
-        hint,
     }) => {
     const [podStatusState, setPodStatusState] = React.useState<PodStatusState>('init');
     const [podStatus, setPodStatus] = React.useState<PodStatus>(getDummyPodStatus());
@@ -289,11 +273,14 @@ const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
                 details={JSON.stringify(podStatus, null, 2)}
                 onCopyDetails={handleCopyDetails}
             />
-            {hint && (
-                <div style={{marginTop: '0.5em'}} className='bp4-text-small bp4-text-muted'>
-                    {hint}
-                </div>
-            )}
+            <div style={{marginTop: '0.5em'}} className='bp4-text-small bp4-text-muted'>
+                This error typically occurs if our limited cloud resources are depleted.
+                This is likely due to high server loads caused by running demanding tasks
+                and/or multiple users competing for resources.<br/>
+                To mitigate loss of data and time, we recommend that you save your workspace
+                often and enable the setting <strong>Reopen last workspace on startup</strong>
+                in the preferences.
+            </div>
         </>
     );
 };
