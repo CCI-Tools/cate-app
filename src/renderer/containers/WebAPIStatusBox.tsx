@@ -1,11 +1,25 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { Button, Classes, Collapse, Dialog, Icon, IconName, Intent, ProgressBar } from '@blueprintjs/core';
+import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar, Spinner } from '@blueprintjs/core';
+import * as actions from '../actions';
+import MessageDetails from '../components/MessageDetails';
 
 import { State, WebAPIServiceInfo, WebAPIStatus } from '../state';
+import { showToast } from '../toast';
 import { PodStatus, ServiceProvisionAPI } from "../webapi/apis/ServiceProvisionAPI";
 
+
+const CL_HINT = (
+    <>
+        This error typically occurs if our limited cloud resources are depleted.
+        This is likely due to high server loads caused by running demanding tasks
+        and/or multiple users competing for resources.
+        To mitigate loss of data and time, we recommend that you save your workspace
+        often and enable the setting <strong>Reopen last workspace on startup</strong>
+        in the preferences.
+    </>
+);
 
 interface IDispatch {
     dispatch: Dispatch<State>;
@@ -80,7 +94,7 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
             if (autoStopInfo
                 && autoStopInfo.inactivityTime >= autoStopInfo.availableTime - 5) {
                 message = 'Cate service has been shut down due to inactivity. ' +
-                    'Press "Retry" to try reconnecting.';
+                          'Press "Retry" to try reconnecting.';
                 return (<StatusBox
                     message={message}
                     icon="offline"
@@ -96,6 +110,7 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
                     onRetry={reload}
                     onCancel={goHome}
                     username={username}
+                    hint={CL_HINT}
                 />);
             }
         case 'error':
@@ -176,23 +191,58 @@ const StatusBox: React.FC<IStatusBoxProps> = ({
 
 //////////////////////////////////////////////////////////////////////////////
 
-type PodStatusState = 'init' | 'loading' | 'success' | 'error';
-
 interface IErrorBoxProps extends IStatusBoxProps {
     username?: string;
+    hint?: React.ReactNode;
 }
 
-const ErrorBox: React.FC<IErrorBoxProps> = ({
-                                                message,
-                                                icon,
-                                                isWaiting,
-                                                onRetry,
-                                                onCancel,
-                                                username,
-                                            }) => {
+const ErrorBox: React.FC<IErrorBoxProps> = (
+    {
+        message,
+        icon,
+        isWaiting,
+        onRetry,
+        onCancel,
+        username,
+        hint,
+    }
+) => {
+    const extendedMessage = (
+        <>
+            {message}
+            {username && (
+                <PodStatusMessage
+                    username={username}
+                    hint={hint}
+                />
+            )}
+        </>
+    );
+    return (<StatusBox
+        message={extendedMessage}
+        icon={icon}
+        isWaiting={isWaiting}
+        onRetry={onRetry}
+        onCancel={onCancel}
+    />);
+};
 
+//////////////////////////////////////////////////////////////////////////////
+
+type PodStatusState = 'init' | 'loading' | 'success' | 'error';
+
+interface IPodStatusMessageProps {
+    username: string;
+    hint?: React.ReactNode;
+}
+
+const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
+    {
+        username,
+        hint,
+    }) => {
     const [podStatusState, setPodStatusState] = React.useState<PodStatusState>('init');
-    const [podStatus, setPodStatus] = React.useState<PodStatus>(null);
+    const [podStatus, setPodStatus] = React.useState<PodStatus>(getDummyPodStatus());
     React.useEffect(() => {
         if (username && podStatusState === 'init') {
             setPodStatusState('loading');
@@ -205,43 +255,9 @@ const ErrorBox: React.FC<IErrorBoxProps> = ({
         }
     }, [username, podStatusState]);
 
-
-    const extendedMessage = (
-        <>
-            {message}
-            <ExtendedMessage
-                podStatusState={podStatusState}
-                podStatus={podStatus}
-            />
-        </>
-    );
-
-    return (<StatusBox
-        message={extendedMessage}
-        icon={icon}
-        isWaiting={isWaiting || podStatusState === 'init' || podStatusState === 'loading'}
-        onRetry={onRetry}
-        onCancel={onCancel}
-    />);
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-interface IExtendedMessageProps {
-    podStatusState: PodStatusState;
-    podStatus?: PodStatus | null;
-}
-
-const ExtendedMessage: React.FC<IExtendedMessageProps> = (
-    {
-        podStatusState,
-        podStatus,
-    }) => {
-    const [showDetails, setShowDetails] = React.useState(false);
-
     let extraMessage = null;
     if (podStatusState === 'init' || podStatusState === 'loading') {
-        extraMessage = 'Fetching container status...';
+        extraMessage = (<div>Fetching container status...&nbsp;<Spinner size={16}/></div>);
     } else if (podStatusState === 'error') {
         extraMessage = 'Failed fetching container status.';
     } else if (podStatusState === 'success' && podStatus) {
@@ -261,29 +277,59 @@ const ExtendedMessage: React.FC<IExtendedMessageProps> = (
         return (<div style={{marginTop: '0.5em'}}>{extraMessage}</div>);
     }
 
+    function handleCopyDetails(details: string) {
+        actions.copyTextToClipboard(details);
+        showToast({type: 'info', text: 'Details copied to clipboard.'});
+    }
+
     return (
         <>
             <div style={{marginTop: '0.5em'}}>{extraMessage}</div>
-            <div style={{marginTop: '0.5em'}}>
-                <Button
-                    onClick={() => setShowDetails(!showDetails)}
-                >
-                    {showDetails ? 'Hide Details' : 'Show Details'}
-                </Button>
-                <Collapse
-                    isOpen={showDetails}
-                >
-                <pre className="user-selectable"
-                     style={{
-                         overflow: 'auto',
-                         width: '32em',
-                         height: '20em'
-                     }}
-                >
-                    {JSON.stringify(podStatus, null, 2)}
-                </pre>
-                </Collapse>
-            </div>
+            <MessageDetails
+                details={JSON.stringify(podStatus, null, 2)}
+                onCopyDetails={handleCopyDetails}
+            />
+            {hint && (
+                <div style={{marginTop: '0.5em'}} className='bp4-text-small bp4-text-muted'>
+                    {hint}
+                </div>
+            )}
         </>
     );
 };
+
+
+function getDummyPodStatus(): PodStatus {
+    return {
+        conditions: [],
+        container_statuses: [{
+            name: 'asaamn adsnvladva',
+            ready: 'True',
+            restart_count: 2,
+            started: true,
+            image: 'ldkj avoij aodijfv aodijv av',
+            image_id: 'ldkj avoij aodijfv aodijv av',
+            container_id: 'ldkj avoij aodijfv aodijv av',
+            state: {
+                running: null,
+                terminated: {},
+                waiting: null,
+            },
+            last_state: {
+                running: null,
+                terminated: null,
+                waiting: null,
+            }
+        }],
+        ephemeral_container_statuses: [],
+        host_ip: '',
+        init_container_statuses: [],
+        message: '',
+        nominated_node_name: '',
+        phase: 'Terminated',
+        pod_ip: '127.8.3.0',
+        qos_class: '',
+        reason: null,
+        start_time: '2022-12-05 10:32:24'
+    };
+}
