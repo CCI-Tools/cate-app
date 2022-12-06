@@ -275,7 +275,7 @@ const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
                 onCopyDetails={handleCopyDetails}
             />
             <div style={{marginTop: '0.5em'}} className='bp4-text-small bp4-text-muted'>
-                This error typically occurs if our limited cloud resources are depleted.
+                This error typically occurs if our cloud resources are depleted.
                 This is likely due to high server loads caused by running demanding tasks
                 and/or multiple users competing for resources.<br/>
                 To mitigate loss of data and time, we recommend that you save your workspace
