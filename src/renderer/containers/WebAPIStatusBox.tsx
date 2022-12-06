@@ -226,7 +226,7 @@ const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
         username,
     }) => {
     const [podStatusState, setPodStatusState] = React.useState<PodStatusState>('init');
-    const [podStatus, setPodStatus] = React.useState<PodStatus>(getDummyPodStatus());
+    const [podStatus, setPodStatus] = React.useState<PodStatus>(null);
     React.useEffect(() => {
         if (username && podStatusState === 'init') {
             setPodStatusState('loading');
@@ -248,7 +248,8 @@ const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
         extraMessage = 'Container error.';
         const containerStatuses = podStatus?.container_statuses;
         if (containerStatuses && containerStatuses.length > 0) {
-            const terminatedState = containerStatuses[0].state?.terminated;
+            const terminatedState = containerStatuses[0].last_state?.terminated
+                || containerStatuses[0].state?.terminated;
             if (terminatedState) {
                 const terminationReason = terminatedState.reason;
                 const terminationExitCode = terminatedState.exit_code;
@@ -278,45 +279,9 @@ const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
                 This is likely due to high server loads caused by running demanding tasks
                 and/or multiple users competing for resources.<br/>
                 To mitigate loss of data and time, we recommend that you save your workspace
-                often and enable the setting <strong>Reopen last workspace on startup</strong>
-                in the preferences.
+                often and enable the setting <strong>Reopen last workspace on startup</strong> in
+                the preferences.
             </div>
         </>
     );
 };
-
-
-function getDummyPodStatus(): PodStatus {
-    return {
-        conditions: [],
-        container_statuses: [{
-            name: 'asaamn adsnvladva',
-            ready: 'True',
-            restart_count: 2,
-            started: true,
-            image: 'ldkj avoij aodijfv aodijv av',
-            image_id: 'ldkj avoij aodijfv aodijv av',
-            container_id: 'ldkj avoij aodijfv aodijv av',
-            state: {
-                running: null,
-                terminated: {},
-                waiting: null,
-            },
-            last_state: {
-                running: null,
-                terminated: null,
-                waiting: null,
-            }
-        }],
-        ephemeral_container_statuses: [],
-        host_ip: '',
-        init_container_statuses: [],
-        message: '',
-        nominated_node_name: '',
-        phase: 'Terminated',
-        pod_ip: '127.8.3.0',
-        qos_class: '',
-        reason: null,
-        start_time: '2022-12-05 10:32:24'
-    };
-}
