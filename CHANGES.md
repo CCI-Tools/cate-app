@@ -1,4 +1,9 @@
-### Changes 3.1.3 (in development)
+### Changes 3.1.3-dev.1 (in development)
+
+* Show last remote container status after connection to server
+  closed unexpectedly. (#150)
+
+### Changes 3.1.3-dev.0 
 
 * Added button "Click here in case you need support" 
   to start screen that refers to the ESA Helpdesk page. (#181)

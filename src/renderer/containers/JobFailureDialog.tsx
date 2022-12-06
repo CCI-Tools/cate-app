@@ -1,7 +1,8 @@
-import { Button, Checkbox, Collapse, Icon, IconName, Intent } from '@blueprintjs/core';
+import { Checkbox, Icon, IconName, Intent } from '@blueprintjs/core';
 import * as React from 'react';
 import { connect, DispatchProp } from 'react-redux';
 import * as actions from '../actions';
+import MessageDetails from '../components/MessageDetails';
 
 import { ModalDialog } from '../components/ModalDialog';
 import * as selectors from '../selectors';
@@ -17,7 +18,6 @@ interface IJobFailureDialogProps {
 
 interface IJobFailureDialogState {
     copyReport: boolean;
-    showDetails: boolean;
 }
 
 function mapStateToProps(state: State): IJobFailureDialogProps {
@@ -43,8 +43,7 @@ class JobFailureDialog extends React.Component<DispatchProp<State> & IJobFailure
         this.handleConfirm = this.handleConfirm.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
         this.handleCopyReport = this.handleCopyReport.bind(this);
-        this.handleShowDetails = this.handleShowDetails.bind(this);
-        this.state = {copyReport: false, showDetails: false};
+        this.state = {copyReport: false};
     }
 
     handleConfirm() {
@@ -75,10 +74,6 @@ class JobFailureDialog extends React.Component<DispatchProp<State> & IJobFailure
 
     handleCopyReport(event) {
         this.setState({copyReport: event.target.checked});
-    }
-
-    handleShowDetails() {
-        this.setState({showDetails: !this.state.showDetails});
     }
 
     render() {
@@ -119,19 +114,7 @@ class JobFailureDialog extends React.Component<DispatchProp<State> & IJobFailure
         let traceback;
         if (!isUserError(this.props.jobFailure)
             && this.props.jobFailure.data && this.props.jobFailure.data.traceback) {
-            traceback = (
-                <div style={{marginTop: '1em'}}>
-                    <Button onClick={this.handleShowDetails}>{this.state.showDetails ? 'Hide' : 'Show'} Details</Button>
-                    <Collapse isOpen={this.state.showDetails}>
-                        <pre className="user-selectable"
-                             style={{
-                                 overflow: 'auto',
-                                 width: '36em',
-                                 height: '20em'
-                             }}>{this.props.jobFailure.data.traceback}</pre>
-                    </Collapse>
-                </div>
-            );
+            traceback = <MessageDetails details={this.props.jobFailure.data.traceback} width={'36em'}/>;
         }
 
         let reporting;

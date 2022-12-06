@@ -2,7 +2,7 @@
 // 1. with the version field in "../package.json".
 // 2. with CATE_PWA_VERSION in "./serviceWorker.ts"
 //
-export const CATE_APP_VERSION = "3.1.3-dev.0";
+export const CATE_APP_VERSION = "3.1.3-dev.1";
 
 const DEFAULT_API_ENDPOINT_DEV = 'https://dev.catehub.brockmann-consult.de/api/v2/';
 const DEFAULT_API_ENDPOINT_PRODUCTION = 'https://catehub.climate.esa.int/api/v2';
