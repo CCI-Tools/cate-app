@@ -8,7 +8,7 @@ import { ServiceInfoAPI } from '../webapi/apis/ServiceInfoAPI';
 // Duration in seconds the ServiceAutoCloseDialog is
 // shown before server auto-shutdown.
 //
-const DIALOG_DURATION = (process.env.NODE_ENV === 'development' ? 1 : 15) * 60;
+const DIALOG_DURATION_MIN = (process.env.NODE_ENV === 'development' ? 1 : 15) * 60;
 
 interface IServiceAutoCloseDialogProps {
     webAPIServiceInfo: WebAPIServiceInfo | null;
@@ -42,8 +42,8 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
         return null;
     }
 
-    const remainingTimeMin = 1;
-    const remainingTimeMax = Math.min(DIALOG_DURATION, availableTime);
+    const remainingTimeMin = 1;  // = dialog disappears 1s before shutdown
+    const remainingTimeMax = Math.max(DIALOG_DURATION_MIN, 0.75 * availableTime);
     const shouldShow = remainingTime > remainingTimeMin
                        && remainingTime < remainingTimeMax;
     if (!shouldShow) {
@@ -70,9 +70,8 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
             <div>
                 <p>
                     The Cate service will shut down soon due to inactivity
-                    since {formatSeconds(inactivityTime)}.
-                    After the shutdown you will need to reconnect/login first.
-                    Unsaved changes will be lost.
+                    since {formatSeconds(inactivityTime)}. After the shutdown
+                    you will need to reconnect/login first. Unsaved changes will be lost.
                 </p>
                 <p>
                     The remaining time is <strong>{formatSeconds(remainingTime)}</strong>.
