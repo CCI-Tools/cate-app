@@ -1,9 +1,11 @@
-### Changes 3.1.3-dev.1 (in development)
+### Changes 3.1.3
+
+* Changed the time until the message is shown that Cate
+  will automatically shut down due to inactivity. 
+  Message is shown after 25% of server's auto-shutdown time. (#150)
 
 * Show last remote container status after connection to server
-  closed unexpectedly. (#150)
-
-### Changes 3.1.3-dev.0 
+  closed unexpectedly and give hint to users how to limit harm. (#150)
 
 * Added button "Click here in case you need support" 
   to start screen that refers to the ESA Helpdesk page. (#181)

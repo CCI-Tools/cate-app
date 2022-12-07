@@ -215,6 +215,7 @@ const ErrorBox: React.FC<IErrorBoxProps> = (
 //////////////////////////////////////////////////////////////////////////////
 
 type PodStatusState = 'init' | 'loading' | 'success' | 'error';
+const REQUEST_POD_STATUS_AFTER = 3;  // seconds
 
 interface IPodStatusMessageProps {
     username: string;
@@ -230,12 +231,14 @@ const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
     React.useEffect(() => {
         if (username && podStatusState === 'init') {
             setPodStatusState('loading');
-            new ServiceProvisionAPI().getPodStatus(username).then(podStatus => {
-                setPodStatusState('success');
-                setPodStatus(podStatus);
-            }).catch(() => {
-                setPodStatusState('error');
-            });
+            window.setTimeout(() => {
+                new ServiceProvisionAPI().getPodStatus(username).then(podStatus => {
+                    setPodStatusState('success');
+                    setPodStatus(podStatus);
+                }).catch(() => {
+                    setPodStatusState('error');
+                });
+            }, REQUEST_POD_STATUS_AFTER * 1000);
         }
     }, [username, podStatusState]);
 
