@@ -14,7 +14,7 @@ const COUNT_API_PATH = '/webapis';
 
 const DEFAULT_MAX_NUM_USERS = 50;
 
-const DEFAULT_AUTH_URL = "https://192-171-139-82.sslip.io/auth";
+const DEFAULT_AUTH_URL = "https://192-171-169-159.sslip.io/auth";
 const DEFAULT_AUTH_REALM = "cate";
 const DEFAULT_AUTH_CLIENT_ID = "cate-webui";
 
