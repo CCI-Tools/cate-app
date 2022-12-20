@@ -1,3 +1,7 @@
+### Changes 3.1.4 (in development)
+
+* Updated to new keycloak version
+
 ### Changes 3.1.3
 
 * Changed the time until the message is shown that Cate
