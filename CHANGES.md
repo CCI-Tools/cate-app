@@ -1,4 +1,4 @@
-### Changes 3.1.4 (in development)
+### Changes 3.1.4
 
 * Updated to new keycloak version
 
