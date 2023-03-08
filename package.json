@@ -1,7 +1,8 @@
 {
   "name": "cate-app",
-  "version": "3.1.5-dev0",
+  "version": "3.1.5-dev.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@blueprintjs/core": "^3.30.1",
     "@blueprintjs/datetime": "^3.18.5",
