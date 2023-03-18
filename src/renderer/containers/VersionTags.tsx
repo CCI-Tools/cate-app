@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import { Intent, Tag } from '@blueprintjs/core';
-import { CATE_APP_VERSION } from '../../config';
+import { CATE_APP_VERSION } from '../../version';
 import { State } from '../state';
 
 

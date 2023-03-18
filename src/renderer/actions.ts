@@ -2,8 +2,6 @@ import * as Cesium from 'cesium';
 import copyToClipboard from 'copy-to-clipboard';
 import * as d3 from 'd3-fetch';
 import { DirectGeometryObject } from 'geojson';
-import { History } from 'history';
-import { KeycloakInstance, KeycloakProfile } from 'keycloak-js';
 import * as redux from 'redux';
 
 import * as assert from '../common/assert';
@@ -98,9 +96,7 @@ import {
     WebAPIClient
 } from './webapi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
-import { ServiceProvisionAPI, PodStatus } from './webapi/apis/ServiceProvisionAPI';
 import { HttpError } from './webapi/HttpError';
-import { CONFIG } from '../config';
 
 
 const electron = requireElectron();
@@ -152,135 +148,6 @@ export const UPDATE_SESSION_STATE = 'UPDATE_SESSION_STATE';
 export const INVOKE_CTX_OPERATION = 'INVOKE_CTX_OPERATION';
 export const SET_USER_PROFILE = 'SET_USER_PROFILE';
 
-
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-
-export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return async (dispatch: Dispatch) => {
-        dispatch(setWebAPIStatus('login'));
-
-        if (!keycloak.authenticated) {
-            await keycloak.login({
-                                     redirectUri: window.location.origin + '/hub',
-                                     prompt: 'login',
-                                     maxAge: 86400, // seconds = 24h
-                                 });
-        }
-
-        const userProfile = await keycloak.loadUserProfile();
-        dispatch(_setUserProfile(userProfile));
-
-        const token = keycloak!.token;
-        // console.log("Token: ", token);
-
-        const serviceProvisionAPI = new ServiceProvisionAPI();
-
-        let serviceCount;
-        try {
-            serviceCount = await serviceProvisionAPI.getServiceCount();
-        } catch (error) {
-            dispatch(setWebAPIStatus('error'));
-            handleFetchError(error, 'Failed fetching server status.');
-            return;
-        }
-        if (serviceCount >= CONFIG.webApi.maxNumUsers) {
-            showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
-            dispatch(setWebAPIStatus('error'));
-            return;
-        }
-
-        dispatch(setWebAPIStatus('launching'));
-        let serviceURL;
-        try {
-            serviceURL = await serviceProvisionAPI.startService(userProfile.username, token);
-        } catch (error) {
-            dispatch(setWebAPIStatus('error'));
-            handleFetchError(error, 'Launching of Cate service failed.');
-            return;
-        }
-
-        function isPodRunning(serviceStatus: PodStatus | null) {
-            return serviceStatus && serviceStatus.phase === 'Running';
-        }
-
-        const podStatus = await serviceProvisionAPI.getPodStatus(userProfile.username, token);
-        if (isPodRunning(podStatus)) {
-            dispatch(connectWebAPIService(serviceURL));
-        } else {
-            const handleServiceError = (error: any) => {
-                handleFetchError(error, 'Launching of Cate service failed.');
-                dispatch(setWebAPIStatus('error'));
-            };
-
-            const getPodStatus = async () => {
-                try {
-                    return await serviceProvisionAPI.getPodStatus(userProfile.username, token);
-                } catch (error) {
-                    return null;
-                }
-            };
-
-            invokeUntil(getPodStatus,
-                        isPodRunning,
-                        () => dispatch(connectWebAPIService(serviceURL)),
-                        handleServiceError,
-                        2 * SECOND,
-                        5 * MINUTE);
-        }
-    }
-}
-
-function _setUserProfile(userProfile: KeycloakProfile): Action {
-    return {type: SET_USER_PROFILE, payload: userProfile}
-}
-
-export function logout(keycloak: KeycloakInstance<'native'>, history: History): ThunkAction {
-    return async (dispatch: Dispatch, getState: GetState) => {
-        const userProfile = getState().communication.userProfile;
-        const hubMode = Boolean(userProfile);
-        if (hubMode) {
-            try {
-                console.debug("Shutting down service...");
-                dispatch(setWebAPIStatus('shuttingDown'));
-                const serviceProvisionAPI = new ServiceProvisionAPI();
-                await serviceProvisionAPI.stopServiceInstance(userProfile.username);
-            } catch (error) {
-                // ok, we are closing down anyway
-            }
-            if (keycloak.authenticated) {
-                try {
-                    dispatch(setWebAPIStatus('loggingOut'));
-                    await keycloak.logout({redirectUri: window.location.origin});
-                } catch (error) {
-                    history.replace('/');
-                }
-            } else {
-                history.replace('/');
-            }
-        } else {
-            history.replace('/');
-        }
-    }
-}
-
-export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return async (dispatch: Dispatch) => {
-        dispatch(savePreferences(() => {
-            const accountUrl = keycloak.createAccountUrl();
-            const accountWindow = window.open(accountUrl, '_blank');
-            if (accountWindow && typeof accountWindow.focus === 'function') {
-                accountWindow.focus();
-            }
-        }));
-    }
-}
-
-export function setWebAPIProvisionCateHub(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return (dispatch: Dispatch) => {
-        dispatch(launchWebAPIService(keycloak));
-    };
-}
 
 export function setWebAPIStatus(webAPIStatus: WebAPIStatus): Action {
     return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus}};
@@ -2340,10 +2207,6 @@ export const showPwaInstallPrompt = (): ThunkAction => (dispatch) => {
     });
 }
 
-export function updatePwaDisplayMode(pwaDisplayMode: string): Action {
-    return {type: UPDATE_PWA_DISPLAY_MODE, payload: pwaDisplayMode};
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 // EU GDPR actions
 
@@ -2667,37 +2530,6 @@ export function handleFetchError(error: any, message: string) {
     showToast({type: 'error', text: message + suffix});
 }
 
-function invokeUntil<T>(callback: () => Promise<T>,
-                        condition: (result: T) => boolean,
-                        onSuccess: (result: T) => any,
-                        onError: (error: any) => any,
-                        interval: number,
-                        timeout: number) {
-    let startTime = new Date().getTime();
-    let func: () => void;
-    // Uncomment for debugging
-    // let attempt = 0;
-    let error: any = null;
-    const _func = async () => {
-        // attempt++;
-        let result;
-        try {
-            // console.log('attempt:', attempt);
-            result = await callback();
-        } catch (e) {
-            error = e;
-        }
-        if (condition(result)) {
-            onSuccess(result);
-        } else if ((new Date().getTime() - startTime) > timeout) {
-            onError(error || new Error('Timeout'));
-        } else {
-            setTimeout(func, interval);
-        }
-    };
-    func = _func;
-    setTimeout(_func, interval);
-}
 
 let _handlersInstalled: boolean = false;
 

@@ -1,20 +1,17 @@
-import { CSSProperties } from 'react';
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { KeycloakProfile } from 'keycloak-js';
 import {
     Button,
     Navbar,
     NavbarDivider,
     NavbarGroup,
     Popover,
-    PopoverPosition, Tooltip,
+    PopoverPosition,
 } from '@blueprintjs/core';
 
 import * as actions from '../actions';
 import { State } from '../state';
 import cateIcon from '../resources/cate-icon-128.png';
-import UserMenu from './UserMenu';
 import WorkspacesMenu from './WorkspacesMenu';
 import FilesMenu from './FilesMenu';
 import HelpMenu from './HelpMenu';
@@ -27,33 +24,23 @@ interface IDispatch {
 }
 
 interface IAppBarProps {
-    userProfile: KeycloakProfile | null,
-    pwaInstallPromotionVisible: boolean;
 }
 
 // noinspection JSUnusedLocalSymbols
 function mapStateToProps(state: State): IAppBarProps {
     return {
-        userProfile: state.communication.userProfile,
-        pwaInstallPromotionVisible: state.control.pwaInstallPromotionVisible,
     };
 }
 
 
 const _AppBar: React.FC<IAppBarProps & IDispatch> = (
     {
-        userProfile,
-        pwaInstallPromotionVisible,
         dispatch,
     }
 ) => {
 
     const handlePreferencesClick = () => {
         dispatch(actions.showPreferencesDialog());
-    };
-
-    const handleShowPwaInstallPrompt = () => {
-        dispatch(actions.showPwaInstallPrompt() as any);
     };
 
     return (
@@ -63,19 +50,6 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                 <h2 style={TITLE_STYLE}>Cate - ESA CCI Toolbox</h2>
             </NavbarGroup>
             <NavbarGroup align="right">
-                {pwaInstallPromotionVisible && (
-                    <React.Fragment>
-                        <Button
-                            className="bp3-minimal"
-                            icon="desktop"
-                            intent="success"
-                            onClick={handleShowPwaInstallPrompt}
-                        >
-                            Install App
-                        </Button>
-                        <NavbarDivider/>
-                    </React.Fragment>
-                )}
                 <Popover content={<WorkspacesMenu/>} position={PopoverPosition.BOTTOM}>
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Workspaces</Button>
                 </Popover>
@@ -86,16 +60,6 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Help</Button>
                 </Popover>
                 <NavbarDivider/>
-                {userProfile !== null && (
-                    <Popover content={<UserMenu/>} position={PopoverPosition.BOTTOM}>
-                        <Tooltip content={<UserInfo userProfile={userProfile}/>}>
-                            <Button
-                                className="bp3-minimal"
-                                icon={<Avatar userProfile={userProfile}/>}
-                            />
-                        </Tooltip>
-                    </Popover>
-                )}
                 <Button
                     className="bp3-minimal"
                     icon='cog'
@@ -109,54 +73,4 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
 const AppBar = connect(mapStateToProps)(_AppBar);
 export default AppBar;
 
-const AVATAR_STYLE: CSSProperties = {
-    width: 28,
-    height: 28,
-    flex: 'none',
-    borderRadius: 14,
-    color: 'white',
-    display: 'flex',
-    textAlign: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#29A634',
-};
 
-interface AvatarProps {
-    userProfile: KeycloakProfile;
-}
-
-function Avatar({userProfile}: AvatarProps) {
-    const name = userProfile.firstName || userProfile.username || userProfile.email;
-    const letter = ((name && name.length && name[0]) || 'U').toUpperCase();
-    return (<div style={AVATAR_STYLE}>{letter}</div>);
-}
-
-
-interface UserInfoProps {
-    userProfile: KeycloakProfile;
-}
-
-function UserInfo({userProfile}: UserInfoProps) {
-    const text: React.ReactNode[] = [];
-    if (userProfile.username) {
-        text.push(<b>{userProfile.username}</b>);
-    }
-    if (userProfile.firstName) {
-        if (userProfile.lastName) {
-            text.push(`${userProfile.firstName} ${userProfile.lastName}`);
-        } else {
-            text.push(userProfile.firstName);
-        }
-    } else if (userProfile.lastName) {
-        text.push(userProfile.lastName);
-    }
-    if (userProfile.email) {
-        if (userProfile.emailVerified) {
-            text.push(userProfile.email);
-        } else {
-            text.push(`${userProfile.email} (not verified)`);
-        }
-    }
-    return (<div>{text.map((t, i) => <div key={i}>{t}</div>)}</div>);
-}

@@ -63,9 +63,6 @@ export const INITIAL_CONTROL_STATE: ControlState = {
 
     newPlacemarkToolType: 'NoTool',
     entityUpdateCount: 0,
-
-    pwaInstallPromotionVisible: false,
-    pwaDisplayMode: 'browser',
 };
 
 
@@ -143,8 +140,6 @@ export const INITIAL_COMMUNICATION_STATE: CommunicationState = {
     webAPIStatus: null,
     webAPIServiceInfo: null,
     webAPIClient: null,
-    hubStatus: null,
-    userProfile: null,
     tasks: {},
 };
 

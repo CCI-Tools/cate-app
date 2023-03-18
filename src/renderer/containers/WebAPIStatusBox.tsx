@@ -1,13 +1,8 @@
 import * as React from 'react';
 import { connect, Dispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar, Spinner } from '@blueprintjs/core';
-import * as actions from '../actions';
-import MessageDetails from '../components/MessageDetails';
+import { Button, Classes, Dialog, Icon, IconName, Intent, ProgressBar } from '@blueprintjs/core';
 
 import { State, WebAPIServiceInfo, WebAPIStatus } from '../state';
-import { showToast } from '../toast';
-import { PodStatus, ServiceProvisionAPI } from "../webapi/apis/ServiceProvisionAPI";
 
 
 interface IDispatch {
@@ -24,7 +19,6 @@ function mapStateToProps(state: State): IWebAPIStatusBoxProps {
     return {
         webAPIStatus: state.communication.webAPIStatus,
         webAPIServiceInfo: state.communication.webAPIServiceInfo,
-        username: state.communication.userProfile?.username || null
     };
 }
 
@@ -32,16 +26,10 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
     {
         webAPIStatus,
         webAPIServiceInfo,
-        username
     }) => {
-    const history = useHistory();
 
     const reload = () => {
         window.location.reload();
-    };
-
-    const goHome = () => {
-        history.replace("/");
     };
 
     switch (webAPIStatus) {
@@ -89,7 +77,6 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
                     icon="offline"
                     isWaiting={false}
                     onRetry={reload}
-                    onCancel={goHome}
                 />);
             } else {
                 message = 'The connection to the Cate service has been closed unexpectedly.';
@@ -97,8 +84,6 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
                     message={message}
                     icon="offline"
                     onRetry={reload}
-                    onCancel={goHome}
-                    username={username}
                 />);
             }
         case 'error':
@@ -106,15 +91,11 @@ const _WebAPIStatusBox: React.FC<IWebAPIStatusBoxProps & IDispatch> = (
                 message={'Oops! An error occurred while launching or connecting the Cate service.'}
                 icon="offline"
                 onRetry={reload}
-                onCancel={goHome}
-                username={username}
             />);
         default:
             return (<ErrorBox
                 message={'Oops! No service available.'}
                 icon="offline"
-                onCancel={goHome}
-                username={username}
             />);
     }
 };
@@ -190,101 +171,13 @@ const ErrorBox: React.FC<IErrorBoxProps> = (
         isWaiting,
         onRetry,
         onCancel,
-        username,
     }
 ) => {
-    const extendedMessage = (
-        <>
-            {message}
-            {username && (
-                <PodStatusMessage
-                    username={username}
-                />
-            )}
-        </>
-    );
     return (<StatusBox
-        message={extendedMessage}
+        message={message}
         icon={icon}
         isWaiting={isWaiting}
         onRetry={onRetry}
         onCancel={onCancel}
     />);
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-type PodStatusState = 'init' | 'loading' | 'success' | 'error';
-const REQUEST_POD_STATUS_AFTER = 3;  // seconds
-
-interface IPodStatusMessageProps {
-    username: string;
-    hint?: React.ReactNode;
-}
-
-const PodStatusMessage: React.FC<IPodStatusMessageProps> = (
-    {
-        username,
-    }) => {
-    const [podStatusState, setPodStatusState] = React.useState<PodStatusState>('init');
-    const [podStatus, setPodStatus] = React.useState<PodStatus>(null);
-    React.useEffect(() => {
-        if (username && podStatusState === 'init') {
-            setPodStatusState('loading');
-            window.setTimeout(() => {
-                new ServiceProvisionAPI().getPodStatus(username).then(podStatus => {
-                    setPodStatusState('success');
-                    setPodStatus(podStatus);
-                }).catch(() => {
-                    setPodStatusState('error');
-                });
-            }, REQUEST_POD_STATUS_AFTER * 1000);
-        }
-    }, [username, podStatusState]);
-
-    let extraMessage = null;
-    if (podStatusState === 'init' || podStatusState === 'loading') {
-        extraMessage = (<div>Fetching container status...&nbsp;<Spinner size={16}/></div>);
-    } else if (podStatusState === 'error') {
-        extraMessage = 'Failed fetching container status.';
-    } else if (podStatusState === 'success' && podStatus) {
-        extraMessage = 'Container error.';
-        const containerStatuses = podStatus?.container_statuses;
-        if (containerStatuses && containerStatuses.length > 0) {
-            const terminatedState = containerStatuses[0].last_state?.terminated
-                || containerStatuses[0].state?.terminated;
-            if (terminatedState) {
-                const terminationReason = terminatedState.reason;
-                const terminationExitCode = terminatedState.exit_code;
-                extraMessage = `Container terminated. Reason: ${terminationReason}, exit code ${terminationExitCode}.`;
-            }
-        }
-    }
-
-    if (!podStatus) {
-        return (<div style={{marginTop: '0.5em'}}>{extraMessage}</div>);
-    }
-
-    function handleCopyDetails(details: string) {
-        actions.copyTextToClipboard(details);
-        showToast({type: 'info', text: 'Details copied to clipboard.'});
-    }
-
-    return (
-        <>
-            <div style={{marginTop: '0.5em'}}>{extraMessage}</div>
-            <MessageDetails
-                details={JSON.stringify(podStatus, null, 2)}
-                onCopyDetails={handleCopyDetails}
-            />
-            <div style={{marginTop: '0.5em'}} className='bp4-text-small bp4-text-muted'>
-                This error typically occurs if our cloud resources are depleted.
-                This is likely due to high server loads caused by running demanding tasks
-                and/or multiple users competing for resources.<br/>
-                To mitigate loss of data and time, we recommend that you save your workspace
-                often and enable the setting <strong>Reopen last workspace on startup</strong> in
-                the preferences.
-            </div>
-        </>
-    );
 };

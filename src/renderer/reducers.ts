@@ -1,5 +1,4 @@
 import { combineReducers, Reducer } from 'redux';
-import { KeycloakProfile } from 'keycloak-js';
 import deepEqual from 'deep-equal';
 
 import * as assert from '../common/assert';
@@ -317,15 +316,6 @@ const controlReducer = (state: ControlState = INITIAL_CONTROL_STATE, action: Act
         }
         case actions.UPDATE_MOUSE_IDLE_STATE: {
             return {...state, ...action.payload};
-        }
-        case actions.SHOW_PWA_INSTALL_PROMOTION: {
-            return {...state, pwaInstallPromotionVisible: true};
-        }
-        case actions.HIDE_PWA_INSTALL_PROMOTION: {
-            return {...state, pwaInstallPromotionVisible: false};
-        }
-        case actions.UPDATE_PWA_DISPLAY_MODE: {
-            return {...state, pwaDisplayMode: action.payload};
         }
         case actions.OPEN_MESSAGE_BOX: {
             return {
@@ -885,12 +875,6 @@ const communicationReducer = (state: CommunicationState = INITIAL_COMMUNICATION_
             const tasks = {...state.tasks};
             delete tasks[action.payload.jobId];
             return {...state, tasks};
-        }
-        case actions.SET_USER_PROFILE: {
-            return {
-                ...state,
-                userProfile: action.payload as KeycloakProfile,
-            };
         }
     }
     return state;

@@ -1,7 +1,6 @@
 import { IconName } from '@blueprintjs/core';
 import { Feature, FeatureCollection, GeoJsonObject, Point } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { KeycloakProfile } from 'keycloak-js';
 
 import { SimpleStyle } from '../common/geojson-simple-style';
 import { HostOS } from '../common/paths';
@@ -55,7 +54,6 @@ export interface DataState {
     hasWebGL: boolean;
 }
 
-export type WebAPIProvision = 'standAlone' | 'hub';
 export type WebAPIStatus = 'login' | 'launching' | 'connecting' | 'open' |
     'error' | 'closed' | 'shuttingDown' | 'loggingOut';
 
@@ -750,8 +748,6 @@ export interface CommunicationState {
     webAPIServiceInfo: WebAPIServiceInfo | null;
     webAPIStatus: WebAPIStatus | null;
     webAPIClient: WebAPIClient | null;
-    userProfile: KeycloakProfile | null;
-    hubStatus: HubStatus | null;
     // A map that stores the current state of any tasks (e.g. data fetch jobs from remote API) given a jobId
     tasks: { [jobId: number]: TaskState; };
 }
@@ -806,9 +802,6 @@ export interface ControlState {
 
     // Used to force component update after an entity's properties have changed
     entityUpdateCount: number;
-
-    pwaInstallPromotionVisible: boolean;
-    pwaDisplayMode: 'standalone' | 'browser';
 }
 
 export interface DialogState {
