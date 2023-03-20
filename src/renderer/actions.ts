@@ -896,18 +896,21 @@ export function updateDataSources(dataStoreId: string, dataSources): Action {
     return {type: UPDATE_DATA_SOURCES, payload: {dataStoreId, dataSources}};
 }
 
-export function setSelectedDataStoreId(selectedDataStoreId: string | null): ThunkAction {
+export function setSelectedDataStoreId(selectedDataStoreId: string | null, force: boolean = false): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
-        if (getState().session.selectedDataStoreId === selectedDataStoreId) {
-            //return;
-        }
         dispatch(setSelectedDataStoreIdImpl(selectedDataStoreId));
         if (selectedDataStoreId !== null) {
             const dataStore = getState().data.dataStores.find(dataStore => dataStore.id === selectedDataStoreId);
-            if (!dataStore.dataSources) {
+            if (force || !dataStore.dataSources) {
                 dispatch(loadDataSources(selectedDataStoreId, true));
             }
         }
+    }
+}
+
+export function refreshLocalDataStore(): ThunkAction {
+    return (dispatch: Dispatch) => {
+        dispatch(setSelectedDataStoreId("local", true));
     }
 }
 
