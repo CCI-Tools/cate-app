@@ -5,6 +5,19 @@
   directories in WebAPI URLs, which did not work with
   [jupyter-server-proxy](https://jupyter-server-proxy.readthedocs.io/).
 
+* Since Cate App is now designed to work inside of Jupyter Lab and standalone,
+  all code dealing with user login and Cate service provisioning in the 
+  cloud has been removed.
+
+* The following changes apply to the "local" data store because the server
+  now serves local files from the current working directory. This has been
+  done to let Cate integrated with Jupyter Lab pickj up all datasets found 
+  in the Lab's workspace.
+  - Users can now refresh the list of diles from the "local" data store.
+  - Users can no longer add/remove data sources to the "local" data store.
+    This is a temporary change. We may reassign add/remove actions to perform
+    a filtering on the local datasets.
+
 ### Changes 3.1.4
 
 * Updated to new keycloak version
