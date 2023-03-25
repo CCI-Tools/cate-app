@@ -509,6 +509,9 @@ export const workspaceSelector = (state: State): WorkspaceState | null => {
 export const isScratchWorkspaceSelector = (state: State): boolean => {
     return state.data.workspace && state.data.workspace.isScratch;
 };
+export const workspaceIdSelector = (state: State): number | null => {
+  return state.data.workspace && state.data.workspace.id;
+};
 export const workspaceBaseDirSelector = (state: State): string | null => {
     return state.data.workspace && state.data.workspace.baseDir;
 };

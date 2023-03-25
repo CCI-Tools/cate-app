@@ -15,7 +15,7 @@ interface IFigureViewOwnProps {
 
 interface IFigureViewProps extends IFigureViewOwnProps {
     baseUrl: string;
-    baseDir: string | null;
+    workspaceId: number | null;
     figureResources: ResourceState[];
     mplWebSocketUrl: string;
 }
@@ -24,7 +24,7 @@ function mapStateToProps(state: State, ownProps: IFigureViewOwnProps): IFigureVi
     return {
         view: ownProps.view,
         baseUrl: selectors.webAPIRestUrlSelector(state),
-        baseDir: selectors.workspaceBaseDirSelector(state),
+        workspaceId: selectors.workspaceIdSelector(state),
         figureResources: selectors.figureResourcesSelector(state),
         mplWebSocketUrl: selectors.mplWebSocketUrlSelector(state),
     };
@@ -42,14 +42,15 @@ class FigureView extends React.Component<IFigureViewProps & DispatchProp<State>,
     }
 
     onDownload(figureId: number) {
-        const imageBaseUrl = getMPLDownloadUrl(this.props.baseUrl, this.props.baseDir, figureId);
+        const imageBaseUrl = getMPLDownloadUrl(this.props.baseUrl, this.props.workspaceId, figureId);
         this.props.dispatch(actions.saveFigureImageAs(imageBaseUrl, figureId) as any);
     }
 
     render() {
         const view = this.props.view;
+        const workspaceId =  this.props.workspaceId;
         const figureResource = this.getFigureResource();
-        if (!figureResource) {
+        if (workspaceId === null || !figureResource) {
             return (<Card>Figure not found.</Card>);
         }
         const compId = `MplFigurePanel-${figureResource.id}-${view.id}`;
@@ -60,7 +61,11 @@ class FigureView extends React.Component<IFigureViewProps & DispatchProp<State>,
                 figureId={figureResource.id}
                 figureUpdateCount={figureResource.updateCount}
                 figureName={figureResource.name}
-                webSocketUrl={getMPLWebSocketUrl(this.props.mplWebSocketUrl, this.props.baseDir, figureResource.id)}
+                webSocketUrl={getMPLWebSocketUrl(
+                  this.props.mplWebSocketUrl,
+                  workspaceId,
+                  figureResource.id
+                )}
                 onDownload={this.onDownload}
             />
         );

@@ -257,11 +257,15 @@ export type OperationKWArgs = { [name: string]: OperationArg };
  */
 export interface WorkspaceState {
     /**
-     * The workspace's base directory path.
+     * The workspace' identifier.
+     */
+    id: number;
+    /**
+     * The workspace' base directory path.
      */
     baseDir: string;
     /**
-     * The workspace's description.
+     * The workspace' description.
      */
     description: string | null;
     /**

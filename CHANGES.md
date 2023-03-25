@@ -1,6 +1,9 @@
-### Changes 3.1.5 (in development)
+### Changes 4.0.0 (in development)
 
-
+* Now using workspace identifiers instead of base directories in resource
+  URLs of the WebAPI. This way we no longer need to URL-encode workspace
+  directories in WebAPI URLs, which did not work with
+  [jupyter-server-proxy](https://jupyter-server-proxy.readthedocs.io/).
 
 ### Changes 3.1.4
 

@@ -1947,8 +1947,8 @@ export function notifySelectedEntityChange(viewId: string, layer: LayerState | n
                     const resId = selectedEntity['_resId'];
                     const featureIndex = +selectedEntity['_idx'];
                     const baseUrl = selectors.webAPIRestUrlSelector(getState());
-                    const baseDir = workspace.baseDir;
-                    const featureUrl = getFeatureUrl(baseUrl, baseDir, {resId}, featureIndex);
+                    const workspaceId = workspace.id;
+                    const featureUrl = getFeatureUrl(baseUrl, workspaceId, {resId}, featureIndex);
                     reloadEntityWithOriginalGeometry(selectedEntity, featureUrl, (layer as any).style);
                 }
             }
@@ -2013,10 +2013,10 @@ export function updateTableViewData(viewId: string,
 export function loadTableViewData(viewId: string, resName: string, varName: string | null): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const restUrl = selectors.webAPIRestUrlSelector(getState());
-        const baseDir = selectors.workspaceBaseDirSelector(getState());
+        const workspaceId = selectors.workspaceIdSelector(getState());
         const resource = selectors.resourcesSelector(getState()).find(res => res.name === resName);
         if (resource) {
-            const csvUrl = getCsvUrl(restUrl, baseDir, {resId: resource.id}, varName);
+            const csvUrl = getCsvUrl(restUrl, workspaceId, {resId: resource.id}, varName);
             dispatch(updateTableViewData(viewId, resName, varName, null, null, true));
             d3.csv(csvUrl)
               .then((dataRows: any[]) => {
@@ -2037,8 +2037,8 @@ export const UPDATE_ANIMATION_VIEW_DATA = 'UPDATE_ANIMATION_VIEW_DATA';
 export function loadAnimationViewData(viewId: string, resId: number): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const restUrl = selectors.webAPIRestUrlSelector(getState());
-        const baseDir = selectors.workspaceBaseDirSelector(getState());
-        const htmlUrl = getHtmlUrl(restUrl, baseDir, resId);
+        const workspaceId = selectors.workspaceIdSelector(getState());
+        const htmlUrl = getHtmlUrl(restUrl, workspaceId, resId);
 
         const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {

@@ -29,7 +29,7 @@ export function convertLayersToLayerDescriptors(layers: LayerState[],
                                                 resources: ResourceState[],
                                                 placemarkCollection: PlacemarkCollection,
                                                 baseUrl: string,
-                                                baseDir: string): LayerDescriptors {
+                                                workspaceId: number): LayerDescriptors {
     if (!layers || !layers.length) {
         return EMPTY_OBJECT;
     }
@@ -41,12 +41,12 @@ export function convertLayersToLayerDescriptors(layers: LayerState[],
         switch (layer.type) {
             case 'VariableImage': {
                 imageLayerDescriptor = convertVariableImageLayerToDescriptor(layer as VariableImageLayerState,
-                                                                             baseUrl, baseDir, resources);
+                                                                             baseUrl, workspaceId, resources);
                 break;
             }
             case 'ResourceVector': {
                 vectorLayerDescriptor = convertResourceVectorLayerToDescriptor(layer as ResourceVectorLayerState,
-                                                                               baseUrl, baseDir, resources);
+                                                                               baseUrl, workspaceId, resources);
                 break;
             }
             case 'Vector': {
@@ -80,7 +80,7 @@ export function convertLayersToLayerDescriptors(layers: LayerState[],
 
 function convertVariableImageLayerToDescriptor(layer: VariableImageLayerState,
                                                baseUrl: string,
-                                               baseDir: string,
+                                               workspaceId: number,
                                                resources: ResourceState[]): ImageLayerDescriptor | null {
     const variable = findVariable(resources, layer);
     if (!variable) {
@@ -92,7 +92,7 @@ function convertVariableImageLayerToDescriptor(layer: VariableImageLayerState,
         console.warn(`GlobeView: variable "${layer.varName}" of resource "${layer.resId}" has no imageLayout`);
         return null;
     }
-    const url = getTileUrl(baseUrl, baseDir, layer);
+    const url = getTileUrl(baseUrl, workspaceId, layer);
     let rectangle = Cesium.Rectangle.MAX_VALUE;
     if (imageLayout.extent) {
         const extent = imageLayout.extent;
@@ -118,7 +118,7 @@ function convertVariableImageLayerToDescriptor(layer: VariableImageLayerState,
 
 function convertResourceVectorLayerToDescriptor(layer: ResourceVectorLayerState,
                                                 baseUrl: string,
-                                                baseDir: string,
+                                                workspaceId: number,
                                                 resources: ResourceState[]): VectorLayerDescriptor | null {
     const resource = findResource(resources, layer);
     if (!resource) {
@@ -129,7 +129,7 @@ function convertResourceVectorLayerToDescriptor(layer: ResourceVectorLayerState,
         ...layer,
         dataSource: createResourceGeoJSONDataSource,
         dataSourceOptions: {
-            data: getFeatureCollectionUrl(baseUrl, baseDir, layer),
+            data: getFeatureCollectionUrl(baseUrl, workspaceId, layer),
             resId: resource.id,
             style: layer.style,
         },

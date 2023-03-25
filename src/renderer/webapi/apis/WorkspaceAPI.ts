@@ -47,6 +47,7 @@ function responseToWorkspace(workspaceResponse: any): WorkspaceState {
         return null;
     }
     return {
+        id: workspaceResponse.id,
         baseDir: workspaceResponse.base_dir,
         description: workspaceResponse.description,
         isScratch: workspaceResponse.is_scratch,

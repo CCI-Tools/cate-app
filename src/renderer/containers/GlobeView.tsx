@@ -268,8 +268,8 @@ class GlobeView extends React.Component<IGlobeViewProps & IGlobeViewOwnProps & D
         let selectedPlacemarkId = null;
         if (workspace) {
             const baseUrl = this.props.baseUrl;
-            const baseDir = workspace.baseDir;
-            descriptors = convertLayersToLayerDescriptors(layers, resources, placemarks, baseUrl, baseDir);
+            const workspaceId = workspace.id;
+            descriptors = convertLayersToLayerDescriptors(layers, resources, placemarks, baseUrl, workspaceId);
             selectedPlacemarkId = this.props.selectedPlacemarkId;
         } else {
             descriptors = EMPTY_OBJECT as LayerDescriptors;
