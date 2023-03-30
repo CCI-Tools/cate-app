@@ -15,7 +15,7 @@ interface IFigureViewOwnProps {
 
 interface IFigureViewProps extends IFigureViewOwnProps {
     baseUrl: string;
-    workspaceId: number | null;
+    workspaceId: string | null;
     figureResources: ResourceState[];
     mplWebSocketUrl: string;
 }

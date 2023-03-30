@@ -10,7 +10,7 @@ import {
     canConstrainDataSourceTime,
     canConstrainDataSourceVariables,
     DEFAULT_BASE_MAP,
-    DEFAULT_BASE_MAP_ID,
+    DEFAULT_BASE_MAP_ID, getWorkspaceId,
 } from './state-util';
 import {
     BaseMapState,
@@ -509,9 +509,6 @@ export const workspaceSelector = (state: State): WorkspaceState | null => {
 export const isScratchWorkspaceSelector = (state: State): boolean => {
     return state.data.workspace && state.data.workspace.isScratch;
 };
-export const workspaceIdSelector = (state: State): number | null => {
-  return state.data.workspace && state.data.workspace.id;
-};
 export const workspaceBaseDirSelector = (state: State): string | null => {
     return state.data.workspace && state.data.workspace.baseDir;
 };
@@ -545,6 +542,13 @@ export const selectedWorkflowStepIdSelector = (state: State): string | null => {
 export const selectedVariableNameSelector = (state: State): string | null => {
     return state.control.selectedVariableName;
 };
+
+export const workspaceIdSelector = createSelector<State, string | null, WorkspaceState | null>(
+    workspaceSelector,
+    (workspace: WorkspaceState | null) => {
+        return workspace !== null ? getWorkspaceId(workspace) : null;
+    }
+);
 
 export const workspaceNameSelector = createSelector<State, string | null, string | null>(
     workspaceBaseDirSelector,

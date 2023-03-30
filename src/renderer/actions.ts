@@ -1950,7 +1950,7 @@ export function notifySelectedEntityChange(viewId: string, layer: LayerState | n
                     const resId = selectedEntity['_resId'];
                     const featureIndex = +selectedEntity['_idx'];
                     const baseUrl = selectors.webAPIRestUrlSelector(getState());
-                    const workspaceId = workspace.id;
+                    const workspaceId = selectors.workspaceIdSelector(getState());
                     const featureUrl = getFeatureUrl(baseUrl, workspaceId, {resId}, featureIndex);
                     reloadEntityWithOriginalGeometry(selectedEntity, featureUrl, (layer as any).style);
                 }

@@ -9,9 +9,9 @@ describe('codec', function () {
 
     it('works for a path string', function () {
         expect(Base16.encode("/workspaces/bibo")).to.equal(
-            "2f776f726b7370616365732f6269626f"
+            "2F776F726B7370616365732F6269626F"
         );
-        expect(Base16.decode("2f776f726b7370616365732f6269626f")).to.equal(
+        expect(Base16.decode("2F776F726B7370616365732F6269626F")).to.equal(
             "/workspaces/bibo"
         );
     });

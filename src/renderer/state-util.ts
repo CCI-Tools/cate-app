@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
+import Base16 from '../common/base16codec';
 
 import {
     AnimationViewDataState,
@@ -25,7 +26,7 @@ import {
     VariableRefState,
     VariableState,
     VectorLayerBase,
-    WorldViewDataState
+    WorldViewDataState, WorkspaceState
 } from './state';
 import { ViewState } from './components/ViewState';
 import * as assert from '../common/assert';
@@ -78,6 +79,10 @@ export const MY_PLACES_LAYER = {
 };
 
 export const PLACEMARK_ID_PREFIX = 'placemark-';
+
+export function getWorkspaceId(workspace: WorkspaceState): string {
+    return Base16.encode(workspace.baseDir);
+}
 
 export function isLocalDataStore(dataStore: DataStoreState | null) {
     return dataStore && (dataStore.id === 'local' || dataStore.isLocal);
@@ -196,7 +201,7 @@ function _checkDataSourceCapability(dataSource: DataSourceState,
 }
 
 export function getTileUrl(baseUrl: string,
-                           workspaceId: number,
+                           workspaceId: string,
                            layer: VariableImageLayerState): string {
     return baseUrl + `ws/res/tile/${workspaceId}/${layer.resId}/{z}/{y}/{x}.png?`
            + `&var=${encodeURIComponent(layer.varName)}`
@@ -207,20 +212,20 @@ export function getTileUrl(baseUrl: string,
 }
 
 export function getFeatureCollectionUrl(baseUrl: string,
-                                        workspaceId: number,
+                                        workspaceId: string,
                                         ref: ResourceRefState): string {
     return baseUrl + `ws/res/geojson/${workspaceId}/${ref.resId}`;
 }
 
 export function getFeatureUrl(baseUrl: string,
-                              workspaceId: number,
+                              workspaceId: string,
                               ref: ResourceRefState,
                               index: number): string {
     return baseUrl + `ws/res/geojson/${workspaceId}/${ref.resId}/${index}`;
 }
 
 export function getCsvUrl(baseUrl: string,
-                          workspaceId: number,
+                          workspaceId: string,
                           ref: ResourceRefState, varName?: string | null): string {
     let varPart = '';
     if (varName) {
@@ -229,7 +234,7 @@ export function getCsvUrl(baseUrl: string,
     return baseUrl + `ws/res/csv/${workspaceId}/${ref.resId}${varPart}`;
 }
 
-export function getHtmlUrl(baseUrl: string, workspaceId: number, resId: number): string {
+export function getHtmlUrl(baseUrl: string, workspaceId: string, resId: number): string {
     return baseUrl + `ws/res/html/${workspaceId}/${resId}`;
 }
 
@@ -237,11 +242,11 @@ export function getGeoJSONCountriesUrl(baseUrl: string): string {
     return baseUrl + 'ws/countries';
 }
 
-export function getMPLWebSocketUrl(baseUrl: string, workspaceId: number, figureId: number): string {
+export function getMPLWebSocketUrl(baseUrl: string, workspaceId: string, figureId: number): string {
     return `${baseUrl}${workspaceId}/${figureId}`;
 }
 
-export function getMPLDownloadUrl(baseUrl: string, workspaceId: number, figureId: number): string {
+export function getMPLDownloadUrl(baseUrl: string, workspaceId: string, figureId: number): string {
     return `${baseUrl}mpl/download/${workspaceId}/${figureId}`;
 }
 

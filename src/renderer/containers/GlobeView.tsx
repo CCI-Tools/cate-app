@@ -24,7 +24,7 @@ import {
     ImageLayerDescriptor,
     LayerDescriptors
 } from '../components/cesium/CesiumGlobe';
-import { findVariableIndexCoordinates, PLACEMARK_ID_PREFIX } from '../state-util';
+import { findVariableIndexCoordinates, getWorkspaceId, PLACEMARK_ID_PREFIX } from '../state-util';
 import { ViewState } from '../components/ViewState';
 import { convertLayersToLayerDescriptors } from './globe-view-layers';
 import * as Cesium from 'cesium';
@@ -268,7 +268,7 @@ class GlobeView extends React.Component<IGlobeViewProps & IGlobeViewOwnProps & D
         let selectedPlacemarkId = null;
         if (workspace) {
             const baseUrl = this.props.baseUrl;
-            const workspaceId = workspace.id;
+            const workspaceId = getWorkspaceId(workspace);
             descriptors = convertLayersToLayerDescriptors(layers, resources, placemarks, baseUrl, workspaceId);
             selectedPlacemarkId = this.props.selectedPlacemarkId;
         } else {

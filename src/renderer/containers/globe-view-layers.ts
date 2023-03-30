@@ -29,7 +29,7 @@ export function convertLayersToLayerDescriptors(layers: LayerState[],
                                                 resources: ResourceState[],
                                                 placemarkCollection: PlacemarkCollection,
                                                 baseUrl: string,
-                                                workspaceId: number): LayerDescriptors {
+                                                workspaceId: string): LayerDescriptors {
     if (!layers || !layers.length) {
         return EMPTY_OBJECT;
     }
@@ -80,7 +80,7 @@ export function convertLayersToLayerDescriptors(layers: LayerState[],
 
 function convertVariableImageLayerToDescriptor(layer: VariableImageLayerState,
                                                baseUrl: string,
-                                               workspaceId: number,
+                                               workspaceId: string,
                                                resources: ResourceState[]): ImageLayerDescriptor | null {
     const variable = findVariable(resources, layer);
     if (!variable) {
@@ -118,7 +118,7 @@ function convertVariableImageLayerToDescriptor(layer: VariableImageLayerState,
 
 function convertResourceVectorLayerToDescriptor(layer: ResourceVectorLayerState,
                                                 baseUrl: string,
-                                                workspaceId: number,
+                                                workspaceId: string,
                                                 resources: ResourceState[]): VectorLayerDescriptor | null {
     const resource = findResource(resources, layer);
     if (!resource) {
