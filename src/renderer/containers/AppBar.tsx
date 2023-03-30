@@ -39,6 +39,14 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
     }
 ) => {
 
+    const handleOpenInBrowser = () => {
+        window.open(window.location.href, "_blank");
+    };
+
+    const handleShutdownServer = () => {
+        dispatch(actions.showShutdownDialog());
+    };
+
     const handlePreferencesClick = () => {
         dispatch(actions.showPreferencesDialog());
     };
@@ -60,6 +68,16 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Help</Button>
                 </Popover>
                 <NavbarDivider/>
+                <Button
+                    className="bp3-minimal"
+                    icon='share'
+                    onClick={handleOpenInBrowser}
+                />
+                <Button
+                    className="bp3-minimal"
+                    icon='delete'
+                    onClick={handleShutdownServer}
+                />
                 <Button
                     className="bp3-minimal"
                     icon='cog'

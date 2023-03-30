@@ -2176,6 +2176,17 @@ export function hidePreferencesDialog() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// (User) Preferences actions
+
+export function showShutdownDialog() {
+    return showDialog('shutdownDialog');
+}
+
+export function hideShutdownDialog() {
+    return hideDialog('shutdownDialog');
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Desktop-PWA installation support actions
 
 export const SHOW_PWA_INSTALL_PROMOTION = 'SHOW_PWA_INSTALL_PROMOTION';

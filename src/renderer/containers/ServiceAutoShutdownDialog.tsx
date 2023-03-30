@@ -10,19 +10,19 @@ import { ServiceInfoAPI } from '../webapi/apis/ServiceInfoAPI';
 //
 const DIALOG_DURATION_MIN = (process.env.NODE_ENV === 'development' ? 1 : 15) * 60;
 
-interface IServiceAutoCloseDialogProps {
+interface IServiceAutoShutdownDialogProps {
     webAPIServiceInfo: WebAPIServiceInfo | null;
     webAPIServiceURL: string;
 }
 
-function mapStateToProps(state: State): IServiceAutoCloseDialogProps {
+function mapStateToProps(state: State): IServiceAutoShutdownDialogProps {
     return {
         webAPIServiceInfo: selectors.webAPIServiceInfoSelector(state),
         webAPIServiceURL: selectors.webAPIServiceURLSelector(state),
     };
 }
 
-const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchProp<State>> = (
+const ServiceAutoShutdownDialog: React.FC<IServiceAutoShutdownDialogProps & DispatchProp<State>> = (
     {
         webAPIServiceInfo,
         webAPIServiceURL,
@@ -100,7 +100,7 @@ const ServiceAutoCloseDialog: React.FC<IServiceAutoCloseDialogProps & DispatchPr
     );
 }
 
-export default connect(mapStateToProps)(ServiceAutoCloseDialog);
+export default connect(mapStateToProps)(ServiceAutoShutdownDialog);
 
 
 function formatSeconds(value: number): string {
