@@ -13,6 +13,23 @@ import { connectWebAPIService } from './actions';
 import { DEFAULT_SERVICE_URL } from './initial-state';
 
 
+function getServiceUrl() {
+    let serviceUrl: string = DEFAULT_SERVICE_URL;
+    const search = new URLSearchParams(window.location.search);
+    if (search.has('serviceUrl')) {
+        serviceUrl = search.get('serviceUrl');
+    } else {
+        const origin = window.location.origin;
+        const path = window.location.pathname;
+        if (path.endsWith('/app')) {
+            serviceUrl = origin + path.substring(0, path.length - 4);
+        } else if (path.endsWith('/app/')) {
+            serviceUrl = origin + path.substring(0, path.length - 5);
+        }
+    }
+    return serviceUrl;
+}
+
 export function main() {
     const middlewares: Middleware[] = [thunkMiddleware];
 
@@ -36,13 +53,7 @@ export function main() {
 
     const middleware = applyMiddleware(...middlewares);
     const store = createStore(stateReducer, middleware) as Store<State>;
-
-    const search = new URLSearchParams(window.location.search);
-    let serviceUrl = DEFAULT_SERVICE_URL;
-    if (search.has("serviceUrl")) {
-        serviceUrl = search.get("serviceUrl");
-    }
-    store.dispatch(connectWebAPIService(serviceUrl) as any);
+    store.dispatch(connectWebAPIService(getServiceUrl()) as any);
 
     ReactDOM.render(
         (

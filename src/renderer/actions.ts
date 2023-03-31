@@ -171,6 +171,8 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
 
 export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
+        console.debug("webAPIServiceURL =", webAPIServiceURL);
+
         dispatch(setWebAPIServiceURL(webAPIServiceURL));
         dispatch(setWebAPIStatus('connecting'));
 
