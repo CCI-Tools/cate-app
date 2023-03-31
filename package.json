@@ -1,6 +1,6 @@
 {
   "name": "cate-app",
-  "version": "4.0.0-dev.0",
+  "version": "4.0.0-dev.2",
   "private": true,
   "homepage": ".",
   "dependencies": {

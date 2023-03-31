@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { IconName } from '@blueprintjs/core';
+import Base16 from '../common/base16codec';
 
 import {
     AnimationViewDataState,
@@ -25,7 +26,7 @@ import {
     VariableRefState,
     VariableState,
     VectorLayerBase,
-    WorldViewDataState
+    WorldViewDataState, WorkspaceState
 } from './state';
 import { ViewState } from './components/ViewState';
 import * as assert from '../common/assert';
@@ -78,6 +79,10 @@ export const MY_PLACES_LAYER = {
 };
 
 export const PLACEMARK_ID_PREFIX = 'placemark-';
+
+export function getWorkspaceId(workspace: WorkspaceState): string {
+    return Base16.encode(workspace.baseDir);
+}
 
 export function isLocalDataStore(dataStore: DataStoreState | null) {
     return dataStore && (dataStore.id === 'local' || dataStore.isLocal);
@@ -195,8 +200,10 @@ function _checkDataSourceCapability(dataSource: DataSourceState,
     }
 }
 
-export function getTileUrl(baseUrl: string, baseDir: string, layer: VariableImageLayerState): string {
-    return baseUrl + `ws/res/tile/${encodeURIComponent(baseDir)}/${layer.resId}/{z}/{y}/{x}.png?`
+export function getTileUrl(baseUrl: string,
+                           workspaceId: string,
+                           layer: VariableImageLayerState): string {
+    return baseUrl + `ws/res/tile/${workspaceId}/${layer.resId}/{z}/{y}/{x}.png?`
            + `&var=${encodeURIComponent(layer.varName)}`
            + `&index=${encodeURIComponent((layer.varIndex || []).join())}`
            + `&cmap=${encodeURIComponent(layer.colorMapName) + (layer.alphaBlending ? '_alpha' : '')}`
@@ -204,36 +211,43 @@ export function getTileUrl(baseUrl: string, baseDir: string, layer: VariableImag
            + `&max=${encodeURIComponent(layer.displayMax + '')}`;
 }
 
-export function getFeatureCollectionUrl(baseUrl: string, baseDir: string, ref: ResourceRefState): string {
-    return baseUrl + `ws/res/geojson/${encodeURIComponent(baseDir)}/${ref.resId}`;
+export function getFeatureCollectionUrl(baseUrl: string,
+                                        workspaceId: string,
+                                        ref: ResourceRefState): string {
+    return baseUrl + `ws/res/geojson/${workspaceId}/${ref.resId}`;
 }
 
-export function getFeatureUrl(baseUrl: string, baseDir: string, ref: ResourceRefState, index: number): string {
-    return baseUrl + `ws/res/geojson/${encodeURIComponent(baseDir)}/${ref.resId}/${index}`;
+export function getFeatureUrl(baseUrl: string,
+                              workspaceId: string,
+                              ref: ResourceRefState,
+                              index: number): string {
+    return baseUrl + `ws/res/geojson/${workspaceId}/${ref.resId}/${index}`;
 }
 
-export function getCsvUrl(baseUrl: string, baseDir: string, ref: ResourceRefState, varName?: string | null): string {
+export function getCsvUrl(baseUrl: string,
+                          workspaceId: string,
+                          ref: ResourceRefState, varName?: string | null): string {
     let varPart = '';
     if (varName) {
         varPart = `?var=${encodeURIComponent(varName)}`;
     }
-    return baseUrl + `ws/res/csv/${encodeURIComponent(baseDir)}/${ref.resId}${varPart}`;
+    return baseUrl + `ws/res/csv/${workspaceId}/${ref.resId}${varPart}`;
 }
 
-export function getHtmlUrl(baseUrl: string, baseDir: string, resId: number): string {
-    return baseUrl + `ws/res/html/${encodeURIComponent(baseDir)}/${resId}`;
+export function getHtmlUrl(baseUrl: string, workspaceId: string, resId: number): string {
+    return baseUrl + `ws/res/html/${workspaceId}/${resId}`;
 }
 
 export function getGeoJSONCountriesUrl(baseUrl: string): string {
     return baseUrl + 'ws/countries';
 }
 
-export function getMPLWebSocketUrl(baseUrl: string, baseDir: string, figureId: number): string {
-    return `${baseUrl}${encodeURIComponent(baseDir)}/${encodeURIComponent('' + figureId)}`;
+export function getMPLWebSocketUrl(baseUrl: string, workspaceId: string, figureId: number): string {
+    return `${baseUrl}${workspaceId}/${figureId}`;
 }
 
-export function getMPLDownloadUrl(baseUrl: string, baseDir: string, figureId: number): string {
-    return `${baseUrl}mpl/download/${encodeURIComponent(baseDir)}/${encodeURIComponent('' + figureId)}`;
+export function getMPLDownloadUrl(baseUrl: string, workspaceId: string, figureId: number): string {
+    return `${baseUrl}mpl/download/${workspaceId}/${figureId}`;
 }
 
 export function isSpatialImageVariable(variable: VariableState): boolean {
@@ -292,24 +306,29 @@ export function getLayerTypeIconName(layer: LayerState): IconName {
     return 'layer';
 }
 
-export function findResource(resources: ResourceState[], ref: ResourceRefState): ResourceState | null {
+export function findResource(resources: ResourceState[],
+                             ref: ResourceRefState): ResourceState | null {
     return findResourceById(resources, ref.resId);
 }
 
-export function findResourceByName(resources: ResourceState[], name: string): ResourceState | null {
+export function findResourceByName(resources: ResourceState[],
+                                   name: string): ResourceState | null {
     return resources.find(r => r.name === name);
 }
 
-export function findResourceById(resources: ResourceState[], id: number): ResourceState | null {
+export function findResourceById(resources: ResourceState[],
+                                 id: number): ResourceState | null {
     return resources.find(r => r.id === id);
 }
 
-export function findVariable(resources: ResourceState[], ref: VariableRefState): VariableState | null {
+export function findVariable(resources: ResourceState[],
+                             ref: VariableRefState): VariableState | null {
     const resource = findResource(resources, ref);
     return resource && resource.variables && resource.variables.find(v => v.name === ref.varName);
 }
 
-export function findOperation(operations: OperationState[], name: string): OperationState | null {
+export function findOperation(operations: OperationState[],
+                              name: string): OperationState | null {
     return operations && operations.find(op => op.qualifiedName === name || op.name === name);
 }
 
@@ -327,7 +346,8 @@ export function findDataSource(dataStores: DataStoreState[],
     return null;
 }
 
-export function findVariableIndexCoordinates(resources: ResourceState[], ref: VariableDataRefState): any[] {
+export function findVariableIndexCoordinates(resources: ResourceState[],
+                                             ref: VariableDataRefState): any[] {
     const resource = findResourceById(resources, ref.resId);
     if (!resource) {
         return EMPTY_ARRAY;
@@ -374,7 +394,8 @@ export function findVariableIndexCoordinates(resources: ResourceState[], ref: Va
     return coords;
 }
 
-export function getNonSpatialIndexers(resource: ResourceState, ref: VariableDataRefState): DimSizes {
+export function getNonSpatialIndexers(resource: ResourceState,
+                                      ref: VariableDataRefState): DimSizes {
     const coordVariables = resource.coordVariables;
     if (!coordVariables) {
         return EMPTY_OBJECT;
@@ -563,7 +584,8 @@ export function getWorldViewSelectedEntity(view: ViewState<any>): Cesium.Entity 
     return null;
 }
 
-export function getWorldViewVectorLayerForEntity(view: ViewState<any>, entity: Cesium.Entity | null): VectorLayerBase | null {
+export function getWorldViewVectorLayerForEntity(view: ViewState<any>,
+                                                 entity: Cesium.Entity | null): VectorLayerBase | null {
     const externalObject = getWorldViewExternalObject(view);
     if (!entity || !externalObject) {
         return null;
