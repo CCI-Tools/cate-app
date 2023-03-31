@@ -39,6 +39,14 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
     }
 ) => {
 
+    const handleOpenInBrowser = () => {
+        window.open(window.location.href, "_blank");
+    };
+
+    const handleShutdownServer = () => {
+        dispatch(actions.showShutdownDialog());
+    };
+
     const handlePreferencesClick = () => {
         dispatch(actions.showPreferencesDialog());
     };
@@ -60,6 +68,18 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                     <Button className="bp3-minimal" rightIcon={'caret-down'}>Help</Button>
                 </Popover>
                 <NavbarDivider/>
+                {isRunningInIFrame() &&
+                    <Button
+                        className="bp3-minimal"
+                        icon='share'
+                        onClick={handleOpenInBrowser}
+                    />
+                }
+                <Button
+                    className="bp3-minimal"
+                    icon='offline'
+                    onClick={handleShutdownServer}
+                />
                 <Button
                     className="bp3-minimal"
                     icon='cog'
@@ -74,3 +94,11 @@ const AppBar = connect(mapStateToProps)(_AppBar);
 export default AppBar;
 
 
+// https://stackoverflow.com/questions/326069/how-to-identify-if-a-webpage-is-being-loaded-inside-an-iframe-or-directly-into-t
+function isRunningInIFrame(): boolean {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}

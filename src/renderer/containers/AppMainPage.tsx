@@ -5,12 +5,13 @@ import { useMatomo } from '@datapunt/matomo-tracker-react'
 
 import GdprBanner from './GdprBanner';
 import { isElectron } from '../electron';
-import { FileSystemAPI } from '../webapi';
+import { FileSystemAPI, ServiceShutdownAPI } from '../webapi';
 import AppBar from './AppBar';
 import ChooseWorkspaceDialog, { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './ChooseWorkspaceDialog';
 import GlobeView from './GlobeView'
 import FigureView from './FigureView';
-import ServiceAutoCloseDialog from './ServiceAutoCloseDialog';
+import ServiceAutoShutdownDialog from './ServiceAutoShutdownDialog';
+import ServiceShutdownDialog from './ServiceShutdownDialog';
 import TableView from './TableView';
 import DataSourcesPanel from './DataSourcesPanel';
 import OperationsPanel from './OperationsPanel';
@@ -170,7 +171,8 @@ const _AppMainPage: React.FC<IApplicationPageProps & IDispatch> = (
             <FileUploadDialog/>
             <FileDownloadDialog/>
             <SaveWorkspaceAsDialog/>
-            <ServiceAutoCloseDialog/>
+            <ServiceShutdownDialog/>
+            <ServiceAutoShutdownDialog/>
             <ChooseWorkspaceDialog dialogId={OPEN_WORKSPACE_DIALOG_ID}/>
             <ChooseWorkspaceDialog dialogId={DELETE_WORKSPACE_DIALOG_ID}/>
             <OperationStepDialog id={NEW_CTX_OPERATION_STEP_DIALOG_ID}/>

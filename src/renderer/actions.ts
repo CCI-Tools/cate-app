@@ -171,6 +171,8 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
 
 export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
+        console.debug("webAPIServiceURL =", webAPIServiceURL);
+
         dispatch(setWebAPIServiceURL(webAPIServiceURL));
         dispatch(setWebAPIStatus('connecting'));
 
@@ -2173,6 +2175,17 @@ export function showPreferencesDialog() {
 
 export function hidePreferencesDialog() {
     return hideDialog('preferencesDialog');
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// (User) Preferences actions
+
+export function showShutdownDialog() {
+    return showDialog('shutdownDialog');
+}
+
+export function hideShutdownDialog() {
+    return hideDialog('shutdownDialog');
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
