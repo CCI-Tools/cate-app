@@ -11,12 +11,17 @@
 
 * The following changes apply to the "local" data store because the server
   now serves local files from the current working directory. This has been
-  done to let Cate integrated with Jupyter Lab pickj up all datasets found 
+  done to let Cate integrated with Jupyter Lab pick up all datasets found 
   in the Lab's workspace.
-  - Users can now refresh the list of diles from the "local" data store.
+  - Users can now refresh the list of files from the "local" data store.
   - Users can no longer add/remove data sources to the "local" data store.
     This is a temporary change. We may reassign add/remove actions to perform
     a filtering on the local datasets.
+
+* When running Cate App as a JupyterLab widget, there is now a new action to 
+  open it in a browser tab.
+
+* Users can now shut down the Cate service in order to release memory.
 
 ### Changes 3.1.4
 
