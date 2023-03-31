@@ -77,7 +77,7 @@ const _AppBar: React.FC<IAppBarProps & IDispatch> = (
                 }
                 <Button
                     className="bp3-minimal"
-                    icon='delete'
+                    icon='offline'
                     onClick={handleShutdownServer}
                 />
                 <Button
