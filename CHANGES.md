@@ -1,7 +1,7 @@
 ### Changes 4.0.0 (in development)
 
 * Since Cate App is now designed to work inside of Jupyter Lab and standalone,
-  the user login action is no longer required because users already log into 
+  The user login action is no longer required because users already log into 
   JupyterLab. Therefore, all code dealing with user login and Cate service 
   provisioning in the cloud has been removed. Other changes include:
   - Added a new user action to open Cate App in a browser tab available, if
