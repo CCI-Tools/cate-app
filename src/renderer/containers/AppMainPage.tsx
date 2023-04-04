@@ -5,7 +5,7 @@ import { useMatomo } from '@datapunt/matomo-tracker-react'
 
 import GdprBanner from './GdprBanner';
 import { isElectron } from '../electron';
-import { FileSystemAPI, ServiceShutdownAPI } from '../webapi';
+import { FileSystemAPI } from '../webapi';
 import AppBar from './AppBar';
 import ChooseWorkspaceDialog, { DELETE_WORKSPACE_DIALOG_ID, OPEN_WORKSPACE_DIALOG_ID } from './ChooseWorkspaceDialog';
 import GlobeView from './GlobeView'

@@ -1,14 +1,20 @@
 ### Changes 4.0.0 (in development)
 
-* Now using workspace identifiers instead of base directories in resource
-  URLs of the WebAPI. This way we no longer need to URL-encode workspace
-  directories in WebAPI URLs, which did not work with
-  [jupyter-server-proxy](https://jupyter-server-proxy.readthedocs.io/).
-
 * Since Cate App is now designed to work inside of Jupyter Lab and standalone,
-  all code dealing with user login and Cate service provisioning in the 
-  cloud has been removed.
-
+  The user login action is no longer required because users already log into 
+  JupyterLab. Therefore, all code dealing with user login and Cate service 
+  provisioning in the cloud has been removed. Other changes include:
+  - Added a new user action to open Cate App in a browser tab available, if
+    Cate App is initially opened in a JupyterLab widget.
+  - Added a new user action to shut down the Cate server 
+    in order to release memory.
+  - Removed the top level **Files** menu, because file management can
+    be effectively done through JupyterLab.
+  - Removed the user action to install Cate App as a Desktop PWA.
+  - Removed proxy configuration from user preferences dialog.
+  - Rephrased filesystem info from "sandboxed / full access" to 
+    "restricted / unrestricted".
+  
 * The following changes apply to the "local" data store because the server
   now serves local files from the current working directory. This has been
   done to let Cate integrated with Jupyter Lab pick up all datasets found 
@@ -18,11 +24,12 @@
     This is a temporary change. We may reassign add/remove actions to perform
     a filtering on the local datasets.
 
-* When running Cate App as a JupyterLab widget, there is now a new action to 
-  open it in a browser tab.
+* Now using workspace identifiers instead of base directories in resource
+  URLs of the WebAPI. This way we no longer need to URL-encode workspace
+  directories in WebAPI URLs, which did not work with
+  [jupyter-server-proxy](https://jupyter-server-proxy.readthedocs.io/).
 
-* Users can now shut down the Cate service in order to release memory.
-
+    
 ### Changes 3.1.4
 
 * Updated to new keycloak version
