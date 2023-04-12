@@ -22,7 +22,7 @@ import deepEqual from 'deep-equal';
 import { ModalDialog } from '../components/ModalDialog';
 import { showToast } from '../toast';
 import { isDefined } from '../../common/types';
-import { CATE_APP_VERSION } from '../../config';
+import { CATE_APP_VERSION } from '../../version';
 
 
 interface IPreferencesDialogProps {
@@ -122,7 +122,6 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             <Tabs id="preferences">
                 <Tab id="g" title="General" panel={this.renderGeneralPanel()}/>
                 <Tab id="dm" title="Data Management" panel={this.renderDataManagementPanel()}/>
-                <Tab id="pc" title="Proxy Configuration" panel={this.renderProxyConfigurationPanel()}/>
                 <Tab id="a" title="System" panel={this.renderSystemPanel()}/>
             </Tabs>
         );
@@ -148,14 +147,6 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                 {!userRootMode && this.renderDataStoresPath()}
                 {!userRootMode && this.renderCacheWorkspaceImagery()}
                 {this.renderResourceNamePrefix()}
-            </div>
-        );
-    }
-
-    private renderProxyConfigurationPanel() {
-        return (
-            <div style={{width: '100%', marginTop: '1em'}}>
-                {this.renderProxyUrlInput()}
             </div>
         );
     }
@@ -220,9 +211,9 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
                     </ControlGroup>
                 )}
                 <ControlGroup style={SYSTEM_CONTROL_GROUP_STYLE}>
-                    <span style={SYSTEM_LABEL_STYLE}>File access mode:</span>
+                    <span style={SYSTEM_LABEL_STYLE}>Filesystem access:</span>
                     <span style={SYSTEM_ITEM_STYLE}>
-                        {this.props.serviceInfo.userRootMode ? 'sandboxed file system' : 'full access to file system'}
+                        {this.props.serviceInfo.userRootMode ? 'restricted' : 'unrestricted'}
                     </span>
                 </ControlGroup>
             </div>
@@ -290,23 +281,6 @@ class PreferencesDialog extends React.Component<IPreferencesDialogProps & Dispat
             'resourceNamePattern',
             true,
             'Default resource name pattern'
-        );
-    }
-
-    private renderProxyUrlInput() {
-        const initialValue = this.getStateValue('proxyUrl', true);
-        const onChange = this.getChangeHandler('proxyUrl', true);
-        return (
-            <ControlGroup style={{width: '100%', marginBottom: '1em', display: 'flex', alignItems: 'center'}}>
-                <span style={{flexGrow: 0.8}}>Proxy URL:</span>
-                <TextField className="bp3-input bp3-fill"
-                           style={{flexGrow: 0.2}}
-                           value={initialValue}
-                           onChange={onChange}
-                           placeholder={'http://user:password@host:port'}
-                           nullable={true}
-                />
-            </ControlGroup>
         );
     }
 

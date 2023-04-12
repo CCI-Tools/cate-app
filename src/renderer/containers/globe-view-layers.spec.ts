@@ -6,7 +6,7 @@ import { COUNTRIES_LAYER, COUNTRIES_LAYER_ID, MY_PLACES_LAYER, MY_PLACES_LAYER_I
 describe('convertLayersToLayerDescriptors', function () {
     it('converts correctly', function () {
 
-        const baseDir = 'hotte';
+        const workspaceId = 3;
         const baseUrl = 'http://localhost/';
 
         let layers, resources, descriptors;
@@ -88,10 +88,10 @@ describe('convertLayersToLayerDescriptors', function () {
             ]
         } as PlacemarkCollection;
 
-        descriptors = convertLayersToLayerDescriptors([], resources, placemarks, baseUrl, baseDir);
+        descriptors = convertLayersToLayerDescriptors([], resources, placemarks, baseUrl, workspaceId);
         expect(descriptors).to.deep.equal({});
 
-        descriptors = convertLayersToLayerDescriptors(layers, resources, placemarks, baseUrl, baseDir);
+        descriptors = convertLayersToLayerDescriptors(layers, resources, placemarks, baseUrl, workspaceId);
         expect(descriptors.vectorLayerDescriptors).to.have.length(3);
         expect(descriptors.imageLayerDescriptors).to.have.length(1);
 

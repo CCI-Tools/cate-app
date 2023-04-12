@@ -96,6 +96,8 @@ interface IDataSourcesPanelDispatch {
 
     updateSessionState(sessionState: any): void;
 
+    refreshLocalDataStore(): void;
+
     loadDataSourceMetaInfo(dataStoreId: string, dataSourceId: string): void;
 
     showDialog(dialogId: string): void;
@@ -110,6 +112,7 @@ const mapDispatchToProps = {
     setSessionState: actions.setSessionProperty,
     setControlState: actions.setControlProperty,
     updateSessionState: actions.updateSessionState,
+    refreshLocalDataStore: actions.refreshLocalDataStore,
     showDialog: actions.showDialog,
     hideDialog: actions.hideDialog,
 };
@@ -133,6 +136,7 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         this.handleAddDatasetDialog = this.handleAddDatasetDialog.bind(this);
         this.handleRemoveDatasetDialog = this.handleRemoveDatasetDialog.bind(this);
         this.handleShowOpenDatasetDialog = this.handleShowOpenDatasetDialog.bind(this);
+        this.handleRefreshLocalDataStore = this.handleRefreshLocalDataStore.bind(this);
         this.handleListHeightChanged = this.handleListHeightChanged.bind(this);
         this.handleShowDetailsChanged = this.handleShowDetailsChanged.bind(this);
         this.handleDataStoreSelected = this.handleDataStoreSelected.bind(this);
@@ -150,24 +154,30 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
         const hasDataSources = this.props.selectedDataSources && this.props.selectedDataSources.length;
         const selectedDataSource = this.props.selectedDataSource;
         const isLocalStore = isLocalDataStore(this.props.selectedDataStore);
-        const canAdd = isLocalStore;
-        const canRemove = selectedDataSource && isLocalStore;
+        // const canAdd = isLocalStore;
+        // const canRemove = selectedDataSource && isLocalStore;
         const isNotVerified = selectedDataSource ? !canOpenDataSource(selectedDataSource) : false;
         const canOpen = selectedDataSource && this.props.hasWorkspace && !isNotVerified;
         const actionComponent = (
             <ButtonGroup>
+                {/*{isLocalStore && <ToolButton*/}
+                {/*    tooltipContent="Add data source"*/}
+                {/*    onClick={this.handleAddDatasetDialog}*/}
+                {/*    disabled={!canAdd}*/}
+                {/*    icon="add"*/}
+                {/*    tooltipPosition={'top'}*/}
+                {/*/>}*/}
+                {/*{isLocalStore && <ToolButton*/}
+                {/*    tooltipContent="Remove data source"*/}
+                {/*    onClick={this.handleRemoveDatasetDialog}*/}
+                {/*    disabled={!canRemove}*/}
+                {/*    icon="trash"*/}
+                {/*    tooltipPosition={'top'}*/}
+                {/*/>}*/}
                 {isLocalStore && <ToolButton
-                    tooltipContent="Add data source"
-                    onClick={this.handleAddDatasetDialog}
-                    disabled={!canAdd}
-                    icon="add"
-                    tooltipPosition={'top'}
-                />}
-                {isLocalStore && <ToolButton
-                    tooltipContent="Remove data source"
-                    onClick={this.handleRemoveDatasetDialog}
-                    disabled={!canRemove}
-                    icon="trash"
+                    tooltipContent="Refresh local data store"
+                    onClick={this.handleRefreshLocalDataStore}
+                    icon="refresh"
                     tooltipPosition={'top'}
                 />}
                 {isNotVerified && (
@@ -255,6 +265,10 @@ class DataSourcesPanel extends React.Component<IDataSourcesPanelProps & IDataSou
 
     private handleRemoveDatasetDialog() {
         this.props.showDialog('removeDatasetDialog');
+    }
+
+    private handleRefreshLocalDataStore() {
+        this.props.refreshLocalDataStore();
     }
 
     private handleShowOpenDatasetDialog() {

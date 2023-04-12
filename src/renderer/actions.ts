@@ -2,8 +2,6 @@ import * as Cesium from 'cesium';
 import copyToClipboard from 'copy-to-clipboard';
 import * as d3 from 'd3-fetch';
 import { DirectGeometryObject } from 'geojson';
-import { History } from 'history';
-import { KeycloakInstance, KeycloakProfile } from 'keycloak-js';
 import * as redux from 'redux';
 
 import * as assert from '../common/assert';
@@ -98,9 +96,7 @@ import {
     WebAPIClient
 } from './webapi';
 import { ServiceInfoAPI } from './webapi/apis/ServiceInfoAPI';
-import { ServiceProvisionAPI, PodStatus } from './webapi/apis/ServiceProvisionAPI';
 import { HttpError } from './webapi/HttpError';
-import { CONFIG } from '../config';
 
 
 const electron = requireElectron();
@@ -153,135 +149,6 @@ export const INVOKE_CTX_OPERATION = 'INVOKE_CTX_OPERATION';
 export const SET_USER_PROFILE = 'SET_USER_PROFILE';
 
 
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-
-export function launchWebAPIService(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return async (dispatch: Dispatch) => {
-        dispatch(setWebAPIStatus('login'));
-
-        if (!keycloak.authenticated) {
-            await keycloak.login({
-                                     redirectUri: window.location.origin + '/hub',
-                                     prompt: 'login',
-                                     maxAge: 86400, // seconds = 24h
-                                 });
-        }
-
-        const userProfile = await keycloak.loadUserProfile();
-        dispatch(_setUserProfile(userProfile));
-
-        const token = keycloak!.token;
-        // console.log("Token: ", token);
-
-        const serviceProvisionAPI = new ServiceProvisionAPI();
-
-        let serviceCount;
-        try {
-            serviceCount = await serviceProvisionAPI.getServiceCount();
-        } catch (error) {
-            dispatch(setWebAPIStatus('error'));
-            handleFetchError(error, 'Failed fetching server status.');
-            return;
-        }
-        if (serviceCount >= CONFIG.webApi.maxNumUsers) {
-            showToast({type: 'error', text: 'Too many concurrent users. Please try again later!'});
-            dispatch(setWebAPIStatus('error'));
-            return;
-        }
-
-        dispatch(setWebAPIStatus('launching'));
-        let serviceURL;
-        try {
-            serviceURL = await serviceProvisionAPI.startService(userProfile.username, token);
-        } catch (error) {
-            dispatch(setWebAPIStatus('error'));
-            handleFetchError(error, 'Launching of Cate service failed.');
-            return;
-        }
-
-        function isPodRunning(serviceStatus: PodStatus | null) {
-            return serviceStatus && serviceStatus.phase === 'Running';
-        }
-
-        const podStatus = await serviceProvisionAPI.getPodStatus(userProfile.username, token);
-        if (isPodRunning(podStatus)) {
-            dispatch(connectWebAPIService(serviceURL));
-        } else {
-            const handleServiceError = (error: any) => {
-                handleFetchError(error, 'Launching of Cate service failed.');
-                dispatch(setWebAPIStatus('error'));
-            };
-
-            const getPodStatus = async () => {
-                try {
-                    return await serviceProvisionAPI.getPodStatus(userProfile.username, token);
-                } catch (error) {
-                    return null;
-                }
-            };
-
-            invokeUntil(getPodStatus,
-                        isPodRunning,
-                        () => dispatch(connectWebAPIService(serviceURL)),
-                        handleServiceError,
-                        2 * SECOND,
-                        5 * MINUTE);
-        }
-    }
-}
-
-function _setUserProfile(userProfile: KeycloakProfile): Action {
-    return {type: SET_USER_PROFILE, payload: userProfile}
-}
-
-export function logout(keycloak: KeycloakInstance<'native'>, history: History): ThunkAction {
-    return async (dispatch: Dispatch, getState: GetState) => {
-        const userProfile = getState().communication.userProfile;
-        const hubMode = Boolean(userProfile);
-        if (hubMode) {
-            try {
-                console.debug("Shutting down service...");
-                dispatch(setWebAPIStatus('shuttingDown'));
-                const serviceProvisionAPI = new ServiceProvisionAPI();
-                await serviceProvisionAPI.stopServiceInstance(userProfile.username);
-            } catch (error) {
-                // ok, we are closing down anyway
-            }
-            if (keycloak.authenticated) {
-                try {
-                    dispatch(setWebAPIStatus('loggingOut'));
-                    await keycloak.logout({redirectUri: window.location.origin});
-                } catch (error) {
-                    history.replace('/');
-                }
-            } else {
-                history.replace('/');
-            }
-        } else {
-            history.replace('/');
-        }
-    }
-}
-
-export function manageAccount(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return async (dispatch: Dispatch) => {
-        dispatch(savePreferences(() => {
-            const accountUrl = keycloak.createAccountUrl();
-            const accountWindow = window.open(accountUrl, '_blank');
-            if (accountWindow && typeof accountWindow.focus === 'function') {
-                accountWindow.focus();
-            }
-        }));
-    }
-}
-
-export function setWebAPIProvisionCateHub(keycloak: KeycloakInstance<'native'>): ThunkAction {
-    return (dispatch: Dispatch) => {
-        dispatch(launchWebAPIService(keycloak));
-    };
-}
-
 export function setWebAPIStatus(webAPIStatus: WebAPIStatus): Action {
     return {type: SET_WEBAPI_STATUS, payload: {webAPIStatus}};
 }
@@ -304,6 +171,8 @@ export function setWebAPIServiceInfo(webAPIServiceInfo: WebAPIServiceInfo): Acti
 
 export function connectWebAPIService(webAPIServiceURL: string): ThunkAction {
     return async (dispatch: Dispatch, getState: GetState) => {
+        console.debug("webAPIServiceURL =", webAPIServiceURL);
+
         dispatch(setWebAPIServiceURL(webAPIServiceURL));
         dispatch(setWebAPIStatus('connecting'));
 
@@ -1029,18 +898,21 @@ export function updateDataSources(dataStoreId: string, dataSources): Action {
     return {type: UPDATE_DATA_SOURCES, payload: {dataStoreId, dataSources}};
 }
 
-export function setSelectedDataStoreId(selectedDataStoreId: string | null): ThunkAction {
+export function setSelectedDataStoreId(selectedDataStoreId: string | null, force: boolean = false): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
-        if (getState().session.selectedDataStoreId === selectedDataStoreId) {
-            //return;
-        }
         dispatch(setSelectedDataStoreIdImpl(selectedDataStoreId));
         if (selectedDataStoreId !== null) {
             const dataStore = getState().data.dataStores.find(dataStore => dataStore.id === selectedDataStoreId);
-            if (!dataStore.dataSources) {
+            if (force || !dataStore.dataSources) {
                 dispatch(loadDataSources(selectedDataStoreId, true));
             }
         }
+    }
+}
+
+export function refreshLocalDataStore(): ThunkAction {
+    return (dispatch: Dispatch) => {
+        dispatch(setSelectedDataStoreId("local", true));
     }
 }
 
@@ -2080,8 +1952,8 @@ export function notifySelectedEntityChange(viewId: string, layer: LayerState | n
                     const resId = selectedEntity['_resId'];
                     const featureIndex = +selectedEntity['_idx'];
                     const baseUrl = selectors.webAPIRestUrlSelector(getState());
-                    const baseDir = workspace.baseDir;
-                    const featureUrl = getFeatureUrl(baseUrl, baseDir, {resId}, featureIndex);
+                    const workspaceId = selectors.workspaceIdSelector(getState());
+                    const featureUrl = getFeatureUrl(baseUrl, workspaceId, {resId}, featureIndex);
                     reloadEntityWithOriginalGeometry(selectedEntity, featureUrl, (layer as any).style);
                 }
             }
@@ -2146,10 +2018,10 @@ export function updateTableViewData(viewId: string,
 export function loadTableViewData(viewId: string, resName: string, varName: string | null): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const restUrl = selectors.webAPIRestUrlSelector(getState());
-        const baseDir = selectors.workspaceBaseDirSelector(getState());
+        const workspaceId = selectors.workspaceIdSelector(getState());
         const resource = selectors.resourcesSelector(getState()).find(res => res.name === resName);
         if (resource) {
-            const csvUrl = getCsvUrl(restUrl, baseDir, {resId: resource.id}, varName);
+            const csvUrl = getCsvUrl(restUrl, workspaceId, {resId: resource.id}, varName);
             dispatch(updateTableViewData(viewId, resName, varName, null, null, true));
             d3.csv(csvUrl)
               .then((dataRows: any[]) => {
@@ -2170,8 +2042,8 @@ export const UPDATE_ANIMATION_VIEW_DATA = 'UPDATE_ANIMATION_VIEW_DATA';
 export function loadAnimationViewData(viewId: string, resId: number): ThunkAction {
     return (dispatch: Dispatch, getState: GetState) => {
         const restUrl = selectors.webAPIRestUrlSelector(getState());
-        const baseDir = selectors.workspaceBaseDirSelector(getState());
-        const htmlUrl = getHtmlUrl(restUrl, baseDir, resId);
+        const workspaceId = selectors.workspaceIdSelector(getState());
+        const htmlUrl = getHtmlUrl(restUrl, workspaceId, resId);
 
         const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
@@ -2306,42 +2178,14 @@ export function hidePreferencesDialog() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Desktop-PWA installation support actions
+// (User) Preferences actions
 
-export const SHOW_PWA_INSTALL_PROMOTION = 'SHOW_PWA_INSTALL_PROMOTION';
-export const HIDE_PWA_INSTALL_PROMOTION = 'HIDE_PWA_INSTALL_PROMOTION';
-export const UPDATE_PWA_DISPLAY_MODE = 'UPDATE_PWA_DISPLAY_MODE';
-
-let _deferredPwaInstallPrompt: any = null;
-
-export function showPwaInstallPromotion(deferredPrompt: any): Action {
-    // Prevent the mini info bar from appearing on mobile
-    _deferredPwaInstallPrompt = deferredPrompt;
-    _deferredPwaInstallPrompt.preventDefault();
-    return {type: SHOW_PWA_INSTALL_PROMOTION};
+export function showShutdownDialog() {
+    return showDialog('shutdownDialog');
 }
 
-function hidePwaInstallPromotion(): Action {
-    return {type: HIDE_PWA_INSTALL_PROMOTION};
-}
-
-export const showPwaInstallPrompt = (): ThunkAction => (dispatch) => {
-    // Hide the app provided install promotion
-    dispatch(hidePwaInstallPromotion());
-    // Show the install prompt
-    _deferredPwaInstallPrompt.prompt();
-    // Wait for the user to respond to the prompt
-    _deferredPwaInstallPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-            console.debug('User accepted the install prompt');
-        } else {
-            console.debug('User dismissed the install prompt');
-        }
-    });
-}
-
-export function updatePwaDisplayMode(pwaDisplayMode: string): Action {
-    return {type: UPDATE_PWA_DISPLAY_MODE, payload: pwaDisplayMode};
+export function hideShutdownDialog() {
+    return hideDialog('shutdownDialog');
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -2667,37 +2511,6 @@ export function handleFetchError(error: any, message: string) {
     showToast({type: 'error', text: message + suffix});
 }
 
-function invokeUntil<T>(callback: () => Promise<T>,
-                        condition: (result: T) => boolean,
-                        onSuccess: (result: T) => any,
-                        onError: (error: any) => any,
-                        interval: number,
-                        timeout: number) {
-    let startTime = new Date().getTime();
-    let func: () => void;
-    // Uncomment for debugging
-    // let attempt = 0;
-    let error: any = null;
-    const _func = async () => {
-        // attempt++;
-        let result;
-        try {
-            // console.log('attempt:', attempt);
-            result = await callback();
-        } catch (e) {
-            error = e;
-        }
-        if (condition(result)) {
-            onSuccess(result);
-        } else if ((new Date().getTime() - startTime) > timeout) {
-            onError(error || new Error('Timeout'));
-        } else {
-            setTimeout(func, interval);
-        }
-    };
-    func = _func;
-    setTimeout(_func, interval);
-}
 
 let _handlersInstalled: boolean = false;
 
