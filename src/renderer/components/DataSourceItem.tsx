@@ -64,7 +64,7 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
                     <div className="user-selectable" style={ID_STYLE}>{dataSource.id}</div>
                 </div>
             ) : (
-                 <span className="user-selectable">{warnIcon}{title}{typeSpec}</span>
+                 <div className="user-selectable">{warnIcon}{title}{typeSpec}</div>
              )}
         </div>
     );
@@ -73,16 +73,29 @@ const DataSourceItem: React.FC<DataSourceItemProps> = ({dataSource, showDataSour
 
 export default DataSourceItem;
 
+const SKIPPED_PREFIXES: string[] = ['esacci '];
+const SKIPPED_SUFFIXES: string[] = ['.zarr', '.levels', '.nc', '.tif'];
+
 
 function dataSourceToTitle(dataSource: DataSourceState) {
-    const title = dataSource.id
-                            .replace(/\./g, ' ')
+    let title = dataSource.id
                             .replace(/-/g, ' ')
-                            .replace(/_/g, '-');
-    if (title.startsWith('esacci ')) {
-        return title.substr('esacci '.length);
-    }  else if (title.startsWith('ESACCI ')) {
-        return title.substr('ESACCI '.length);
+                            .replace(/_/g, ' ');
+    const lastSlashPos = title.lastIndexOf('/');
+    if (lastSlashPos >= 0 && lastSlashPos < title.length - 1) {
+        title = title.substring(lastSlashPos + 1)
+    }
+    for (let prefix of SKIPPED_PREFIXES) {
+        if (title.startsWith(prefix) || title.startsWith(prefix.toUpperCase())) {
+            title = title.substring(prefix.length);
+            break;
+        }
+    }
+    for (let suffix of SKIPPED_SUFFIXES) {
+        if (title.endsWith(suffix) || title.endsWith(suffix.toUpperCase())) {
+            title = title.substring(0, title.length - suffix.length);
+            break;
+        }
     }
     return title;
 }
