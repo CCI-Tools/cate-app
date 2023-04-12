@@ -30,6 +30,9 @@
   [jupyter-server-proxy](https://jupyter-server-proxy.readthedocs.io/).
 
     
+* Slightly improved readability of dataset titles generated from identifiers
+  if titles are missing.
+  
 ### Changes 3.1.4
 
 * Updated to new keycloak version
